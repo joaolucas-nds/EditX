@@ -1,0 +1,249 @@
+# DECISIONS.md — Registro de Decisões Técnicas (ADRs)
+
+> ADR — Architecture Decision Records (simplificado)
+> Registra TODAS as decisões importantes com contexto e motivo.
+> Evita reabrir discussões já resolvidas e dá contexto ao Claude em novas sessões.
+
+---
+
+## DEC-001 — Formato de arquivo proprietário `.editx`
+
+**Data:** 2026-05-24
+**Status:** aceita
+**Autor:** ambos
+
+### Contexto
+O editor precisa salvar e carregar templates completos: dimensões do documento, todas as páginas, todos os frames (texto, imagem, forma), estilos de texto globais, paleta de cores e mapeamentos CSV. Esse arquivo é a unidade de trabalho principal do usuário.
+
+### Decisão
+Usar JSON com extensão proprietária `.editx`. O JSON é legível, versionável com Git, e não requer parser binário. A extensão proprietária diferencia claramente os arquivos do projeto de JSONs genéricos e permite associação de arquivo no desktop no futuro.
+
+### Alternativas consideradas
+- **Formato binário (ex: MessagePack)** — menor, mais rápido de parsear, mas não é versionável com diff legível e dificulta debug
+- **SQLite** — ótimo para dados relacionais, mas excessivo para um documento de template; sem suporte nativo no browser
+- **JSON puro sem extensão proprietária** — funcional mas sem identidade; não permite associação com o app desktop
+
+### Consequências
+- **Positivas:** versionável com Git, editável manualmente para debug, fácil de compartilhar, sem dependência de formato externo
+- **Negativas:** para arquivos com muitos frames e imagens em base64 (modo "empacotar"), o arquivo pode ficar grande
+- **Riscos:** mudanças no schema que quebrem arquivos existentes exigem migração — mitigado com campo `"version"` no JSON e módulo de migração futuro
+
+---
+
+## DEC-002 — Imagens referenciadas por caminho, não embutidas
+
+**Data:** 2026-05-24
+**Status:** aceita
+**Autor:** ambos
+
+### Contexto
+Templates de catálogo podem ter dezenas de frames de imagem. Embutir todas em base64 no `.editx` tornaria o arquivo imenso (uma imagem JPEG de 1MB vira ~1.3MB em base64) e não versionável.
+
+### Decisão
+Por padrão, frames de imagem armazenam o caminho relativo ao arquivo `.editx` (ex: `"./imagens/coca-cola.jpg"`). O template é portátil desde que a pasta de imagens acompanhe o arquivo. Uma opção "Empacotar tudo" gera um `.editx` autossuficiente com imagens em base64 — útil para compartilhar o template sem a pasta de imagens.
+
+### Alternativas consideradas
+- **Sempre base64** — simples para compartilhamento, mas inutilizável para Git e lento para abrir
+- **Sempre caminho absoluto** — o template não funciona em outra máquina sem ajuste manual
+
+### Consequências
+- **Positivas:** arquivos `.editx` leves, versionáveis, portáteis quando acompanhados da pasta de imagens
+- **Negativas:** o usuário precisa manter a pasta de imagens junto com o `.editx`
+- **Riscos:** caminhos relativos podem quebrar se o usuário mover o arquivo sem mover a pasta — mitigado com aviso na UI e validação ao abrir
+
+---
+
+## DEC-003 — Fabric.js como motor de canvas (sobre Konva.js)
+
+**Data:** 2026-05-24
+**Status:** aceita
+**Autor:** ambos
+
+### Contexto
+O editor precisa de um motor de canvas 2D que suporte: objetos interativos (mover, redimensionar, rotacionar), z-order, seleção múltipla, serialização/deserialização de objetos, e extensibilidade para frames customizados.
+
+### Decisão
+Usar Fabric.js 6.x.
+
+### Alternativas consideradas
+- **Konva.js** — performance superior com React (Konva tem binding React oficial), mas API de serialização menos madura e menos recursos built-in para manipulação de objetos de texto
+- **Canvas API pura** — controle total, zero overhead, mas implementar seleção, transformação e hit-testing do zero levaria meses
+- **PixiJS** — otimizado para jogos (WebGL), não para edição de documentos; sem conceito de objetos editáveis
+
+### Consequências
+- **Positivas:** serialização built-in, tipos de objeto prontos (IText, Image, Rect, etc.), comunidade grande, boa documentação
+- **Negativas:** Fabric.js v6 quebrou compatibilidade com a v5 em serialização — tutoriais antigos podem enganar
+- **Riscos:** a API de texto do Fabric.js não suporta os modos de overflow necessários — o FrameText.ts precisará estender a classe IText com lógica customizada
+
+**⚠️ Armadilha conhecida:** Fabric.js v6 mudou a estrutura do `toJSON()`. Tutoriais que mostram a estrutura de v5 estão desatualizados. Sempre consultar a documentação da v6.
+
+---
+
+## DEC-004 — Zustand + Immer para estado global
+
+**Data:** 2026-05-24
+**Status:** aceita
+**Autor:** Claude
+
+### Contexto
+O editor tem estado complexo e interconectado: documento ativo com múltiplas páginas e frames, seleção atual, histórico de undo/redo, dados CSV importados. Esse estado precisa ser acessível por vários componentes sem prop-drilling.
+
+### Decisão
+Usar Zustand para gerenciamento de estado + Immer para mutações imutáveis e patches de undo/redo.
+
+### Alternativas consideradas
+- **Redux Toolkit** — poderoso, mas boilerplate excessivo para um app de editor; o overhead de ações e reducers atrasa o desenvolvimento
+- **Context API do React** — simples, mas re-render excessivo em contextos grandes afeta performance do canvas
+- **MobX** — reativo e elegante, mas a magia do MobX dificulta debug e é menos familiar para a maioria dos devs React
+
+### Consequências
+- **Positivas:** API simples, zero boilerplate, compatível nativamente com Immer para undo/redo com `produceWithPatches`
+- **Negativas:** sem devtools tão sofisticadas quanto Redux para inspecionar estado complexo
+- **Riscos:** stores grandes sem divisão correta podem causar re-renders desnecessários — mitigado com stores separadas por domínio (`documentStore`, `selectionStore`, etc.)
+
+---
+
+## DEC-005 — Tauri em vez de Electron para versão desktop
+
+**Data:** 2026-05-24
+**Status:** aceita
+**Autor:** Claude
+
+### Contexto
+O app precisa de uma versão desktop para acesso direto ao sistema de arquivos (pasta de imagens sem upload manual). Duas opções principais: Electron e Tauri.
+
+### Decisão
+Tauri 2.x, implementado na Fase 2 (não antes).
+
+### Alternativas consideradas
+- **Electron** — mais maduro, mais fácil de encontrar recursos, mas bundle de ~150MB por app (inclui Chromium + Node.js); RAM elevada; histórico de vulnerabilidades de segurança
+- **PWA com File System Access API** — sem instalação, mas API ainda não tem suporte universal e não funciona no Safari iOS
+
+### Consequências
+- **Positivas:** bundle de ~10MB, usa WebView nativo do SO (sem Chromium embutido), backend Rust mais seguro, API de sistema de arquivos rica
+- **Negativas:** Rust no backend requer aprendizado adicional; menor comunidade que Electron; algumas APIs Electron não têm equivalente direto em Tauri
+- **Riscos:** a API Tauri 2.x mudou significativamente da 1.x — não misturar documentação das versões
+
+---
+
+## DEC-006 — Motor de overflow de texto 100% customizado
+
+**Data:** 2026-05-24
+**Status:** aceita
+**Autor:** ambos
+
+### Contexto
+O editor precisa de frames de texto com comportamentos avançados de overflow, similares ao Figma: crescer verticalmente, crescer horizontalmente, diminuir fonte para caber, ou cortar. Nenhuma biblioteca de canvas (Fabric.js, Konva.js, ou qualquer outra) implementa esses modos nativamente.
+
+### Decisão
+Implementar um motor customizado em `FrameText.ts` usando a Canvas 2D API para medir métricas de texto (`measureText`, `opentype.js` para métricas precisas de fonte) e calcular as dimensões finais do frame antes de renderizar.
+
+### Alternativas consideradas
+- **Adaptar IText do Fabric.js** — a classe tem overflow básico mas não os modos específicos; seria necessário sobrescrever tantos métodos que vale mais a pena uma implementação própria
+- **Renderizar texto em HTML/CSS e sobrepor ao canvas** — HTML tem overflow nativo, mas sincronizar a posição com o canvas é frágil e inviável para exportação
+
+### Consequências
+- **Positivas:** controle total sobre o comportamento; pode implementar exatamente o que o produto precisa
+- **Negativas:** é o módulo mais custoso de implementar e testar; edge cases de tipografia são numerosos (texto vazio, uma única palavra longa, RTL, ligaduras)
+- **Riscos:** performance em geração de lote com 500+ itens — cada item precisa rodar o motor de layout. Mitigado com Web Worker e cache de métricas de fonte
+
+**⚠️ Armadilha conhecida:** `ctx.measureText()` da Canvas 2D API não retorna altura real da linha (só `width`). Para altura precisa, usar `opentype.js` para calcular ascender + descender da fonte. Não depender de `measureText().actualBoundingBoxAscent`.
+
+---
+
+## DEC-007 — BatchGenerator.ts roda em Web Worker
+
+**Data:** 2026-05-24
+**Status:** aceita
+**Autor:** Claude
+
+### Contexto
+A geração em massa de N arquivos (renderizar template + popular com dados + exportar PNG/PDF) é CPU-intensiva. Com 200+ linhas no CSV, rodar no thread principal da UI trava o browser por vários segundos, tornando o app inutilizável durante a geração.
+
+### Decisão
+`BatchGenerator.ts` roda exclusivamente em Web Worker. A UI recebe atualizações de progresso via `postMessage` e pode cancelar a geração a qualquer momento.
+
+### Alternativas consideradas
+- **Thread principal com `requestAnimationFrame` yield** — divide a carga em frames de 16ms; funciona para lotes pequenos mas ainda degrada a UI em lotes grandes
+- **setTimeout yield** — similar ao anterior, mais simples de implementar mas menos previsível
+
+### Consequências
+- **Positivas:** UI permanece responsiva durante toda a geração; progresso em tempo real; cancelamento limpo
+- **Negativas:** Web Workers não têm acesso ao DOM — a renderização precisa usar OffscreenCanvas (suportado nos browsers modernos)
+- **Riscos:** `OffscreenCanvas` ainda tem suporte limitado em Safari (verificar compatibilidade ao implementar); fallback para thread principal pode ser necessário em Safari antigo
+
+---
+
+## DEC-008 — pdf-lib em vez de jsPDF
+
+**Data:** 2026-05-24
+**Status:** aceita
+**Autor:** Claude
+
+### Contexto
+O editor precisa gerar PDFs multipáginas com índice, links internos, sangria para impressão, e possível suporte a PDF/X para gráficas.
+
+### Decisão
+Usar `pdf-lib` como biblioteca de geração de PDF.
+
+### Alternativas consideradas
+- **jsPDF** — mais antigo, mais exemplos na internet, mas API de baixo nível e suporte a tipografia avançada limitado; sem manipulação de PDFs existentes
+- **Puppeteer** — gera PDF via headless Chrome, qualidade excelente, mas requer Node.js (não roda no browser) e é pesado demais para um app client-side
+- **Pdfmake** — declarativo e simples para layouts de texto, mas não tem suporte a elementos canvas/imagem com a fidelidade necessária
+
+### Consequências
+- **Positivas:** API TypeScript moderna; suporte a embedar imagens, fontes e links; pode ler e modificar PDFs existentes; roda no browser sem servidor
+- **Negativas:** curva de aprendizado maior que jsPDF; documentação menos extensa; layouts complexos exigem cálculo manual de coordenadas
+- **Riscos:** PDF/X para impressão profissional pode exigir configurações específicas de colorimetria (ICC profiles) que pdf-lib não suporta nativamente — a ser investigado na Fase 4
+
+---
+
+## DEC-009 — `TemplateSchema.ts` é a fonte da verdade — implementar primeiro
+
+**Data:** 2026-05-24
+**Status:** aceita
+**Autor:** ambos
+
+### Contexto
+Com múltiplos módulos interdependentes (canvas, serialização, geração em massa, UI de propriedades), há risco de cada módulo definir suas próprias interfaces e criar inconsistências entre eles.
+
+### Decisão
+`TemplateSchema.ts` (re-exportado como `template.types.ts`) é a única fonte de tipos para o formato `.editx`. Todos os outros módulos importam desse arquivo. O canvas não pode definir seus próprios tipos de frame — deve usar e estender os tipos do schema.
+
+### Alternativas consideradas
+- **Cada módulo define seus próprios tipos** — rápido de começar, mas cria divergências que exigem conversões e adaptadores entre módulos
+- **Gerar tipos automaticamente a partir de um JSON Schema** — mais robusto para validação, mas adiciona complexidade de tooling desde o início
+
+### Consequências
+- **Positivas:** consistência garantida entre todos os módulos; mudança de tipo em um lugar propaga por todo o projeto via TypeScript
+- **Negativas:** exige disciplina para sempre importar do arquivo correto; risco de tipos muito acoplados ao formato de armazenamento
+- **Riscos:** mudanças no schema após o `v0.1.0` (quando usuários tiverem arquivos `.editx`) exigem módulo de migração — planejar o campo `"version"` com cuidado
+
+---
+
+## Template para novo ADR (copie e preencha)
+
+```markdown
+## DEC-[número] — [Título curto]
+
+**Data:** YYYY-MM-DD
+**Status:** proposta | aceita | rejeitada | substituída por DEC-[N]
+**Autor:** você | Claude | ambos
+
+### Contexto
+[Por que essa decisão precisou ser tomada? Qual problema estava sendo resolvido?]
+
+### Decisão
+[O que foi decidido]
+
+### Alternativas consideradas
+- [Opção A] — [por que não]
+- [Opção B] — [por que não]
+
+### Consequências
+- **Positivas:** [o que melhora]
+- **Negativas:** [trade-offs aceitos]
+- **Riscos:** [o que pode dar errado]
+
+**⚠️ Armadilha conhecida:** [se a decisão já criou um problema, registrar aqui]
+```
