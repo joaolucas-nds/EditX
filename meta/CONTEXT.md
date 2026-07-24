@@ -3,6 +3,8 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Mantenha-o atualizado a cada sessão de desenvolvimento.
 
+**Mudanças nesta revisão (2026-07-11):** adicionada a seção "Como o Motor de Overflow Funciona (CRÍTICO)" (mecanismo central em prosa, exigida pelo template-update do KCM). A antiga tabela "Decisões Técnicas Importantes" foi substituída por "Arquitetura — Pontos-Chave", que referencia o DECISIONS.md em vez de duplicar o raciocínio completo (regra de higiene: uma fonte de verdade por dado). Nada foi removido — o conteúdo de "motivo" de cada decisão continua integral em DECISIONS.md.
+
 ---
 
 ## Visão Geral
@@ -112,6 +114,9 @@ editor-editorial/
 ├── CHANGELOG.md                   # Histórico de versões
 ├── IDEAS.md                       # Ideias capturadas e sugestões
 ├── DECISIONS.md                   # Decisões arquiteturais registradas
+├── ROADMAP.md                     # Plano de fases de médio/longo prazo
+├── GLOSSARY.md                    # Termos próprios do projeto
+├── HISTORY.md                     # Conhecimento consolidado de fases antigas
 ├── LOG-TEMPLATE.md                # Template de formato para logs de sessão
 ├── package.json
 ├── vite.config.ts
@@ -161,18 +166,57 @@ editor-editorial/
 
 ---
 
-## Decisões Técnicas Importantes
+## Como o Motor de Overflow de Texto Funciona (CRÍTICO)
 
-| Decisão | Motivo | Data |
-|---|---|---|
-| Fabric.js como motor de canvas | Mais maduro que Konva para manipulação de objetos (seleção, transformação, z-order). API bem documentada. | 2026-05-24 |
-| Zustand + Immer para estado | Zustand é simples e sem boilerplate. Immer permite patches para undo/redo sem complexidade do Redux | 2026-05-24 |
-| Formato `.editx` (JSON) com referências de imagem por caminho | Arquivos leves e versionáveis. Opção de "empacotar tudo" (base64) disponível para compartilhamento | 2026-05-24 |
-| Tauri em vez de Electron (Fase 2) | Tauri é 10–20x mais leve em bundle, usa WebView nativo do SO, escrito em Rust = mais seguro e eficiente | 2026-05-24 |
-| Motor de overflow de texto customizado | Nenhuma lib existente (nem Fabric.js) implementa os modos grow-vertical/horizontal + fixed-shrink como o Figma. Implementação própria necessária | 2026-05-24 |
-| StyleRegistry com observer pattern | Permite atualizar um estilo e propagar automaticamente para todos os frames vinculados, como Affinity/Word | 2026-05-24 |
-| BatchGenerator em Web Worker | Geração de N arquivos é CPU-intensiva. Rodar no thread principal travaria a UI | 2026-05-24 |
-| pdf-lib em vez de jsPDF | pdf-lib tem API mais moderna, suporte a PDF/X para impressão, manipulação de PDFs existentes e tipagem TypeScript nativa | 2026-05-24 |
+> Mecanismo central do sistema — se mal-entendido, gera bug de layout silencioso
+> (frame que não cresce, texto cortado sem aviso, fonte minúscula).
+
+O `FrameText.ts` não usa o overflow nativo de nenhuma lib de canvas — é motor próprio
+(ver DEC-006). O fluxo, para cada frame de texto a cada renderização (edição no canvas
+ou item de um lote):
+
+1. **Medir** — o texto é renderizado em um canvas offscreen para obter largura por linha
+   (`ctx.measureText`) e altura por linha via `opentype.js` (ascender + descender da fonte
+   real, não `measureText().actualBoundingBoxAscent` — ver armadilha abaixo).
+2. **Quebrar linha** — o texto é dividido em linhas respeitando a largura disponível do
+   frame (ou largura "infinita" se o modo for `grow-horizontal`).
+3. **Decidir overflow** — comparando a altura/largura total calculada contra as dimensões
+   atuais do frame, o modo configurado decide o resultado:
+   - `grow-vertical` / `grow-horizontal` → o frame é redimensionado para caber o texto,
+     crescendo a partir do `anchor` configurado (ex.: `top-left` cresce para baixo).
+   - `fixed-shrink` → o frame NÃO muda de tamanho; o `fontSize` é reduzido em passos até
+     o texto caber ou até `minFontSize` ser atingido (o que vier primeiro).
+   - `fixed-clip` → o frame não muda; o texto que ultrapassa a borda é simplesmente
+     cortado (sem reticências, sem redução de fonte).
+4. **Aplicar** — o frame é re-renderizado no Fabric.js com as dimensões/fonte finais.
+
+**Exemplo mínimo (pseudocódigo):**
+```typescript
+const metrics = measureText(content, style, opentypeFont);
+const layout = applyOverflow(frame.overflow.mode, metrics, frame.transform, frame.overflow);
+// layout.width, layout.height, layout.fontSize já resolvidos → aplica no Fabric.js
+```
+
+Em geração de lote (500+ itens), esse cálculo roda uma vez por frame de texto por linha
+do CSV — é por isso que o `BatchGenerator.ts` roda em Web Worker (ver DEC-007): sem isso,
+a UI trava durante o cálculo de centenas de layouts em sequência.
+
+---
+
+## Arquitetura — Pontos-Chave
+
+> Uma linha por decisão estrutural. O raciocínio completo (alternativas, trade-offs,
+> riscos) vive em DECISIONS.md — não duplicado aqui.
+
+- Formato de template é JSON próprio com extensão `.editx` — ver DEC-001.
+- Imagens são referenciadas por caminho relativo, não embutidas por padrão — ver DEC-002.
+- Fabric.js é o motor de canvas (não Konva.js) — ver DEC-003.
+- Zustand + Immer para todo o estado global (não Redux/Context) — ver DEC-004.
+- Tauri para desktop na Fase 2 (não Electron) — ver DEC-005.
+- Motor de overflow de texto é 100% implementação própria — ver DEC-006.
+- `BatchGenerator.ts` roda exclusivamente em Web Worker — ver DEC-007.
+- `pdf-lib` para toda geração de PDF (não jsPDF) — ver DEC-008.
+- `TemplateSchema.ts` é a fonte única de tipos; nenhum módulo define tipos de frame próprios — ver DEC-009.
 
 ---
 
@@ -195,8 +239,6 @@ editor-editorial/
 
 ## Modos de Overflow de Texto (FrameText)
 
-Este é o módulo mais crítico do sistema. Os modos suportados:
-
 | Modo | Comportamento | Anchor relevante |
 |---|---|---|
 | `grow-vertical` | Frame cresce para baixo/cima conforme o texto | `top-left`, `top-center`, `top-right`, `bottom-*` |
@@ -216,6 +258,8 @@ Este é o módulo mais crítico do sistema. Os modos suportados:
 - **Não usar Konva.js** — foi avaliado e descartado em favor do Fabric.js (ver DECISIONS.md DEC-003).
 - **Fabric.js v6 quebrou a API de serialização do v5.** Se encontrar tutoriais usando `toJSON()` com estrutura de v5, não seguir cegamente — verificar a documentação da v6.
 - **Evitar gradients radiais e multi-stop em SVG de preview** — causam artefatos na exportação PNG via html2canvas.
+- **`ctx.measureText()` não retorna altura real da linha.** Só retorna `width`. Para altura, usar `opentype.js` (ascender + descender da fonte real) — não depender de `actualBoundingBoxAscent` isoladamente (ver DEC-006).
+- **`OffscreenCanvas` tem suporte limitado no Safari.** Verificar compatibilidade antes de finalizar o `BatchGenerator.ts`; pode exigir fallback para thread principal em Safari antigo (ver DEC-007).
 
 ---
 
@@ -233,4 +277,4 @@ O fluxo de uso principal é:
 
 ---
 
-*Última atualização: 2026-05-24 — Documento inicial criado. Projeto em fase de arquitetura, sem código de produção.*
+*Última atualização: 2026-07-11 — Merge do template-update do KCM (v2): nova seção de mecanismo crítico, referências cruzadas para DECISIONS.md. Criação original: 2026-05-24.*

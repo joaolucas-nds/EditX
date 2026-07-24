@@ -1,16 +1,27 @@
 # CHANGELOG.md — EditX
 
-> Formato: [Keep a Changelog](https://keepachangelog.com)
-> Versionamento: [Semantic Versioning](https://semver.org)
+> Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/)
+> Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/)
 >
 > **MAJOR.MINOR.PATCH**
 > - MAJOR: mudança que quebra compatibilidade com arquivos `.editx` existentes
 > - MINOR: nova funcionalidade (novo tipo de frame, novo modo de exportação, etc.)
 > - PATCH: correção de bug sem quebrar compatibilidade
 
+**Mudanças nesta revisão (2026-07-11):** links atualizados para as versões em PT-BR do
+Keep a Changelog e do SemVer (coerente com o projeto ser documentado em português).
+Adicionada nota sobre a reorganização de documentação desta sessão em [Unreleased].
+
 ---
 
 ## [Unreleased] — Em desenvolvimento
+
+### Notas
+- Sistema de documentação atualizado via template-update do KCM: backlog de fases
+  migrado de STATUS.md para ROADMAP.md, IDEAS.md reestruturado em Ativas/Concluídas/
+  Descartadas, GLOSSARY.md populado, HISTORICO.md renomeado para HISTORY.md, CEREBRO.md e
+  instruções do projeto atualizados com protocolo mais recente. Nenhuma mudança de
+  produto/código — puramente organizacional. Ver DEC-010.
 
 ### Planejado para v0.1.0 (MVP do editor)
 - Setup inicial do projeto (Vite + React + TypeScript)

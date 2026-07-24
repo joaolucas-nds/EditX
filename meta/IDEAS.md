@@ -2,180 +2,172 @@
 
 > Captura TODAS as ideias — tanto as suas quanto as sugeridas pelo Claude.
 > Funciona como "segundo cérebro" do projeto.
-> Lido pelo Claude no início de novas sessões para ter continuidade de raciocínio.
+> Nunca perde: ideia implementada vai para «Concluídas»; ideia recusada vai para «Descartadas» com o motivo.
+
+**Mudanças nesta revisão (2026-07-11):** reestruturado em seções físicas Ativas /
+Concluídas / Descartadas (antes era só "Suas Ideias" + "Sugestões do Claude" com um
+campo `Status` solto no texto — funcionava, mas não seguia a regra de higiene do próprio
+CEREBRO.md de migrar a ideia de seção). Como nenhuma ideia virou código ainda (projeto
+pré-boilerplate), tudo que estava `aprovada`/`aceita` permanece em **Ativas** — decidido,
+mas não implementado — até a primeira entrega de código real. A tabela "Decisões
+Registradas Aqui" foi removida por duplicar DECISIONS.md; no lugar, uma referência
+cruzada. Nenhum conteúdo foi perdido — ver DECISIONS.md para o raciocínio completo de
+cada decisão. Adicionada a seção "Feedback para o Kit".
 
 ---
 
-## 💡 Suas Ideias (capturadas durante as sessões)
+## 💡 Ideias Ativas — Usuário
 
-### 2026-05-24
+> Decididas (ver DECISIONS.md), aguardando implementação — nenhuma ainda é código.
 
-**Ideia:** Ferramenta de geração em massa de materiais editoriais (catálogos, cartazes, menus, stories, dobráveis) populada via CSV
-**Contexto:** Ideia inicial que deu origem ao projeto
-**Status:** `aprovada` — é o produto inteiro
-**Detalhes originais (preservados):** *"geração completa de catalogo de produtos, cartazes de ofertas, cartazes digitais de story, menu digital, menu de story, menu imprimivel, menu de estilo pdf com index, cardapios imprimiveis, menus c fold, z fold entre outras produções editorias, de forma a ser mais 'pratica' em popular coisas em massa (pegaria os dados de um csv)"*
+### 2026-05 — Ferramenta de geração em massa de materiais editoriais via CSV
+Editor visual estilo Canva/Figma especializado em geração em massa de catálogos,
+cartazes, cartazes digitais de story, menu digital, menu imprimível, menu PDF com
+índice, cardápios, menus C-fold e Z-fold — populados a partir de um CSV.
+**Detalhes originais (preservados):** *"geração completa de catalogo de produtos,
+cartazes de ofertas, cartazes digitais de story, menu digital, menu de story, menu
+imprimivel, menu de estilo pdf com index, cardapios imprimiveis, menus c fold, z fold
+entre outras produções editorias, de forma a ser mais 'pratica' em popular coisas em
+massa (pegaria os dados de um csv)"*
+**Impacto:** alto — é o produto inteiro. **Onde vive no schema:** raiz do `.editx`,
+todos os tipos de documento.
 
----
+### 2026-05 — Interface "Canva-like" com opções de coluna
+Nomear e marcar o padrão/modelo de cada informação do CSV visualmente, em vez de editar
+JSON à mão. **Onde vive:** mapeamento CSV → frames no canvas (`ColumnMapper.ts`, `CsvMapper.tsx`).
 
-**Ideia:** Interface "Canva-like" com opções de coluna — nomear e marcar o padrão/modelo de cada informação
-**Contexto:** Parte da ideia original
-**Status:** `aprovada` — é o mapeamento CSV → frames no canvas
-**Impacto estimado:** alto
+### 2026-05 — Templates salvos e reutilizáveis
+Poder abrir um template já usado para atualizar uma peça já produzida (ex.: trocar só os
+preços de um catálogo). **Onde vive:** arquivo `.editx` + gerenciador de templates.
 
----
+### 2026-05 — Frames de imagem populáveis por nome de arquivo
+Se o CSV contiver o nome exato do arquivo de imagem, o frame popula sozinho.
+**Impacto:** alto — resolve um dos maiores pontos de atrito do fluxo. **Onde vive:**
+`ImageResolver.ts`.
 
-**Ideia:** Templates salvos reutilizáveis — quando for atualizar algo que já foi feito, poder abrir o template existente
-**Contexto:** Parte da ideia original
-**Status:** `aprovada` — implementado via arquivo `.editx` com gerenciador de templates
-**Impacto estimado:** alto
+### 2026-05 — Frames de texto com comportamento configurável nas bordas
+Referência ao Figma: crescer horizontal (com alinhamento esq/meio/dir), crescer vertical
+(alinhamento cima/meio/baixo), ou não ultrapassar (com redução automática de fonte).
+**Onde vive:** especificado como os 4 modos de overflow (`grow-vertical`,
+`grow-horizontal`, `fixed-shrink`, `fixed-clip`) — ver CONTEXT.md, seção "Como o Motor de
+Overflow Funciona".
 
----
+### 2026-05 — Sistema de estilos de texto globais
+Referência ao Affinity Publisher e ao Word: alterar um estilo atualiza todos os frames
+vinculados automaticamente. **Impacto:** alto — essencial para manter identidade visual
+consistente em lote. **Onde vive:** `StyleRegistry.ts`, observer pattern, herança via
+`basedOn`.
 
-**Ideia:** Frames de imagem populáveis automaticamente se o CSV contiver o nome exato do arquivo
-**Contexto:** Parte da ideia original
-**Status:** `aprovada` — implementado no `ImageResolver.ts`
-**Impacto estimado:** alto — resolve um dos maiores pontos de atrito do fluxo
+### 2026-05 — Suporte a formas, objetos, bordas, ornamentos, paletas de marca
+**Onde vive:** `FrameShape.ts` + `palette.brand` no `.editx`.
 
----
-
-**Ideia:** Frames de texto com comportamento configurável ao atingir as bordas — crescer horizontal, crescer vertical, ou não ultrapassar (diminuir fonte automaticamente)
-**Contexto:** Referenciou o comportamento do Figma para frames de texto
-**Status:** `aprovada` — especificado como 4 modos de overflow: `grow-vertical`, `grow-horizontal`, `fixed-shrink`, `fixed-clip`
-**Impacto estimado:** alto
-
----
-
-**Ideia:** Sistema de estilos de texto globais — alterar o estilo atualiza todos os frames vinculados automaticamente
-**Contexto:** Referenciou o Affinity Publisher e o Word
-**Status:** `aprovada` — implementado via `StyleRegistry.ts` com observer pattern
-**Impacto estimado:** alto — essencial para manter identidade visual consistente em lote
-
----
-
-**Ideia:** Suporte a formas, objetos, bordas, ornamentos, cores, paletas de marca
-**Contexto:** Parte da ideia original
-**Status:** `aprovada` — `FrameShape.ts` + sistema de paletas no `.editx`
-**Impacto estimado:** médio
+### 2026-05 — Rodar no navegador ou como app desktop
+**Onde vive:** web primeiro (Fase 1); desktop via Tauri (Fase 5 do ROADMAP).
 
 ---
 
-**Ideia:** Capacidade de popular imagens em massa — pasta de imagens + CSV com nomes dos arquivos
-**Contexto:** Parte da ideia original, reforçada ao descrever o fluxo
-**Status:** `aprovada` — `ImageResolver.ts` + `imageBasePath` no `csvMapping`
-**Impacto estimado:** alto
+## 🤖 Ideias Ativas — Assistente
+
+> Sugestões do Claude já aceitas, aguardando implementação.
+
+### 2026-05-24 — Tauri em vez de Electron para desktop
+Bundle 15× menor (~10MB vs ~150MB), sem Chromium embutido, mais seguro. → DEC-005.
+**Prioridade:** média (Fase 5 do ROADMAP).
+
+### 2026-05-24 — BatchGenerator.ts em Web Worker
+Geração de 200+ itens no thread principal trava a UI; Worker mantém a interface
+responsiva com progresso em tempo real. → DEC-007. **Prioridade:** alta.
+
+### 2026-05-24 — TemplateSchema.ts implementado primeiro
+Contrato entre todos os módulos; implementar o canvas antes dos tipos cria
+inconsistências difíceis de corrigir. → DEC-009. **Prioridade:** alta — primeiro item do
+backlog em STATUS.md.
+
+### 2026-05-24 — Imagens por caminho relativo + opção "empacotar" em base64
+Mantém o `.editx` leve e versionável; base64 só quando o usuário precisar compartilhar
+sem a pasta de imagens. → DEC-002. **Prioridade:** média.
+
+### 2026-05-24 — `outputNaming` no `csvMapping`
+Nomeia os arquivos gerados com dados do CSV: `"{nome}-{preco}"` → `"coca-cola-5,99.pdf"`.
+Elimina arquivos numerados sem sentido. **Prioridade:** média — já está no schema.
+
+### 2026-05-24 — `skipRowsWhere` no `csvMapping`
+Filtro de linhas do CSV direto no template (ex.: `ativo = "sim"`), evita limpar o CSV
+antes de importar. **Prioridade:** baixa — já está no schema.
+
+### 2026-05-24 — Campo `isDataPage: true` nas páginas
+Em catálogos, a página de produto se repete por linha do CSV; a capa é estática. Sem essa
+flag o sistema não sabe qual página repetir. **Prioridade:** alta — sem isso, catálogos
+multipágina não funcionam.
+
+### 2026-05-24 — Formatadores nativos de coluna CSV
+`currency:BRL`, `date:DD/MM/YYYY`, `uppercase` — evita o usuário formatar dados antes de
+importar. **Prioridade:** média — já está no schema (`columns[].format`).
+
+### 2026-05-24 — `fallback` em frames de imagem
+Em lotes de 500 produtos, é provável que alguns não tenham imagem. Sem fallback, o frame
+quebra ou fica vazio. **Prioridade:** alta — já está no schema (`FrameImage.fallback`).
 
 ---
 
-**Ideia:** Rodar no navegador ou como app desktop
-**Contexto:** Requisito de plataforma desde o início
-**Status:** `aprovada` — web primeiro, desktop via Tauri na Fase 2
-**Impacto estimado:** médio
+## ✅ Concluídas
+
+*Nenhuma ainda — o projeto está pré-boilerplate (ver STATUS.md). Uma ideia só migra para
+cá quando o código correspondente estiver de fato funcionando, não quando apenas
+especificado no schema ou decidido em DECISIONS.md.*
 
 ---
 
-## 🤖 Sugestões do Claude
+## 🚫 Descartadas
 
-### 2026-05-24
-
-**Sugestão:** Usar Tauri em vez de Electron para a versão desktop
-**Por que:** Bundle 15× menor (~10MB vs ~150MB), sem Chromium embutido, mais seguro, performance melhor
-**Status:** `aceita` — registrada em DEC-005
-**Prioridade:** média (Fase 2)
-
----
-
-**Sugestão:** BatchGenerator.ts rodar em Web Worker
-**Por que:** Geração de 200+ itens no thread principal trava a UI por vários segundos; Web Worker mantém a interface responsiva com progresso em tempo real
-**Status:** `aceita` — registrada em DEC-007
-**Prioridade:** alta
-
----
-
-**Sugestão:** `TemplateSchema.ts` como primeira coisa a implementar (antes do canvas)
-**Por que:** É o contrato entre todos os módulos. Implementar o canvas antes dos tipos cria inconsistências difíceis de corrigir
-**Status:** `aceita` — registrada em DEC-009
-**Prioridade:** alta (primeiro item do backlog)
-
----
-
-**Sugestão:** Imagens referenciadas por caminho relativo + opção "Empacotar tudo" em base64
-**Por que:** Mantém o `.editx` leve e versionável; base64 disponível apenas quando o usuário precisar compartilhar sem a pasta de imagens
-**Status:** `aceita` — registrada em DEC-002
-**Prioridade:** média
-
----
-
-**Sugestão:** Coluna `outputNaming` no `csvMapping` para nomear os arquivos gerados com dados do CSV
-**Por que:** `"{nome}-{preco}"` → `"coca-cola-5,99.pdf"`. Elimina arquivos numerados sem sentido (item_001.pdf, item_002.pdf)
-**Status:** `aceita` — já está no schema do `.editx`
-**Prioridade:** média
-
----
-
-**Sugestão:** `skipRowsWhere` no `csvMapping` — filtro de linhas do CSV
-**Por que:** Catálogos frequentemente têm uma coluna "ativo: sim/não". Poder filtrar diretamente no template evita ter que limpar o CSV antes de importar
-**Status:** `aceita` — já está no schema do `.editx`
-**Prioridade:** baixa
-
----
-
-**Sugestão:** Campo `"isDataPage": true` nas páginas do template
-**Por que:** Em catálogos, a página de produto se repete para cada linha do CSV. A página de capa é estática. Sem essa flag, o sistema não sabe qual página repetir.
-**Status:** `aceita` — já está no schema do `.editx`
-**Prioridade:** alta (sem isso catálogos multipáginas não funcionam)
-
----
-
-**Sugestão:** Formatadores nativos para colunas CSV: `currency:BRL`, `date:DD/MM/YYYY`, `uppercase`
-**Por que:** Evita o usuário ter que formatar os dados antes de importar. O CSV pode ter preço como `"12.9"` e o template exibe `"R$ 12,90"` automaticamente
-**Status:** `aceita` — já está no schema do `.editx` no `columns[].format`
-**Prioridade:** média
-
----
-
-**Sugestão:** `fallback` nos frames de imagem — imagem padrão quando o arquivo não é encontrado
-**Por que:** Em lotes de 500 produtos, é provável que alguns não tenham imagem. Sem fallback, o frame fica vazio ou o sistema quebra. Com fallback, a geração continua com um placeholder
-**Status:** `aceita` — já está no schema do `.editx` no `FrameImage.fallback`
-**Prioridade:** alta
+- **Konva.js como motor de canvas** — descartado em favor do Fabric.js: API de texto e
+  serialização menos madura para o tipo de editor necessário. Ver DEC-003.
+- **Electron para desktop** — descartado em favor do Tauri: bundle de ~150MB, Chromium
+  embutido, RAM elevada. Ver DEC-005.
+- **Imagens sempre em base64 no `.editx`** — descartado: arquivo fica imenso e não é
+  versionável com Git. Ver DEC-002.
+- **Renderizar texto em HTML/CSS sobreposto ao canvas** — descartado: sincronização de
+  posição frágil, inviável para exportação. Ver DEC-006.
+- **jsPDF** — descartado em favor do pdf-lib: API mais moderna, suporte a PDF/X. Ver DEC-008.
+- **Context API do React para estado global** — descartado: re-renders excessivos
+  afetariam performance do canvas. Ver DEC-004.
+- **Redux Toolkit** — descartado: boilerplate excessivo para um editor; Zustand resolve
+  com menos código. Ver DEC-004.
 
 ---
 
 ## 🔭 Visão de Longo Prazo
 
-- **Biblioteca de templates:** templates pré-prontos para os tipos mais comuns (supermercado, restaurante, boutique) — usuário abre, importa CSV, gera
-- **Integração com Google Sheets:** importar dados diretamente de uma planilha sem exportar CSV
-- **Reconhecimento de imagem por IA:** sugerir crop ideal da imagem dentro do frame (evitar rostos cortados, produto centralizado)
-- **Exportação para redes sociais:** formatos otimizados para Instagram Feed, Stories, WhatsApp Business Catalog
-- **Versão colaborativa:** múltiplos usuários editando o mesmo template (Fase muito distante)
-- **Plugin para Canva ou Figma:** exportar o sistema de frames para o workflow de quem já usa essas ferramentas
-- **Modo "atualização de preços":** abrir catálogo existente, importar CSV com apenas os preços atualizados, regenerar só as páginas que mudaram
+> Ideias grandes demais para o ROADMAP atual, sem fase definida ainda.
+
+- **Biblioteca de templates:** templates pré-prontos para os tipos mais comuns
+  (supermercado, restaurante, boutique) — usuário abre, importa CSV, gera
+- **Integração com Google Sheets:** importar dados diretamente de uma planilha sem
+  exportar CSV
+- **Reconhecimento de imagem por IA:** sugerir crop ideal da imagem dentro do frame
+  (evitar rostos cortados, produto centralizado)
+- **Exportação para redes sociais:** formatos otimizados para Instagram Feed, Stories,
+  WhatsApp Business Catalog
+- **Versão colaborativa:** múltiplos usuários editando o mesmo template (fase muito distante)
+- **Plugin para Canva ou Figma:** exportar o sistema de frames para o workflow de quem já
+  usa essas ferramentas
+- **Modo "atualização de preços":** abrir catálogo existente, importar CSV com apenas os
+  preços atualizados, regenerar só as páginas que mudaram
 
 ---
 
-## ⚖️ Decisões Registradas Aqui (resumo — detalhes em DECISIONS.md)
+## 📌 Feedback para o Kit
 
-| Decisão | Alternativa considerada | Por que escolhemos X | Data |
-|---|---|---|---|
-| Fabric.js para canvas | Konva.js | API de texto e serialização mais madura | 2026-05-24 |
-| Tauri para desktop | Electron | Bundle 15× menor, sem Chromium, mais seguro | 2026-05-24 |
-| Zustand + Immer | Redux Toolkit | Sem boilerplate, nativo para undo/redo com patches | 2026-05-24 |
-| Motor overflow customizado | Lib existente | Não existe lib que implemente os 4 modos necessários | 2026-05-24 |
-| pdf-lib | jsPDF | API TypeScript moderna, suporte a links internos e PDF/X | 2026-05-24 |
-| Web Worker para geração | Thread principal | UI não pode travar durante geração de 500+ itens | 2026-05-24 |
-| Referência por caminho | Base64 embutido | Arquivos leves, versionáveis com Git | 2026-05-24 |
-| `.editx` como extensão | JSON puro | Identidade proprietária, futura associação com o app | 2026-05-24 |
+> Desvios estruturais deste projeto em relação ao kit — material que volta para evoluir o KCM.
 
----
-
-## 🚫 Ideias Descartadas (e por quê)
-
-- **Konva.js como motor de canvas** — descartado em favor do Fabric.js (API de texto menos madura para o que precisamos)
-- **Electron para desktop** — descartado em favor do Tauri (muito pesado, bundle de 150MB)
-- **Imagens sempre em base64 no `.editx`** — descartado (arquivo imenso, não versionável com Git)
-- **Renderizar texto em HTML/CSS sobreposto ao canvas** — descartado (sincronização de posição frágil, inviável para exportação)
-- **jsPDF** — descartado em favor do pdf-lib (API mais moderna e suporte a PDF/X)
-- **Context API do React para estado global** — descartado (re-renders excessivos afetariam performance do canvas)
-- **Redux Toolkit** — descartado (boilerplate excessivo para um editor, Zustand resolve com menos código)
+### 2026-07-11 — Integração do template-update (v2)
+Ao aplicar o template-update, identificamos que o projeto vinha usando STATUS.md para
+guardar plano de fases de médio/longo prazo (deveria estar em ROADMAP.md) e IDEAS.md sem
+separação física entre ideias ativas e concluídas — ambos desvios das próprias regras de
+higiene do kit, não causados pelo template em si, só expostos por ele ao comparar
+estrutura. Também renomeamos `HISTORICO.md` para `HISTORY.md` para consistência de nomes
+em inglês com os demais arquivos (CONTEXT/STATUS/DECISIONS/CHANGELOG/IDEAS/GLOSSARY/ROADMAP).
+Ver DEC-010 para o registro completo da decisão.
 
 ---
 

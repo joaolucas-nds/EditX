@@ -3,6 +3,12 @@
 > ADR — Architecture Decision Records (simplificado)
 > Registra TODAS as decisões importantes com contexto e motivo.
 > Evita reabrir discussões já resolvidas e dá contexto ao Claude em novas sessões.
+> Duas naturezas: **DEC** (arquitetura/design) e **FIX** (bugs graves resolvidos, para não repetir).
+> Quando passar de ~700 linhas, mova as mais antigas para `DECISIONS-archive.md`.
+
+**Mudanças nesta revisão (2026-07-11):** adicionado o template de **FIX-N** (faltava —
+só existia o de DEC, mas o CEREBRO.md já previa registrar bugs graves aqui). Adicionado
+DEC-010, registrando a própria integração do template-update do KCM nesta sessão.
 
 ---
 
@@ -221,6 +227,55 @@ Com múltiplos módulos interdependentes (canvas, serialização, geração em m
 
 ---
 
+## DEC-010 — Integração do template-update do KCM (v2) e reestruturação da documentação
+
+**Data:** 2026-07-11
+**Status:** aceita
+**Autor:** ambos
+
+### Contexto
+Um template-update do Kit de Contexto (KCM) foi recebido para o projeto, trazendo versões
+mais recentes dos 13 arquivos estruturais (CONTEXT, STATUS, DECISIONS, CHANGELOG, IDEAS,
+LOG-TEMPLATE, ROADMAP, GLOSSARY, HISTORY, CEREBRO, INSTRUCOES, .gitignore, .flatdropignore).
+A comparação com os arquivos vivos revelou tanto novidades comportamentais (protocolo de
+ASU mais detalhado, ritual de leitura de mount, recomendação de configuração) quanto
+inconsistências estruturais já existentes no projeto antes mesmo do update (backlog de
+fases hospedado em STATUS.md em vez de ROADMAP.md; IDEAS.md sem separação física entre
+ideias ativas e concluídas; ausência de template FIX-N em DECISIONS.md).
+
+### Decisão
+Aplicar o merge completo: (1) mover o backlog de fases 2–5 de STATUS.md para ROADMAP.md;
+(2) reestruturar IDEAS.md em Ativas/Concluídas/Descartadas; (3) adicionar template FIX-N
+e este DEC-010 a DECISIONS.md; (4) popular GLOSSARY.md com os termos já em uso no projeto;
+(5) renomear HISTORICO.md para HISTORY.md, padronizando com os demais arquivos (nomes em
+inglês); (6) mesclar em CEREBRO.md as três seções novas do template (ritual de mount,
+recomendação de configuração, ASU detalhado); (7) consolidar INSTRUCOES-DO-PROJETO.md com
+o ritual de início de sessão mais completo; (8) adotar `.gitignore` e `.flatdropignore` do
+pacote, sem equivalente vivo para comparar.
+
+### Alternativas consideradas
+- **Manter tudo como estava, ignorar o update** — mais simples, mas perpetua as
+  inconsistências já identificadas (backlog no lugar errado, IDEAS sem higiene de seções)
+  e deixa de fora protocolo comportamental que o próprio Claude já deveria seguir
+- **Aplicar só os arquivos `template` puros, sem tocar CEREBRO/INSTRUCOES (`fusao`)** —
+  mais conservador, mas deixaria o comportamento do assistente desatualizado em relação
+  à documentação que o descreve, um risco de deriva entre "o que o CEREBRO diz" e "o que
+  o Claude realmente faz"
+
+### Consequências
+- **Positivas:** documentação agora segue as próprias regras de higiene que ela mesma
+  define (uma fonte de verdade por dado, STATUS só o agora, IDEAS nunca perde mas migra
+  de seção); comportamento do assistente (CEREBRO/INSTRUCOES) alinhado ao protocolo mais
+  recente do kit
+- **Negativas:** nenhum arquivo de código foi tocado nesta sessão — é puramente
+  organizacional; o histórico de nomes (HISTORICO → HISTORY) exige que o usuário delete
+  manualmente o arquivo antigo, já que o assistente não tem acesso de escrita ao disco do
+  usuário
+- **Riscos:** nenhum identificado — mudança é aditiva e reversível (nada foi sobrescrito
+  sem registro do que mudou e por quê, conforme regra de higiene do CEREBRO.md)
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown
@@ -246,4 +301,19 @@ Com múltiplos módulos interdependentes (canvas, serialização, geração em m
 - **Riscos:** [o que pode dar errado]
 
 **⚠️ Armadilha conhecida:** [se a decisão já criou um problema, registrar aqui]
+```
+
+---
+
+## Template para novo FIX (copie e preencha)
+
+```markdown
+## FIX-[número] — [Título do bug grave]
+
+**Data:** YYYY-MM-DD
+
+- **Sintoma:** [o que se observava.]
+- **Causa raiz:** [o que realmente estava errado — não o sintoma.]
+- **Solução:** [o que foi feito.]
+- **Lição:** [o que evita que volte a acontecer; virou armadilha em CONTEXT?]
 ```

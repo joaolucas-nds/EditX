@@ -5,6 +5,17 @@
 > As Instruções do Projeto trazem uma versão curta deste arquivo, lida em toda mensagem.
 > **Você pode adaptar as Instruções do Projeto a ESTE projeto.** A versão que o kit gera é ponto de partida, não contrato: se fizer sentido, proponha encurtar, trocar exemplos, remover um princípio que não se aplica aqui ou acrescentar uma regra específica deste projeto — sempre respeitando o teto de caracteres (elas são lidas em toda mensagem, cada palavra custa). Registre a mudança no DECISIONS e na seção «Feedback para o Kit» do IDEAS.
 
+**Mudanças nesta revisão (2026-07-11):** merge do template-update do KCM (v2) sobre o
+CEREBRO.md vivo. Os 19 princípios e a maior parte das seções operacionais eram idênticos
+— nenhum conflito de comportamento. Três seções inteiras foram incorporadas por não
+existirem na versão anterior: **"Ao receber um template-update do KCM"** (o próprio
+procedimento usado nesta sessão), **"Recomendação de configuração (fim de sessão)"**, e a
+versão mais detalhada da seção **"Saída de código via ASU"** (distinção arquivo novo vs.
+edição, escopo por tipo de arquivo). A tabela "Como manter os documentos" passou a
+referenciar `HISTORY.md` (antes `HISTORICO.md` — ver DEC-010). A nota da tabela de
+gatilhos foi ajustada para este projeto específico, já que CHANGELOG.md e ROADMAP.md são
+arquivos ativos aqui, não "de outro nicho".
+
 ---
 
 ## Ritual de início de sessão
@@ -95,8 +106,11 @@ Cada arquivo tem um papel e um comportamento temporal distinto. **Respeite o pap
 | `LOG-TEMPLATE.md` | Referência fixa | Modelo do log de sessão. Referência fixa — nunca substituído pelo conteúdo preenchido. |
 | `ROADMAP.md` | Plano em fases | OPCIONAL — plano deliberado de evolução em fases. Use quando o projeto tem direção de médio/longo prazo. |
 | `GLOSSARY.md` | Estável | OPCIONAL — termos próprios do projeto. Use quando há jargão que se repete entre sessões. |
-| `HISTORICO.md` | Cresce (histórico) | OPCIONAL — conhecimento consolidado de fases antigas (guias, análises que não cabem no CONTEXT enxuto). Lido sob demanda. |
+| `HISTORY.md` | Cresce (histórico) | OPCIONAL — conhecimento consolidado de fases antigas (guias, análises que não cabem no CONTEXT enxuto). Lido sob demanda. |
 | `logs/AAAA-MM-DD.md` | Histórico | Ao final de cada sessão (formato em LOG-TEMPLATE). |
+
+## Ao receber um template-update do KCM
+Se aparecerem no mount arquivos com sufixo `__template-update` junto de um `_UPDATE-MANIFEST.md`: são atualizações genéricas do próprio template (propositalmente vazias do específico desta obra), não conteúdo novo do projeto. Para cada arquivo: compara com o vivo equivalente (o destino real está no manifesto) e **reporta** ao usuário — (a) novidade útil que falta aqui, (b) choque com o que já existe (lado a lado, o usuário decide), (c) algo que este projeto tem e o template não cobre. **Nunca sobrescreve conteúdo vivo por template vazio.** Itens marcados `fusao` no manifesto (CEREBRO, INSTRUCOES) carregam comportamento que este projeto pode ter evoluído: propõe o merge, o usuário decide — nunca substituição cega.
 
 ## Regras de higiene (impedem inchaço e duplicação)
 
@@ -128,6 +142,7 @@ As mudanças nos documentos que decorrem do trabalho do assistente são registra
 Quando a entrega inclui arquivos que vão para um repositório Git/GitHub (código ou documentos), o assistente fecha a resposta com o bloco de commit pronto para copiar e colar, na convenção Conventional Commits (`tipo(escopo): descrição` — feat, fix, docs, refactor, chore), em TRÊS linhas separadas: `git add` listando os arquivos alterados (pode usar `git add .` quando o conjunto é pequeno e a árvore é conhecida/limpa), `git commit` com a mensagem completa, e `git push` — prontas para colar uma a uma e conferir entre elas.
 
 > Se o seu sistema operacional estiver definido acima, cada comando já vem na sintaxe certa do seu shell (ex.: no CMD do Windows, comando numa linha só, `-m` repetido para parágrafos e mensagem SEM acentos, que o CMD corrompe). Para mudanças triviais, basta o título; para várias mudanças de naturezas diferentes, o assistente pode sugerir mais de um commit.
+- **Artefatos de repo (.gitignore, README):** em projeto com repositório, o `.gitignore` sai na primeira leva que cria estrutura (adequado ao stack) e o `README.md` é entregue/atualizado quando a estrutura estabiliza (não no rascunho, para não nascer velho). O assistente gera por previsão, sem pedir permissão a cada vez; se adiar o README, diz por quê.
 
 ### Canal de atualização do kit
 
@@ -175,7 +190,7 @@ Pense na janela de contexto como a memória RAM: rápida, finita, zerada a cada 
 | Mudança de fase do projeto | Entrega o ROADMAP.md completo com a fase atualizada (concluída / em curso / próxima). |
 | Termo técnico próprio do projeto usado | Entrega o GLOSSARY.md completo com o termo definido. |
 
-> Se um arquivo referenciado pelas regras acima (IDEAS, DECISIONS, etc.) ainda não existir no projeto, o assistente o CRIA na primeira necessidade — a partir do papel descrito e do modelo do kit — em vez de tratar a ausência como erro ou adiar a captura.
+> Se um arquivo da **camada universal** (STATUS, IDEAS, DECISIONS — sempre existe em qualquer projeto do kit) referenciado acima ainda não existir, o assistente o CRIA na primeira necessidade, a partir do papel descrito — em vez de tratar a ausência como erro ou adiar a captura. Arquivos de um nicho que este projeto não usa não são criados por engano; **neste projeto (Desenvolvimento), CHANGELOG.md e ROADMAP.md já são arquivos ativos** e seguem a mesma regra de criação sob demanda, não a exceção.
 
 ## Ao final de cada sessão, o assistente entrega (como arquivos completos)
 
@@ -215,13 +230,25 @@ O usuário trabalha em **Windows (CMD/Prompt de Comando)**. Qualquer comando de 
 
 Respostas em pt-BR, incluindo comentários quando houver código.
 
+## Recomendação de configuração (fim de sessão)
+
+No fim de cada sessão, junto do resumo e de qualquer dúvida, avalie o que a **próxima etapa** exige e recomende a configuração de forma **completa e explícita**. Os controles dependem de ONDE se trabalha:
+- **No chat (claude.ai):** **modelo** (recomende pela capacidade — o mais capaz vs. um mais leve —, não pelo nome/versão, que muda), **esforço** (Baixo→Máximo) e **pensamento** (ligado/desligado): três controles independentes.
+- **No Claude Code (CLI/desktop):** **modelo** + **nível de esforço** (`/effort` baixo→máximo, ou `xhigh`/`ultracode` onde houver). **Não há toggle de pensamento** no Code — ele é acoplado ao esforço; para um turno difícil pontual, use `ultrathink` no prompt. Nunca recomende "ligar o pensamento" no Code.
+- **Nunca afirme saber a configuração atual** — ela não é legível de forma confiável. Recomende pela TAREFA e pela config que o usuário declarou.
+- Próxima etapa **pesada** + config provável fraca → **pare e peça o aumento, nomeando os níveis exatos**.
+- Etapa atual **leve** mas config **alta** → **não pare no meio**; termine e, no fim, sinalize "pode baixar para X na próxima".
+- É um **default recomendado**, não proibição — cabe sob a válvula de desvio registrado.
+
 ## Saída de código via ASU (patch)
 
-Este projeto entrega mudanças de código como instrução do **Atualizador Automático de Scripts (ASU)** — não arquivos inteiros. Pré-requisito: o `INSTRUCTION_GUIDE.md` está no conhecimento do Projeto e a ferramenta ASU está instalada.
+Este projeto usa o **Atualizador Automático de Scripts (ASU)** para **alterar arquivos existentes** — entregue UMA instrução `yaml` (patch cirúrgico) **para baixar**, não arquivos inteiros. Para **arquivos NOVOS**, entregue o arquivo **pronto para baixar** (não embuta o arquivo inteiro num bloco YAML — arrisca corromper no escape), **exceto** quando a criação faz parte de uma instrução que também edita existentes (operação atômica) — aí use `create_file` na mesma instrução. Pré-requisito: `INSTRUCTION_GUIDE.md` e `PROMPT_IA.md` estão no conhecimento do Projeto e o ASU está instalado.
 
-1. Ao pedir uma "instrução ASU" (ou ao alterar arquivos existentes), responda com **UM bloco `yaml`** cujo `format_version` é o declarado no `INSTRUCTION_GUIDE.md` do Projeto (não fixe um número aqui — o guia é o contrato) e uma linha final com `python -m src apply instrucao.yaml --root <RAIZ> --dry-run`. Nunca XML; nunca arquivos soltos.
-2. Prefira edições **cirúrgicas** (`replace_function`/`replace_method`/`replace_section`/`set_json_path`); para JS e outras linguagens, `type: "text"` + `replace_context_block` com âncoras copiadas **literalmente do arquivo real** (indentação exata), casando **uma única vez** — só o miolo no `new_content`.
-3. Não invente campos nem use número de linha; o `INSTRUCTION_GUIDE.md` é a referência obrigatória do formato.
-4. **Verificação (sessão seguinte):** se você emitiu uma instrução ASU e os arquivos do projeto estão à vista, confira no disco cada arquivo que ela tocou antes de seguir — não confie em "deu certo".
+1. Ao pedir uma "instrução ASU" (ou ao **editar** arquivos existentes), entregue a instrução **como arquivo `.yaml` para baixar** — não colada no chat: o download preserva os bytes UTF-8 exatos e evita corromper âncoras não-ASCII no copia-e-cola. Nome `AAMMDD-asuNNNN.yaml` (ex.: `260628-asu0001.yaml`), com `format_version` igual ao declarado no `INSTRUCTION_GUIDE.md` (não fixe número — o guia é o contrato). Acompanhe de UMA linha: `python -m src apply <arquivo>.yaml --root <RAIZ> --dry-run`. Nunca XML.
+2. **Arquivo NOVO:** entregue-o pronto para baixar — não o reescreva como instrução ASU. Exceção: criação junto de edições a existentes na MESMA instrução → aí `create_file`. (Mesmo numa edição, o usuário pode preferir o arquivo inteiro para baixar — se pedir, respeite.)
+3. **Escopo do ASU (por tipo de arquivo):** (a) **código** e docs de **heading estável** (`DECISIONS.md`, `CONTEXT.md`, `GLOSSARY`) → ASU serve (append/troca localizada, âncora inequívoca). (b) **Capítulos / escrita longa:** edição de **trecho localizado** → ASU é até preferível (evita reescrever o capítulo todo e o risco de perder conteúdo no meio); **escrita nova ou reescrita profunda** → arquivo inteiro (não há âncora; é geração). (c) **Docs rolantes** (`STATUS`, `CHANGELOG`, `IDEAS`, `HISTORY` e equivalentes de domínio que acumulam por higiene, ex.: `REVISOES`) → **sempre inteiros**: a edição é holística (mover o resolvido, reclassificar, fundir, checar que nada único se perdeu) e um patch cirúrgico briga com a higiene; pior, o diff pode 'bater' e a higiene estar errada, porque o ASU não tem julgamento. Reavalie `DECISIONS.md` via ASU só perto de ~700 linhas. **Verificação obrigatória:** apliquei uma instrução ASU e os arquivos estão à vista? Confira no disco cada arquivo tocado antes de seguir, mesmo sem o usuário pedir — não confie em 'deu certo' (alinhado ao ponto 9 do PROMPT_IA do ASU).
+4. Prefira edições **cirúrgicas** (`replace_function`/`replace_method`/`replace_section`/`set_json_path`); para JS e outras, `type: "text"` + `replace_context_block` com âncoras copiadas **literalmente** do arquivo real (indentação exata), casando **uma única vez** — só o miolo no `new_content`. Se a âncora tiver caractere não-ASCII, evite o literal com `.*`: prefira uma âncora ASCII vizinha estável.
+5. Não invente campos nem use número de linha; o `INSTRUCTION_GUIDE.md` é a referência obrigatória do formato.
+6. **Verificação (sessão seguinte):** se emitiu uma instrução ASU e os arquivos estão à vista, confira no disco cada arquivo tocado antes de seguir — não confie em "deu certo".
 
 *Gerado pelo Kit de Contexto Universal — nicho Desenvolvimento. Edite à vontade: este arquivo é seu.*

@@ -1,7 +1,14 @@
-# HISTORICO.md — Conhecimento Consolidado
+# HISTORY.md — Conhecimento Consolidado
 
 > **Opcional.** Arquivo-baú para conhecimento denso que já foi aprendido e não muda mais — guias técnicos, análises de viabilidade, notas de migração — que tornariam o CONTEXT pesado demais.
 > Não é lido no início da sessão; o assistente consulta sob demanda quando o assunto aparece.
+
+**Mudanças nesta revisão (2026-07-11):** arquivo renomeado de `HISTORICO.md` para
+`HISTORY.md`, por consistência com os demais arquivos do projeto (CONTEXT, STATUS,
+DECISIONS, CHANGELOG, IDEAS, GLOSSARY, ROADMAP — todos em inglês). Conteúdo idêntico ao
+anterior (ainda vazio — nenhum conhecimento consolidado registrado até o momento).
+**Ação necessária:** delete `meta/HISTORICO.md` do projeto ao aplicar este arquivo, para
+não ficar com os dois.
 
 ---
 

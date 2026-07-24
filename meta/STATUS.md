@@ -3,6 +3,12 @@
 > Atualizado a cada sessão de desenvolvimento.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
+**Mudanças nesta revisão (2026-07-11):** a seção "Backlog por Fase" (Fases 1–5) foi
+**movida para o ROADMAP.md** — é plano de médio/longo prazo, e por regra de higiene do
+projeto (CEREBRO.md) não deve viver aqui. STATUS agora traz só a Fase 1 como backlog
+curto e acionável — o que dá pra pegar já na próxima sessão. Nada foi perdido: as Fases
+2–5 estão completas no ROADMAP.md.
+
 ---
 
 ## Versão Atual
@@ -18,15 +24,14 @@
 - **Motor de overflow de texto especificado** — 4 modos: `grow-vertical`, `grow-horizontal`, `fixed-shrink`, `fixed-clip`
 - **Sistema de estilos de texto especificado** — herança via `basedOn`, observer pattern para propagação automática
 - **Mapeamento CSV especificado** — colunas tipadas, formatadores (currency, date, uppercase), filtro de linhas, padrão de nomenclatura de saída (`outputNaming`)
-- **Decisões técnicas registradas** — 8 ADRs documentados no DECISIONS.md
+- **Decisões técnicas registradas** — 10 ADRs documentados no DECISIONS.md
+- **Sistema de documentação operacional** — CONTEXT/STATUS/CHANGELOG/DECISIONS/IDEAS/ROADMAP/GLOSSARY/HISTORY, alinhado ao template-update do KCM
 
 ---
 
 ## 🔧 Em Progresso
 
-- [ ] **Boilerplate do projeto** — criar repositório com Vite + React + TypeScript (0%)
-- [ ] **TemplateSchema.ts** — implementar os tipos TypeScript do `.editx` (0%)
-- [ ] **TemplateSerializer.ts** — salvar / carregar / validar JSON (0%)
+*Nada em progresso no momento — a sessão atual foi de organização de documentação. Próximo passo é iniciar a Fase 1 (ver backlog abaixo).*
 
 ---
 
@@ -36,52 +41,25 @@
 
 ---
 
-## 📋 Backlog por Fase
+## 📋 Backlog (curto prazo — Fase 1, MVP do Editor)
 
-### Fase 1 — MVP do Editor (estimativa: 3–4 meses solo)
+> Plano completo de médio/longo prazo (Fases 2–5) está no ROADMAP.md.
+> Aqui só o que é acionável já nas próximas sessões, em ordem de dependência.
 
-1. Boilerplate: Vite + React + TypeScript + ESLint + Prettier
-2. `TemplateSchema.ts` — tipos completos do `.editx`
-3. `TemplateSerializer.ts` — serialização/deserialização + validação de schema
-4. `StyleRegistry.ts` — estilos globais com herança e observer
-5. `CanvasEngine.ts` — wrapper Fabric.js com eventos e ciclo de vida
-6. `FrameText.ts` — frame de texto com overflow básico (grow-vertical e fixed-clip primeiro)
-7. `FrameImage.ts` — frame de imagem com fit modes
-8. `FrameShape.ts` — retângulo, elipse, linha básicos
-9. `SelectionManager.ts` — seleção simples, mover, redimensionar
-10. `documentStore.ts` + `selectionStore.ts` + `historyStore.ts`
-11. UI mínima: Toolbar + PropertiesPanel + LayersList (sem estilização avançada)
-12. `CsvParser.ts` + `ColumnMapper.ts` básico
-13. `BatchGenerator.ts` em Web Worker (PNG por enquanto)
-14. Exportação PNG básica por frame
-
-### Fase 2 — Tipografia e Estilos Avançados
-
-- Todos os modos de overflow de texto (grow-horizontal, fixed-shrink)
-- Upload de fontes customizadas (TTF/OTF via opentype.js)
-- UI de estilos de texto (criar, editar, aplicar em massa)
-- Painel de paleta de cores e temas da marca
-
-### Fase 3 — Geração em Massa Robusta
-
-- `ImageResolver.ts` com busca por nome exato + fallback
-- `BatchPreview.tsx` — preview dos N primeiros antes de gerar
-- `ZipPacker.ts` — exportação ZIP com nomes personalizados
-- Filtro de linhas do CSV na UI
-- Progresso de geração em tempo real (via postMessage do Worker)
-
-### Fase 4 — Tipos Editoriais Avançados
-
-- `PdfExporter.ts` — PDF multipáginas com índice automático
-- Suporte a C-fold e Z-fold (guias de dobra, painéis corretos)
-- Catálogo multipáginas (página de capa + loop de página de produto)
-- Menu imprimível com marcas de corte e sangria
-
-### Fase 5 — Desktop
-
-- Integração Tauri 2.x
-- Acesso direto ao sistema de arquivos (sem upload manual de imagens)
-- Menu nativo do SO, atalhos de teclado
+- [ ] Boilerplate: Vite + React + TypeScript + ESLint + Prettier
+- [ ] `TemplateSchema.ts` — tipos completos do `.editx`
+- [ ] `TemplateSerializer.ts` — serialização/deserialização + validação de schema
+- [ ] `StyleRegistry.ts` — estilos globais com herança e observer
+- [ ] `CanvasEngine.ts` — wrapper Fabric.js com eventos e ciclo de vida
+- [ ] `FrameText.ts` — frame de texto com overflow básico (grow-vertical e fixed-clip primeiro)
+- [ ] `FrameImage.ts` — frame de imagem com fit modes
+- [ ] `FrameShape.ts` — retângulo, elipse, linha básicos
+- [ ] `SelectionManager.ts` — seleção simples, mover, redimensionar
+- [ ] `documentStore.ts` + `selectionStore.ts` + `historyStore.ts`
+- [ ] UI mínima: Toolbar + PropertiesPanel + LayersList (sem estilização avançada)
+- [ ] `CsvParser.ts` + `ColumnMapper.ts` básico
+- [ ] `BatchGenerator.ts` em Web Worker (PNG por enquanto)
+- [ ] Exportação PNG básica por frame
 
 ---
 
@@ -108,11 +86,11 @@
 
 ## 💬 Notas da Última Sessão
 
-**Data:** 2026-05-24
+**Data:** 2026-07-11
 
-**O que foi feito:** Sessão de concepção e arquitetura completa. Definiu-se a visão do produto, stack tecnológica, estrutura de pastas, schema completo do `.editx`, decisões técnicas (ADRs), e inicialização da documentação do projeto.
+**O que foi feito:** Integração de um template-update do KCM (nicho Desenvolvimento). Comparação de 13 arquivos do pacote contra os equivalentes vivos do projeto, com relatório de novidades/choques/exclusividades. Após aprovação do usuário, aplicado merge completo: backlog de fases migrado do STATUS para o ROADMAP (antes vazio); IDEAS reestruturado em Ativas/Concluídas/Descartadas; DECISIONS ganhou template de FIX-N e um novo DEC-010 registrando este próprio desvio; GLOSSARY populado com termos do projeto; HISTORICO.md renomeado para HISTORY.md (padronização de nomes em inglês); CEREBRO.md e as instruções do projeto receberam 3 seções novas (ritual de leitura de mount, recomendação de configuração, ASU detalhado); `.gitignore` e `.flatdropignore` adotados. Nenhum código de produção foi escrito nesta sessão.
 
-**Pendências para próxima sessão:** Implementar o boilerplate do projeto e o `TemplateSchema.ts`.
+**Pendências para próxima sessão:** Implementar o boilerplate do projeto e o `TemplateSchema.ts` (primeiro item do backlog acima). Comentários profissionais de código (docstrings) ficam para quando houver código — nada a comentar ainda.
 
 ---
 
