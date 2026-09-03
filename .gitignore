@@ -1,6 +1,28 @@
-# .gitignore — lixo de SO / editor. NAO ignore .claude/, meta/ nem logs/ (versionados de proposito).
+# Logs
+# NAO ignorar a pasta logs/ inteira: os logs de sessao (logs/AAAA-MM-DD.md)
+# sao versionados de proposito neste projeto (ver LOG-TEMPLATE.md). So
+# arquivos de log genericos de ferramentas (npm, yarn, pnpm) sao ignorados.
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-Thumbs.db
-*.swp
-.vscode/
-.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
