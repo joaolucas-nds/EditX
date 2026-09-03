@@ -276,6 +276,90 @@ pacote, sem equivalente vivo para comparar.
 
 ---
 
+## DEC-011 — Aceitar versões reais do npm (React 19/Vite 8/TS 6) em vez das documentadas; ESLint 9 mantido (não 10) por incompatibilidade de plugin; duas vulnerabilidades de `npm audit` aceitas como inertes
+
+**Data:** 2026-07-24
+**Status:** aceita
+**Autor:** ambos
+
+### Contexto
+Ao rodar o boilerplate pela primeira vez (`npm create vite@latest -- --template react-ts`),
+o npm serviu versões bem mais novas do que as documentadas em CONTEXT.md desde 2026-05-24:
+React 19.2.7 (documentado: ^18.3.0), Vite 8.1.5 (documentado: ^5.2.0), TypeScript 6.0.2
+(documentado: ^5.4.0). O scaffold atual do `create-vite` também vem com `oxlint` por
+padrão, não ESLint+Prettier como as "Ferramentas" do CONTEXT.md especificam.
+
+Duas cadeias de vulnerabilidade apareceram no `npm audit`:
+1. **`fabric` → `canvas`/`jsdom` (optionalDependencies) → `@mapbox/node-pre-gyp` → `tar`**
+   — crítica. `canvas`/`jsdom` só existem para renderização server-side em Node; nosso
+   app é 100% client-side (Vite/browser) e nunca importa esse caminho (confirmado:
+   `canvas` não chega a instalar de fato neste ambiente, por exigir compilação nativa).
+   Corrigir exigiria `fabric@7.4.0` — breaking change não avaliado.
+2. **`eslint@9.x` → `@eslint/eslintrc`/`@eslint/config-array` → `minimatch` → `brace-expansion`**
+   — alta (DoS por expansão de string). Testamos a correção óbvia (`eslint@^10.0.0`), que
+   resolve essa cadeia sem tocar no fabric. Porém `eslint-plugin-react-hooks@5.2.0` (nossa
+   dependência) trava seu peer dependency em `eslint <= ^9.0.0` — a v10 quebra a instalação
+   do projeto (`ERESOLVE`). Não é uma escolha de manter compatibilidade "por via das
+   dúvidas": tentamos de verdade, o conflito é real e documentado no log do npm.
+
+### Decisão
+1. **Manter as versões que o npm serviu hoje** (React 19, Vite 8, TS 6) em vez de fixar
+   às versões antigas documentadas — CEREBRO.md princípio 11 ("usa a versão mais recente;
+   não regride"). CONTEXT.md atualizado para refletir a realidade instalada.
+2. **Trocar `oxlint` por ESLint 9 (flat config) + Prettier**, conforme já documentado em
+   CONTEXT.md § Ferramentas.
+3. **Manter ESLint em `^9.0.0`, não `^10.0.0`** — testamos a v10, ela resolve a
+   vulnerabilidade do minimatch mas quebra a instalação por incompatibilidade real com
+   `eslint-plugin-react-hooks@5.2.0`. Revisitar quando esse plugin liberar suporte à v10.
+4. **Não fazer downgrade nem forçar `fabric@7.4.0`** para eliminar o alerta crítico do
+   `npm audit` — a vulnerabilidade está numa dependência opcional inerte para o nosso
+   caso de uso. Forçar a v7 seria um breaking change não avaliado, quebrando as
+   armadilhas já documentadas sobre a API de serialização da v6.
+
+### Alternativas consideradas
+- **Fixar versões antigas manualmente (`react@18.3.0` etc.)** — mais "fiel" ao que foi
+  documentado em maio, mas regride para versões que o próprio ecossistema já deixou para
+  trás; contraria o princípio de usar a versão mais recente
+- **Forçar `eslint@^10.0.0` mesmo com o conflito** (`--force`/`--legacy-peer-deps`) —
+  eliminaria o alerta do minimatch, mas deixaria uma árvore de dependências
+  inconsistente logo no primeiro commit, com risco real de o plugin de react-hooks
+  simplesmente não funcionar
+- **Forçar `npm audit fix --force` para tudo (fabric@7.4.0 + eslint@10)** — eliminaria
+  ambos os alertas, mas empilharia dois breaking changes não avaliados por cima de uma
+  incompatibilidade de peer dependency conhecida
+- **Manter `oxlint`** — mais rápido, já vem pronto, mas contraria a stack já documentada
+  e tem cobertura de regras mais rasa para o que precisamos garantir (ex.: proibir `any`
+  de forma confiável no schema)
+
+### Consequências
+- **Positivas:** projeto começa com as versões atuais do ecossistema, não com débito
+  técnico de dia zero; ESLint configurado já cobre a regra "nunca usar `any`" como erro
+  de lint; a decisão sobre o ESLint v10 foi testada de verdade, não assumida — evita
+  descobrir a incompatibilidade mais tarde, no meio de um merge
+- **Negativas:** CONTEXT.md precisou de mais uma atualização de "Mudanças nesta revisão"
+  logo em sequência à sessão anterior — mas é o comportamento correto (documentação
+  seguindo a realidade do código, não o contrário)
+- **Riscos:** `npm audit` vai continuar mostrando 11 vulnerabilidades (10 altas, 1
+  crítica) mesmo com o projeto saudável — isso é ESPERADO e não deve ser tratado como
+  sinal de problema em sessões futuras (ver armadilha em CONTEXT.md). Revisitar a
+  decisão do ESLint quando `eslint-plugin-react-hooks` liberar suporte à v10 (checar
+  `npm view eslint-plugin-react-hooks peerDependencies` periodicamente); se o fabric.js
+  algum dia tornar `canvas`/`jsdom` dependências obrigatórias, essa parte também precisa
+  ser revisada
+
+**⚠️ Armadilha conhecida:** o `.gitignore` que o `create-vite` gera por padrão ignora a
+pasta `logs/` inteira — no nosso projeto essa pasta é versionada de propósito (logs de
+sessão). Corrigido manualmente no primeiro `.gitignore` entregue; se algum dia o
+boilerplate for regenerado do zero, conferir esse ponto de novo.
+
+**⚠️ Armadilha conhecida:** `npx eslint --version` retornando a versão nova não é prova
+de que a atualização é segura — só confirma que o binário instalado localmente naquele
+momento é aquele. A prova real é tentar instalar mais alguma coisa (ou rodar `npm install`
+do zero) e ver se o peer dependency resolve sem conflito. Descobrimos isso ao tentar
+adicionar `@eslint/js` depois de já ter "confirmado" a v10 funcionando.
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown

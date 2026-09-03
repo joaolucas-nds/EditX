@@ -3,7 +3,14 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Mantenha-o atualizado a cada sessão de desenvolvimento.
 
-**Mudanças nesta revisão (2026-07-11):** adicionada a seção "Como o Motor de Overflow Funciona (CRÍTICO)" (mecanismo central em prosa, exigida pelo template-update do KCM). A antiga tabela "Decisões Técnicas Importantes" foi substituída por "Arquitetura — Pontos-Chave", que referencia o DECISIONS.md em vez de duplicar o raciocínio completo (regra de higiene: uma fonte de verdade por dado). Nada foi removido — o conteúdo de "motivo" de cada decisão continua integral em DECISIONS.md.
+**Mudanças nesta revisão (2026-07-24):** primeira sessão de código real — boilerplate
+criado, dependências instaladas, `TemplateSchema.ts`/`frame.types.ts`/`template.types.ts`
+implementados e validados (compilação + lint + build de produção, todos limpos). A seção
+"Stack Tecnológica" foi atualizada para as versões REAIS que o npm serviu hoje (React 19,
+Vite 8, TypeScript 6 — bem mais novas que as documentadas em maio), e ESLint+Prettier
+substituíram o `oxlint` que o `create-vite` agora traz por padrão — ver DEC-011 (inclui o
+relato de uma tentativa de upgrade do ESLint para v10 que foi revertida por
+incompatibilidade real de peer dependency). Cinco armadilhas novas registradas.
 
 ---
 
@@ -40,18 +47,22 @@ e metadados de exportação.
 
 ## Stack Tecnológica
 
-- **Linguagem:** TypeScript 5.x
-- **Framework UI:** React 18 + Vite 5
-- **Motor de canvas:** Fabric.js 6.x (canvas 2D interativo)
-- **Estado global:** Zustand + Immer (estado imutável, patches para undo/redo)
-- **Tipografia avançada:** opentype.js (leitura de fontes TTF/OTF, métricas precisas)
-- **Exportação PDF:** pdf-lib (multipáginas, links internos, índice, sangria)
-- **Exportação raster:** html2canvas + Canvas API nativa
-- **Empacotamento em lote:** JSZip
-- **Leitura de CSV:** PapaParse
+> Versões abaixo são as REAIS instaladas em 2026-07-24 (confirmadas via `npm list`),
+> não as planejadas em maio — desatualização de versão em doc é esperada com o tempo;
+> ver armadilha "Não confiar cegamente nesta tabela" abaixo.
+
+- **Linguagem:** TypeScript ~6.0.2 (documentado originalmente: 5.x)
+- **Framework UI:** React 19.2.7 + Vite 8.1.5 (documentado originalmente: React 18 + Vite 5)
+- **Motor de canvas:** Fabric.js 6.9.1 (canvas 2D interativo)
+- **Estado global:** Zustand 4.5.7 + Immer 10.2.0 (estado imutável, patches para undo/redo)
+- **Tipografia avançada:** opentype.js 1.3.x (leitura de fontes TTF/OTF, métricas precisas)
+- **Exportação PDF:** pdf-lib 1.17.x (multipáginas, links internos, índice, sangria)
+- **Exportação raster:** html2canvas 1.4.x + Canvas API nativa
+- **Empacotamento em lote:** JSZip 3.10.x
+- **Leitura de CSV:** PapaParse 5.5.x
 - **Desktop (Fase 2):** Tauri 2.x (Rust) — empacota o app web como executável nativo
 - **Deploy web:** Vercel / Netlify (SPA estática)
-- **Ferramentas:** Git, ESLint, Prettier, Vitest
+- **Ferramentas:** Git, ESLint 9.39.x (flat config — NÃO 10.x, ver DEC-011), Prettier 3, Vitest (ainda não instalado — entra com TemplateSerializer.ts)
 
 ---
 
@@ -68,8 +79,10 @@ editor-editorial/
 │   │   └── SelectionManager.ts   # Seleção, multi-select, alinhamento, distribuição
 │   │
 │   ├── template/
-│   │   ├── TemplateSchema.ts      # Tipos TypeScript do formato .editx (fonte da verdade)
-│   │   ├── TemplateSerializer.ts  # Salvar / carregar / validar JSON .editx
+│   │   ├── TemplateSchema.ts      # Documento raiz + CSV mapping (fonte da verdade, DEC-009)
+│   │   ├── __examples__/          # Fixtures que validam o schema por compilação (não é produção)
+│   │   │   └── catalogo-simples.example.ts
+│   │   ├── TemplateSerializer.ts  # Salvar / carregar / validar JSON .editx — PRÓXIMO item do backlog
 │   │   ├── TemplateRenderer.ts    # Popula template com dados de uma linha CSV
 │   │   └── StyleRegistry.ts      # Estilos de texto globais com herança (observer pattern)
 │   │
@@ -98,8 +111,8 @@ editor-editorial/
 │   │   └── BatchPreview.tsx       # Preview dos N primeiros itens antes de gerar
 │   │
 │   ├── types/
-│   │   ├── template.types.ts      # Tipos do .editx (re-exportados de TemplateSchema)
-│   │   └── frame.types.ts         # Tipos de frames, overflow, estilos, transformações
+│   │   ├── template.types.ts      # Fachada de re-export (TemplateSchema.ts + frame.types.ts) — nunca redefine tipos
+│   │   └── frame.types.ts         # Tipos de frames, overflow, estilos, transformações (extraído de TemplateSchema.ts por tamanho)
 │   │
 │   └── main.tsx                   # Ponto de entrada React
 │
@@ -139,30 +152,43 @@ editor-editorial/
 
 ## Dependências Principais
 
+> Trecho real de `package.json` após `npm install` em 2026-07-24. `oxlint` foi removido
+> (era o default do scaffold) e substituído pelo bloco ESLint+Prettier já documentado.
+> ESLint fixado em `^9.0.0`, não `^10.0.0` — ver DEC-011.
+
 ```json
 {
   "dependencies": {
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0",
-    "fabric": "^6.0.0",
-    "zustand": "^4.5.0",
-    "immer": "^10.1.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "fabric": "^6.9.1",
+    "zustand": "^4.5.7",
+    "immer": "^10.2.0",
     "opentype.js": "^1.3.4",
     "pdf-lib": "^1.17.1",
     "jszip": "^3.10.1",
-    "papaparse": "^5.4.1",
+    "papaparse": "^5.5.4",
     "html2canvas": "^1.4.1"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "vite": "^5.2.0",
-    "@vitejs/plugin-react": "^4.2.0",
-    "vitest": "^1.5.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.1.1",
+    "@vitejs/plugin-react": "^6.0.3",
     "eslint": "^9.0.0",
-    "prettier": "^3.2.0"
+    "@eslint/js": "^9.0.0",
+    "prettier": "^3.2.0",
+    "typescript-eslint": "^8.0.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.0",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.0.0"
   }
 }
 ```
+
+Vitest ainda não foi instalado — entra junto com `TemplateSerializer.ts`, quando houver
+lógica de runtime de fato testável (o schema em si é só tipos; a "prova" dele hoje é
+compilar limpo, ver `src/template/__examples__/`).
 
 ---
 
@@ -217,6 +243,7 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - `BatchGenerator.ts` roda exclusivamente em Web Worker — ver DEC-007.
 - `pdf-lib` para toda geração de PDF (não jsPDF) — ver DEC-008.
 - `TemplateSchema.ts` é a fonte única de tipos; nenhum módulo define tipos de frame próprios — ver DEC-009.
+- Versões de dependências seguem o que o npm serve no momento da instalação, não datas fixas documentadas; ESLint+Prettier são o padrão de lint/format do projeto (ESLint fixo em 9.x, não 10.x), não o default do scaffold — ver DEC-011.
 
 ---
 
@@ -260,6 +287,11 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - **Evitar gradients radiais e multi-stop em SVG de preview** — causam artefatos na exportação PNG via html2canvas.
 - **`ctx.measureText()` não retorna altura real da linha.** Só retorna `width`. Para altura, usar `opentype.js` (ascender + descender da fonte real) — não depender de `actualBoundingBoxAscent` isoladamente (ver DEC-006).
 - **`OffscreenCanvas` tem suporte limitado no Safari.** Verificar compatibilidade antes de finalizar o `BatchGenerator.ts`; pode exigir fallback para thread principal em Safari antigo (ver DEC-007).
+- **Não confiar cegamente na tabela de versões deste documento.** Ela reflete o estado em que foi escrita; o npm segue evoluindo (React 19/Vite 8/TS 6 já divergem do que foi documentado em maio — ver DEC-011). Antes de instalar ou depender de uma versão específica, rode `npm list` / confira o `package.json` real em vez de copiar o número daqui.
+- **`npm audit` vai sempre mostrar ~11 vulnerabilidades (10 altas, 1 crítica) mesmo num projeto saudável.** A maior cadeia é `fabric` → `canvas`/`jsdom` (optionalDependencies, só para renderização server-side em Node) → `@mapbox/node-pre-gyp` → `tar` vulnerável. Nosso app é 100% client-side e nunca executa esse caminho — ver DEC-011. Não tentar "corrigir" com `npm audit fix --force` (forçaria fabric v7, breaking change não avaliado).
+- **`eslint@^10.0.0` resolveria a vulnerabilidade do `minimatch`, mas quebra a instalação.** `eslint-plugin-react-hooks@5.2.0` trava o peer dependency em `eslint <= ^9.0.0` — confirmado por tentativa real, não suposição. Manter ESLint em `^9.0.0` até esse plugin liberar suporte à v10 (ver DEC-011).
+- **`npx eslint --version` mostrando a versão nova NÃO prova que o upgrade é seguro.** Só confirma o binário instalado naquele momento — o teste real é instalar mais alguma coisa (ou reinstalar do zero) e ver se os peer dependencies resolvem sem conflito. Isso pegou a gente de surpresa uma vez (ver DEC-011).
+- **O `.gitignore` que o `create-vite` gera por padrão ignora a pasta `logs/` inteira.** Neste projeto `logs/` é versionada de propósito (logs de sessão). Se o boilerplate for regenerado do zero, lembrar de remover essa linha — ver DEC-011.
 
 ---
 
@@ -277,4 +309,4 @@ O fluxo de uso principal é:
 
 ---
 
-*Última atualização: 2026-07-11 — Merge do template-update do KCM (v2): nova seção de mecanismo crítico, referências cruzadas para DECISIONS.md. Criação original: 2026-05-24.*
+*Última atualização: 2026-07-24 — Primeira sessão de código: boilerplate + TemplateSchema.ts completos e validados. Versões reais de dependências atualizadas, incluindo o relato de um upgrade de ESLint testado e revertido (ver DEC-011). Sessão anterior: 2026-07-11 (merge do template-update do KCM). Criação original: 2026-05-24.*

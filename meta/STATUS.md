@@ -3,41 +3,48 @@
 > Atualizado a cada sessão de desenvolvimento.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
-**Mudanças nesta revisão (2026-07-11):** a seção "Backlog por Fase" (Fases 1–5) foi
-**movida para o ROADMAP.md** — é plano de médio/longo prazo, e por regra de higiene do
-projeto (CEREBRO.md) não deve viver aqui. STATUS agora traz só a Fase 1 como backlog
-curto e acionável — o que dá pra pegar já na próxima sessão. Nada foi perdido: as Fases
-2–5 estão completas no ROADMAP.md.
+**Mudanças nesta revisão (2026-07-24):** primeira sessão de código real. Boilerplate
+(Vite + React + TypeScript) criado e dependências instaladas; `TemplateSchema.ts` +
+`frame.types.ts` + `template.types.ts` implementados, com exemplo de validação em
+`__examples__/`. Os 2 primeiros itens do backlog saíram da lista de pendências e foram
+para "Funcionando". `TemplateSerializer.ts` é o próximo item.
 
 ---
 
 ## Versão Atual
 
-**v0.0.0** — 2026-05-24 (pré-boilerplate, fase de arquitetura)
+**v0.0.0** — ainda não lançado (Fase 1/F1 do ROADMAP em andamento, 2 de 14 itens prontos)
 
 ---
 
 ## ✅ Funcionando / Concluído
 
 - **Arquitetura definida** — stack tecnológica decidida, estrutura de pastas projetada
-- **Schema `.editx` desenhado** — formato JSON completo especificado (tipos, páginas, frames, estilos, mapeamento CSV)
-- **Motor de overflow de texto especificado** — 4 modos: `grow-vertical`, `grow-horizontal`, `fixed-shrink`, `fixed-clip`
-- **Sistema de estilos de texto especificado** — herança via `basedOn`, observer pattern para propagação automática
-- **Mapeamento CSV especificado** — colunas tipadas, formatadores (currency, date, uppercase), filtro de linhas, padrão de nomenclatura de saída (`outputNaming`)
-- **Decisões técnicas registradas** — 10 ADRs documentados no DECISIONS.md
+- **Schema `.editx` desenhado e IMPLEMENTADO** — `TemplateSchema.ts` (documento raiz + CSV mapping) e `frame.types.ts` (frames/overflow/estilos) com tipos TypeScript completos, zero `any`, JSDoc em cada export público
+- **Boilerplate do projeto criado** — Vite 8 + React 19 + TypeScript 6, ESLint 9 (flat config) + Prettier configurados, todas as dependências de CONTEXT.md instaladas
+- **Schema validado por exemplo real** — `src/template/__examples__/catalogo-simples.example.ts` satisfaz `EditxTemplate` de ponta a ponta (2 páginas, 3 tipos de frame, herança de estilo via `basedOn`, `isDataPage`, `csvMapping` completo) — compila limpo, passa lint, `npm run build` funciona
+- **Motor de overflow de texto especificado** — 4 modos: `grow-vertical`, `grow-horizontal`, `fixed-shrink`, `fixed-clip` (tipos prontos em `frame.types.ts`; lógica de runtime ainda não implementada — é o `FrameText.ts`, mais à frente no backlog)
+- **Sistema de estilos de texto especificado** — herança via `basedOn` tipada; `StyleRegistry.ts` (observer pattern que resolve a herança em runtime) ainda não implementado
+- **Mapeamento CSV especificado e tipado** — colunas tipadas, formatadores (currency, date, uppercase), filtro de linhas, padrão de nomenclatura de saída (`outputNaming`)
+- **Decisões técnicas registradas** — 11 ADRs documentados no DECISIONS.md
 - **Sistema de documentação operacional** — CONTEXT/STATUS/CHANGELOG/DECISIONS/IDEAS/ROADMAP/GLOSSARY/HISTORY, alinhado ao template-update do KCM
 
 ---
 
 ## 🔧 Em Progresso
 
-*Nada em progresso no momento — a sessão atual foi de organização de documentação. Próximo passo é iniciar a Fase 1 (ver backlog abaixo).*
+- [ ] **`TemplateSerializer.ts`** — próximo item do backlog: salvar/carregar/validar JSON `.editx` (0%)
 
 ---
 
 ## ❌ Quebrado / Com Problema
 
-*Nenhum — projeto ainda não tem código de produção.*
+*Nenhum bug — projeto compila, lint passa, build de produção funciona.* Dois avisos
+não-bloqueantes valem registro (não são bugs do projeto, são de dependências de
+terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
+- `npm audit` reporta ~11 vulnerabilidades (10 altas, 1 crítica), todas em dependências
+  opcionais/de desenvolvimento nunca executadas pelo nosso código (cadeia `fabric`→
+  `canvas`/`jsdom`→`tar`, e `eslint@9`→`minimatch`→`brace-expansion`)
 
 ---
 
@@ -46,9 +53,9 @@ curto e acionável — o que dá pra pegar já na próxima sessão. Nada foi per
 > Plano completo de médio/longo prazo (Fases 2–5) está no ROADMAP.md.
 > Aqui só o que é acionável já nas próximas sessões, em ordem de dependência.
 
-- [ ] Boilerplate: Vite + React + TypeScript + ESLint + Prettier
-- [ ] `TemplateSchema.ts` — tipos completos do `.editx`
-- [ ] `TemplateSerializer.ts` — serialização/deserialização + validação de schema
+- [x] Boilerplate: Vite + React + TypeScript + ESLint + Prettier
+- [x] `TemplateSchema.ts` — tipos completos do `.editx`
+- [ ] `TemplateSerializer.ts` — serialização/deserialização + validação de schema ← **próximo**
 - [ ] `StyleRegistry.ts` — estilos globais com herança e observer
 - [ ] `CanvasEngine.ts` — wrapper Fabric.js com eventos e ciclo de vida
 - [ ] `FrameText.ts` — frame de texto com overflow básico (grow-vertical e fixed-clip primeiro)
@@ -65,11 +72,12 @@ curto e acionável — o que dá pra pegar já na próxima sessão. Nada foi per
 
 ## 🧪 Testes
 
-- **Cobertura:** 0% (sem código ainda)
+- **Cobertura:** 0% (Vitest ainda não instalado — entra com `TemplateSerializer.ts`, primeiro módulo com lógica de runtime de fato testável)
+- **Validação atual do schema:** compilação limpa (`tsc --noEmit`) do exemplo em `__examples__/` — prova que o schema é ergonômico, mas não substitui testes automatizados quando houver lógica
 - **Estratégia planejada:** Vitest para lógica de negócio (serialização, overflow engine, CSV parser); sem testes de UI no MVP
 - **Módulos críticos que PRECISAM de testes:**
-  - `FrameText.ts` — lógica de overflow é sensível a edge cases (texto vazio, texto muito longo, font-size mínimo)
   - `TemplateSerializer.ts` — qualquer bug aqui corrompe arquivos de template
+  - `FrameText.ts` — lógica de overflow é sensível a edge cases (texto vazio, texto muito longo, font-size mínimo)
   - `CsvParser.ts` — CSV com aspas, delimitadores internos, encoding UTF-8 com BOM
 
 ---
@@ -78,20 +86,32 @@ curto e acionável — o que dá pra pegar já na próxima sessão. Nada foi per
 
 | Arquivo | Por que é crítico |
 |---|---|
-| `src/types/template.types.ts` | É o contrato entre todos os módulos. Mudança de tipo quebra serialização de arquivos existentes |
-| `src/template/TemplateSerializer.ts` | Qualquer bug corromperia arquivos `.editx` de usuários. Requer testes antes de qualquer mudança |
-| `src/canvas/FrameText.ts` | Motor de overflow customizado. Lógica complexa de métricas de texto — mudanças exigem re-teste visual |
+| `src/types/template.types.ts` | Fachada de re-export — o contrato que todo o resto do app importa. Mudança de tipo quebra serialização de arquivos existentes |
+| `src/template/TemplateSchema.ts` + `src/types/frame.types.ts` | Fonte real dos tipos (DEC-009). `template.types.ts` só reexporta daqui |
+| `src/template/TemplateSerializer.ts` | Ainda não existe. Quando existir: qualquer bug corromperia arquivos `.editx` de usuários. Requer testes antes de qualquer mudança |
+| `src/canvas/FrameText.ts` | Ainda não existe. Quando existir: motor de overflow customizado, mudanças exigem re-teste visual |
 
 ---
 
 ## 💬 Notas da Última Sessão
 
-**Data:** 2026-07-11
+**Data:** 2026-07-24
 
-**O que foi feito:** Integração de um template-update do KCM (nicho Desenvolvimento). Comparação de 13 arquivos do pacote contra os equivalentes vivos do projeto, com relatório de novidades/choques/exclusividades. Após aprovação do usuário, aplicado merge completo: backlog de fases migrado do STATUS para o ROADMAP (antes vazio); IDEAS reestruturado em Ativas/Concluídas/Descartadas; DECISIONS ganhou template de FIX-N e um novo DEC-010 registrando este próprio desvio; GLOSSARY populado com termos do projeto; HISTORICO.md renomeado para HISTORY.md (padronização de nomes em inglês); CEREBRO.md e as instruções do projeto receberam 3 seções novas (ritual de leitura de mount, recomendação de configuração, ASU detalhado); `.gitignore` e `.flatdropignore` adotados. Nenhum código de produção foi escrito nesta sessão.
+**O que foi feito:** Primeira sessão de código real do projeto. Criado o boilerplate
+(Vite + React + TypeScript) e instaladas todas as dependências de CONTEXT.md. Implementados
+`TemplateSchema.ts`, `frame.types.ts` e `template.types.ts` com tipagem completa, JSDoc em
+cada export público e um exemplo (`__examples__/catalogo-simples.example.ts`) que valida o
+schema por compilação. Configurado ESLint 9 (flat config) + Prettier no lugar do `oxlint`
+padrão do scaffold. Descobertas 3 divergências reais entre o documentado e o instalado
+(versões React/Vite/TS mais novas; vulnerabilidade inerte fabric→canvas→tar; tentativa de
+upgrade do ESLint para v10 testada e revertida por incompatibilidade real com
+`eslint-plugin-react-hooks`) — tudo registrado em DEC-011. Corrigido o `.gitignore` padrão
+do Vite, que ignorava a pasta `logs/` (versionada de propósito neste projeto).
 
-**Pendências para próxima sessão:** Implementar o boilerplate do projeto e o `TemplateSchema.ts` (primeiro item do backlog acima). Comentários profissionais de código (docstrings) ficam para quando houver código — nada a comentar ainda.
+**Pendências para próxima sessão:** Implementar `TemplateSerializer.ts` (salvar/carregar/
+validar `.editx`) — é aí que o Vitest entra pela primeira vez, com testes reais de
+serialização/deserialização e validação de schema malformado.
 
 ---
 
-*Próxima sessão deve começar por: `npm create vite@latest editor-editorial -- --template react-ts` e implementação do `TemplateSchema.ts`*
+*Próxima sessão deve começar por: implementação do `TemplateSerializer.ts` + setup do Vitest*

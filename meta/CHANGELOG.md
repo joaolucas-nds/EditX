@@ -8,24 +8,29 @@
 > - MINOR: nova funcionalidade (novo tipo de frame, novo modo de exportação, etc.)
 > - PATCH: correção de bug sem quebrar compatibilidade
 
-**Mudanças nesta revisão (2026-07-11):** links atualizados para as versões em PT-BR do
-Keep a Changelog e do SemVer (coerente com o projeto ser documentado em português).
-Adicionada nota sobre a reorganização de documentação desta sessão em [Unreleased].
+**Mudanças nesta revisão (2026-07-24):** primeira sessão de código real — 2 itens do
+"Planejado para v0.1.0" migraram para "Adicionado" (boilerplate + TemplateSchema.ts).
+Nenhuma versão foi lançada ainda (v0.1.0 continua não-lançada até o MVP completo).
 
 ---
 
 ## [Unreleased] — Em desenvolvimento
 
+### Adicionado
+- Boilerplate do projeto: Vite 8 + React 19 + TypeScript 6, ESLint 9 (flat config) + Prettier
+- `TemplateSchema.ts` + `frame.types.ts` + `template.types.ts` — schema completo do `.editx` tipado (documento, páginas, 3 tipos de frame, textStyles com herança, csvMapping), com exemplo de validação em `__examples__/`
+
 ### Notas
 - Sistema de documentação atualizado via template-update do KCM: backlog de fases
   migrado de STATUS.md para ROADMAP.md, IDEAS.md reestruturado em Ativas/Concluídas/
   Descartadas, GLOSSARY.md populado, HISTORICO.md renomeado para HISTORY.md, CEREBRO.md e
-  instruções do projeto atualizados com protocolo mais recente. Nenhuma mudança de
-  produto/código — puramente organizacional. Ver DEC-010.
+  instruções do projeto atualizados com protocolo mais recente. Ver DEC-010.
+- Versões de dependências instaladas divergem das documentadas originalmente em maio
+  (React 19/Vite 8/TS 6, não 18/5/5.4) — aceito como atualização natural do ecossistema,
+  não regressão. ESLint fixado em 9.x (não 10.x) por incompatibilidade real com
+  `eslint-plugin-react-hooks`. Ver DEC-011.
 
 ### Planejado para v0.1.0 (MVP do editor)
-- Setup inicial do projeto (Vite + React + TypeScript)
-- `TemplateSchema.ts` — tipos TypeScript completos do formato `.editx`
 - `TemplateSerializer.ts` — salvar e carregar arquivos `.editx`
 - `StyleRegistry.ts` — estilos de texto globais com herança
 - `CanvasEngine.ts` — wrapper Fabric.js básico
