@@ -1,6 +1,7 @@
 # ANALISE — Herança de estilos de texto (`basedOn`) antes do `StyleRegistry.ts`
 
-> **Status:** Em discussao
+> **Status:** Decidida — dono aprovou a Opção A em 2026-11-11 → DEC-014; aplicação: wo0002 (schema,
+> validador, exemplo, testes) e wo0003 (`StyleRegistry.ts`). Muda para «Implementada» quando a wo0003 fechar.
 > **Data:** 2026-11-11 (data de criacao; nao muda depois)
 > **Origem:** revisão do código da wo0001 pelo chat, ao preparar a WO do `StyleRegistry.ts`.
 

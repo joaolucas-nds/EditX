@@ -33,7 +33,6 @@ import {
   columnFormat,
   fail,
   fontWeight,
-  frame,
   hexColor,
   isObject,
   isoDate,
@@ -50,8 +49,9 @@ import {
   typeError,
   uniqueId,
   validated,
-} from './FrameValidator';
-import type { Check, Ctx, Obj, Spec } from './FrameValidator';
+} from './ValidationRules';
+import type { Check, Ctx, Obj, Spec } from './ValidationRules';
+import { frame } from './FrameValidator';
 
 /** Versões de schema que este validador entende. Lista explícita: versão fora dela é rejeitada, nunca "tentada". */
 export const SUPPORTED_SCHEMA_VERSIONS: readonly string[] = ['0.1.0'];
@@ -79,7 +79,8 @@ export type ValidationResult =
 
 // --------------------------------------------------------- estilos de texto
 
-const textStyleSpec: Spec = {
+/** As 10 propriedades visuais (`TextStyleProps`) e a regra de valor de cada uma — fonte única para raiz e derivado. */
+const textStyleProps: Record<string, Check> = {
   fontFamily: string,
   fontWeight,
   fontSize: positive,
@@ -90,9 +91,30 @@ const textStyleSpec: Spec = {
   verticalAlign: oneOf<VerticalAlign>(['top', 'middle', 'bottom']),
   transform: oneOf<TextCase>(['none', 'uppercase', 'lowercase', 'capitalize']),
   decoration: oneOf<TextDecoration>(['none', 'underline', 'strikethrough']),
-  basedOn: (v, p, c) => {
-    if (v !== null) styleRef(v, p, c);
-  },
+};
+
+/** Estilo RAIZ (`basedOn: null`): as 10 propriedades são obrigatórias. */
+const rootStyleSpec: Spec = { ...textStyleProps, basedOn: validated };
+
+/** Estilo DERIVADO (`basedOn: "<pai>"`): as mesmas regras, mas só o que difere do pai precisa estar presente (DEC-014). */
+const derivedStyleSpec: Spec = {
+  ...Object.fromEntries(Object.entries(textStyleProps).map(([key, rule]) => [key, optional(rule)])),
+  basedOn: styleRef,
+};
+
+/**
+ * Um estilo de `textStyles`. O `basedOn` decide qual regra vale, então ele é
+ * checado primeiro: ausente ou de tipo errado → um erro e NÃO desce (sem saber
+ * a forma, as demais chaves só gerariam cascata).
+ */
+const textStyle: Check = (v, p, c) => {
+  if (!isObject(v)) return typeError(c, p, 'um objeto', v);
+  const bp = child(p, 'basedOn');
+  const based = v.basedOn;
+  if (based === undefined) return fail(c, bp, 'missing-field', `${bp}: campo obrigatório ausente.`);
+  if (based === null) checkObject(v, p, c, rootStyleSpec);
+  else if (typeof based === 'string') checkObject(v, p, c, derivedStyleSpec);
+  else typeError(c, bp, 'nulo ou um texto', based);
 };
 
 /**
@@ -128,8 +150,7 @@ function checkBasedOnCycles(styles: Obj, path: string, ctx: Ctx): void {
 
 const textStyles: Check = (v, p, c) => {
   if (!isObject(v)) return typeError(c, p, 'um objeto', v);
-  for (const [name, style] of Object.entries(v))
-    checkObject(style, keyed(p, name), c, textStyleSpec);
+  for (const [name, style] of Object.entries(v)) textStyle(style, keyed(p, name), c);
   checkBasedOnCycles(v, p, c);
 };
 

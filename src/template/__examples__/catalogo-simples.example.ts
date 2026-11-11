@@ -19,9 +19,9 @@ import type { EditxTemplate, TextStyleMap } from '../TemplateSchema';
 /**
  * Estilos de texto do catálogo. `preco-destaque` herda de `titulo-produto`
  * via `basedOn` e sobrescreve só `fontSize`/`color`/`fontWeight` — o
- * restante (fontFamily, align, etc.) vem do pai. Resolvido em runtime por
- * `StyleRegistry.ts` (ainda não implementado — próximo item após
- * TemplateSerializer.ts no backlog).
+ * restante (fontFamily, align, etc.) vem do pai — por isso o objeto dele só
+ * tem esses três campos (estilo derivado, DEC-014). Resolvido em runtime por
+ * `StyleRegistry.ts` (wo0003).
  */
 const textStyles: TextStyleMap = {
   'titulo-produto': {
@@ -38,16 +38,9 @@ const textStyles: TextStyleMap = {
     basedOn: null,
   },
   'preco-destaque': {
-    fontFamily: 'Montserrat',
     fontWeight: 800,
     fontSize: 22,
-    lineHeight: 1.3,
-    letterSpacing: 0,
     color: '#E63946',
-    align: 'left',
-    verticalAlign: 'top',
-    transform: 'uppercase',
-    decoration: 'none',
     basedOn: 'titulo-produto',
   },
   'titulo-capa': {

@@ -3,11 +3,10 @@
 > Atualizado a cada turno que muda o estado do projeto.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
-**Mudanças nesta revisão (2026-11-11):** wo0001 aplicada — `TemplateSerializer.ts` +
-`TemplateValidator.ts` + suíte Vitest (DEC-013). Saíram de «Em Progresso» o commit do merge
-(feito: `222c5f8`) e o serializer (feito); backlog avança para `StyleRegistry.ts` e ganha a
-sanitização de `customSvg`; «Testes» deixa de dizer 0%; a contagem de ADRs deixou de ser número
-congelado. A nota de 2026-11-10 saiu — o merge que ela descrevia está em DEC-012.
+**Mudanças nesta revisão (2026-11-11, wo0002):** herança de estilos decidida e aplicada no formato
+(estilo derivado guarda só as diferenças — DEC-014); «Sistema de estilos» e «Estratégia» de testes
+atualizados; «Última conversa» passa à wo0002. Nenhum item de backlog fechou: o `StyleRegistry.ts`
+continua o próximo (wo0003). A nota anterior (wo0001) saiu — o que ela registrava está em DEC-013.
 
 ---
 
@@ -24,7 +23,7 @@ congelado. A nota de 2026-11-10 saiu — o merge que ela descrevia está em DEC-
 - **Boilerplate do projeto criado** — Vite 8 + React 19 + TypeScript 6, ESLint 9 (flat config) + Prettier configurados, todas as dependências de CONTEXT.md instaladas
 - **Schema validado por exemplo real** — `src/template/__examples__/catalogo-simples.example.ts` satisfaz `EditxTemplate` de ponta a ponta (2 páginas, 3 tipos de frame, herança de estilo via `basedOn`, `isDataPage`, `csvMapping` completo) — compila limpo, passa lint, `npm run build` funciona
 - **Motor de overflow de texto especificado** — 4 modos: `grow-vertical`, `grow-horizontal`, `fixed-shrink`, `fixed-clip` (tipos prontos em `frame.types.ts`; lógica de runtime ainda não implementada — é o `FrameText.ts`, mais à frente no backlog)
-- **Sistema de estilos de texto especificado** — herança via `basedOn` tipada; `StyleRegistry.ts` (observer pattern que resolve a herança em runtime) ainda não implementado
+- **Sistema de estilos de texto especificado e validado** — `TextStyle` é raiz (completo, `basedOn: null`) ou derivado (só as diferenças, `basedOn: "<pai>"`), DEC-014; o validador cobra as duas formas. `StyleRegistry.ts` (resolve a cadeia em runtime + observer) ainda não implementado — wo0003
 - **Mapeamento CSV especificado e tipado** — colunas tipadas, formatadores (currency, date, uppercase), filtro de linhas, padrão de nomenclatura de saída (`outputNaming`)
 - **Decisões técnicas registradas** — ADRs DEC-NNN e FIX-NNN no DECISIONS.md (conte lá; o número não se repete aqui)
 - **Sistema de documentação operacional** — CONTEXT/STATUS/CHANGELOG/DECISIONS/IDEAS/ROADMAP/GLOSSARY/HISTORY, alinhado ao KCM v1.135.0
@@ -79,7 +78,7 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 
 - **Suíte:** Vitest (`npm test`, `vitest run`) desde a wo0001 — cobre `TemplateSerializer.ts` e `TemplateValidator.ts`; contagem de testes no relatório da wo0001; cobertura em % não medida (sem `@vitest/coverage-*`)
 - **Validação atual do schema:** compilação limpa (`tsc --noEmit`) do exemplo em `__examples__/` — prova que o schema é ergonômico, mas não substitui testes automatizados quando houver lógica
-- **Estratégia planejada:** Vitest para lógica de negócio (serialização, overflow engine, CSV parser); sem testes de UI no MVP
+- **Estratégia:** Vitest para lógica de negócio — serialização e validação (feito), herança de estilos, overflow engine e CSV parser (a fazer); sem testes de UI no MVP
 - **Módulos críticos que PRECISAM de testes:**
   - `TemplateSerializer.ts` — qualquer bug aqui corrompe arquivos de template
   - `FrameText.ts` — lógica de overflow é sensível a edge cases (texto vazio, texto muito longo, font-size mínimo)
@@ -89,11 +88,11 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 
 ## 💬 Última conversa
 
-**2026-11-11** — primeira WO aplicada pelo Claude Code (wo0001): Vitest instalado, `npm test`,
-`TemplateSerializer.ts` + `TemplateValidator.ts` com os 19 casos obrigatórios da WO; ROADMAP F1
-acertado (boilerplate, schema e serializer marcados). Detalhe no relatório
-`../*-code-editx-apply-wo0001.txt` e em `logs/2026-11-11.md`.
-**Onde parou:** próximo item é `StyleRegistry.ts`.
+**2026-11-11** — wo0001 (serializer + validador + Vitest) e wo0002 (herança de estilos, DEC-014:
+`TextStyle` raiz × derivado no tipo, no validador e no exemplo; motor do validador extraído para
+`ValidationRules.ts`; scaffold formatado pelo Prettier). Relatórios em `../notas-arquivadas/` e
+na pasta-pai; detalhe em `logs/2026-11-11.md`.
+**Onde parou:** próximo item é `StyleRegistry.ts` (wo0003).
 
 ---
 

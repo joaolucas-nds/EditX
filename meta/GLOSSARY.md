@@ -23,9 +23,12 @@ populado a partir do que já se usava em CONTEXT, DECISIONS e no schema.
 - **`isDataPage`** — flag booleana numa página do template. Se `true`, a página se repete
   uma vez por linha do CSV (ex.: página de produto num catálogo). Se ausente/`false`, a
   página é estática (ex.: capa).
-- **`basedOn`** — campo de herança entre `textStyles`. Um estilo com `basedOn` herda todas
-  as propriedades do estilo referenciado e só sobrescreve o que for diferente — como
-  estilos baseados no Word.
+- **`basedOn`** — campo de herança entre `textStyles`, e discriminante do tipo `TextStyle`
+  (DEC-014): `null` = estilo **raiz**, completo; nome de outro estilo = estilo **derivado**, que
+  guarda SÓ as propriedades que diferem do pai — o resto vem em cadeia até a raiz, como o
+  «Baseado em» do Word. Estilo derivado nunca se lê direto: resolve-se pelo `StyleRegistry.ts`.
+- **`TextStyleProps`** — as 10 propriedades visuais de um estilo (fonte, peso, tamanho, cor…);
+  todas obrigatórias na raiz, todas opcionais no derivado.
 - **`outputNaming`** — padrão de nomenclatura dos arquivos gerados em lote, com variáveis
   do CSV entre chaves. Ex.: `"{nome}-{preco}"` → `"coca-cola-5,99.pdf"`.
 - **`skipRowsWhere`** — filtro de linhas do CSV aplicado antes da geração em massa (ex.:

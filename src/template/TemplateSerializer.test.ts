@@ -236,3 +236,71 @@ describe('validateTemplate / serializeTemplate / parseTemplate', () => {
     expect(JSON.stringify(t)).toBe(before);
   });
 });
+
+describe('herança de estilos (DEC-014)', () => {
+  /** Erros cujo caminho está sob o estilo `name` (ele mesmo ou qualquer propriedade). */
+  const errorsUnder = (value: unknown, name: string) =>
+    errorsOf(value).filter((e) => e.path.startsWith(`$.textStyles["${name}"]`));
+
+  it('T20: o exemplo usa mesmo um estilo derivado parcial', () => {
+    const t = fresh();
+    expect(Object.keys(at(t, 'textStyles', 'preco-destaque')).sort()).toEqual([
+      'basedOn',
+      'color',
+      'fontSize',
+      'fontWeight',
+    ]);
+  });
+
+  it('T21: estilo raiz sem uma propriedade é missing-field', () => {
+    const t = fresh();
+    delete at(t, 'textStyles', 'titulo-capa').fontFamily;
+    expectError(t, '$.textStyles["titulo-capa"].fontFamily', 'missing-field');
+  });
+
+  it('T22: estilo derivado só com basedOn é válido', () => {
+    const t = fresh();
+    at(t, 'textStyles')['so-pai'] = { basedOn: 'titulo-produto' };
+    expect(validateTemplate(t).ok).toBe(true);
+  });
+
+  it('T23: chave desconhecida num estilo derivado é unknown-field', () => {
+    const t = fresh();
+    at(t, 'textStyles', 'preco-destaque').fontSise = 10;
+    expectError(t, '$.textStyles["preco-destaque"].fontSise', 'unknown-field');
+  });
+
+  it('T24: propriedade presente num estilo derivado passa pela regra de valor', () => {
+    const t = fresh();
+    at(t, 'textStyles', 'preco-destaque').fontSize = 0;
+    expectError(t, '$.textStyles["preco-destaque"].fontSize', 'invalid-value');
+  });
+
+  it('T25: estilo sem basedOn gera um erro só e não desce', () => {
+    const t = fresh();
+    delete at(t, 'textStyles', 'titulo-capa').basedOn;
+    expect(errorsUnder(t, 'titulo-capa')).toEqual([
+      expect.objectContaining({
+        path: '$.textStyles["titulo-capa"].basedOn',
+        code: 'missing-field',
+      }),
+    ]);
+  });
+
+  it('T26: basedOn de tipo errado gera um erro só e não desce', () => {
+    const t = fresh();
+    at(t, 'textStyles', 'titulo-capa').basedOn = 7;
+    expect(errorsUnder(t, 'titulo-capa')).toEqual([
+      expect.objectContaining({
+        path: '$.textStyles["titulo-capa"].basedOn',
+        code: 'invalid-type',
+      }),
+    ]);
+  });
+
+  it('T27: basedOn que aponta para estilo inexistente é unknown-reference', () => {
+    const t = fresh();
+    at(t, 'textStyles', 'preco-destaque').basedOn = 'inexistente';
+    expectError(t, '$.textStyles["preco-destaque"].basedOn', 'unknown-reference');
+  });
+});

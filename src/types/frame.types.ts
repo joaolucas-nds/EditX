@@ -111,15 +111,11 @@ export type TextCase = 'none' | 'uppercase' | 'lowercase' | 'capitalize';
 export type TextDecoration = 'none' | 'underline' | 'strikethrough';
 
 /**
- * Estilo de texto nomeado e reutilizável, com herança em cadeia via `basedOn`
- * (como estilos baseados no Word). Vive em `EditxTemplate.textStyles`,
- * indexado pelo nome do estilo — ver TemplateSchema.ts.
- *
- * Alterar um estilo propaga automaticamente para todos os frames vinculados
- * — implementado por observer pattern em `StyleRegistry.ts` (ver DEC-006,
- * seção de estilos globais em CONTEXT.md § Modos de Overflow).
+ * As propriedades visuais de um estilo de texto. Num estilo RAIZ todas são
+ * obrigatórias; num estilo DERIVADO todas são opcionais — o que falta vem do
+ * estilo-pai. Ver `TextStyle` e DEC-014.
  */
-export interface TextStyle {
+export interface TextStyleProps {
   fontFamily: string;
   /** Peso da fonte no padrão CSS (400 = normal, 700 = bold, etc.). */
   fontWeight: number;
@@ -135,13 +131,28 @@ export interface TextStyle {
   verticalAlign: VerticalAlign;
   transform: TextCase;
   decoration: TextDecoration;
-  /**
-   * Nome de outro estilo em `textStyles` do qual este herda todas as
-   * propriedades — sobrescrevendo apenas os campos explicitamente definidos
-   * aqui. `null` = estilo raiz, sem herança. Resolvido por `StyleRegistry.ts`.
-   */
-  basedOn: string | null;
 }
+
+/**
+ * Estilo de texto nomeado e reutilizável, com herança em cadeia via `basedOn`
+ * (como estilos baseados no Word). Vive em `EditxTemplate.textStyles`,
+ * indexado pelo nome do estilo — ver TemplateSchema.ts.
+ *
+ * União discriminada pelo próprio `basedOn` (DEC-014):
+ * - `basedOn: null`   → estilo RAIZ: todas as `TextStyleProps`, completo.
+ * - `basedOn: string` → estilo DERIVADO: nome de outro estilo em `textStyles`;
+ *   guarda SÓ as propriedades que diferem do pai, e o resto é herdado em
+ *   cadeia até a raiz — como o «Baseado em» do Word.
+ *
+ * Nunca leia uma propriedade de um estilo derivado diretamente: resolva antes
+ * pelo `StyleRegistry.ts`. O `Partial` existe para o compilador cobrar isso.
+ *
+ * Alterar um estilo propaga automaticamente para todos os frames vinculados
+ * — implementado por observer pattern em `StyleRegistry.ts` (ver DEC-006,
+ * seção de estilos globais em CONTEXT.md § Modos de Overflow).
+ */
+export type TextStyle =
+  ({ basedOn: null } & TextStyleProps) | ({ basedOn: string } & Partial<TextStyleProps>);
 
 /**
  * Frame de texto — populável (`role: 'data'`, vem do CSV) ou estático

@@ -26,6 +26,9 @@ está nas entradas «Adicionado» abaixo).
   (settings + skills `apply-wo`/`wrap`/`sondar`), `meta/workorders/_TEMPLATE.md`, `meta/SPEC.md`;
   CEREBRO fundido (seção ASU removida), INSTRUCOES reescritas (7.355 → 5.588 caracteres), cadência
   por turno/evento no lugar de «por sessão». Ver DEC-012.
+- Formato `.editx` (`0.1.0`, ainda não lançado): `TextStyle` passa a ser raiz completo
+  (`basedOn: null`) ou derivado só com as diferenças (`basedOn: "<pai>"`); novo tipo
+  `TextStyleProps`. Motor do validador extraído para `ValidationRules.ts`. Ver DEC-014.
 
 ### Notas
 - Sistema de documentação atualizado via template-update do KCM: backlog de fases

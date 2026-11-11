@@ -447,6 +447,41 @@ que tipo TypeScript não protege. A DEC-009 fez de `TemplateSchema.ts` a fonte �
 
 ---
 
+## DEC-014 — Estilo de texto derivado guarda só as diferenças do pai
+
+**Data:** 2026-11-11
+**Status:** aceita
+**Autor:** dono (decisão), Claude (análise)
+
+### Contexto
+O JSDoc de `TextStyle.basedOn` prometia herança («sobrescrevendo apenas os campos explicitamente
+definidos»), mas o tipo exigia todos os campos e o validador da DEC-013 rejeitava os ausentes: a
+herança não tinha efeito. Raciocínio completo, com as quatro opções:
+`meta/analises/261111-ANALISE-heranca-de-estilos.md`.
+
+### Decisão
+- `TextStyle` é união discriminada por `basedOn`: **raiz** (`null`, todas as `TextStyleProps`) ou
+  **derivado** (nome do pai, `Partial<TextStyleProps>` — só o que difere).
+- O validador cobra as duas formas (raiz completa; derivado parcial e ainda estrito).
+- O formato `0.1.0` muda **no lugar, sem subir versão** — exceção válida só porque nenhum `.editx`
+  existia (`find .. -name "*.editx" -not -path "*/node_modules/*" | wc -l` = 0, conferido na wo0002).
+  Depois do primeiro arquivo de usuário, mudança de formato sobe versão e traz migração.
+
+### Alternativas consideradas
+- **Tudo obrigatório, propagação por igualdade de valor** — regra implícita; erra quando o usuário
+  escolheu de propósito o mesmo valor do pai.
+- **Tudo obrigatório + lista `overrides`** — duas fontes da mesma verdade no mesmo objeto.
+- **Sem herança** — contradiz o requisito de estilos em cascata (Affinity/Word).
+
+### Consequências
+- **Positivas:** o arquivo diz sem ambiguidade o que é herdado; o compilador impede ler propriedade de
+  estilo derivado sem resolver (`number | undefined`).
+- **Negativas:** todo consumidor de estilo depende do `StyleRegistry.ts` (wo0003) para o valor final.
+- **Riscos:** `as TextStyleProps` forçado fora do `StyleRegistry.ts` desfaz a proteção — sinal:
+  `grep -rn "as TextStyleProps" src`.
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown
