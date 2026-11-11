@@ -13,7 +13,7 @@ congelado. A nota de 2026-11-10 saiu — o merge que ela descrevia está em DEC-
 
 ## Versão Atual
 
-**v0.0.0** — ainda não lançado (Fase 1/F1 do ROADMAP em andamento, 2 de 14 itens prontos)
+**v0.0.0** — ainda não lançado (Fase 1/F1 do ROADMAP em andamento, 3 de 14 itens prontos)
 
 ---
 
