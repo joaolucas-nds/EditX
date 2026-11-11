@@ -3,11 +3,11 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-11, wo0002):** a árvore de `template/` ganha o `ValidationRules.ts`
-(motor de regras do validador, extraído do `FrameValidator.ts`, que fica só com as regras de frame);
-saiu a armadilha do `npm run format` (a wo0002 formata `App.tsx`/`main.tsx` de uma vez, e o format
-fica idempotente). Herança de estilos decidida: DEC-014. A nota anterior saiu — o que ela registrava
-está em DEC-013 e no log de 2026-11-11.
+**Mudanças nesta revisão (2026-11-11, wo0003):** `StyleRegistry.ts` descrito como módulo PURO sobre o
+mapa `textStyles` do documento, não como registro com estado e observer — o estado global é do
+Zustand + Immer (DEC-004), e a propagação «altera o pai, muda o filho» vem de o estilo final ser
+sempre resolvido do mapa atual (DEC-015). «Objetivo atual» aponta para o `CanvasEngine.ts`. A nota
+anterior (wo0002: `ValidationRules.ts`, format do scaffold) saiu — está em DEC-014 e no log de 2026-11-11.
 
 ---
 
@@ -24,9 +24,9 @@ catálogos de produto, cartazes de oferta, cardápios, stories digitais, menus d
 (C-fold, Z-fold) e PDFs com índice.
 
 **Objetivo atual:** Fase 1 (MVP do editor). Existem o schema do `.editx`, o
-serializer/validador com testes e o boilerplate; o canvas ainda não. O objetivo imediato é
-resolver a herança de estilos (análise `meta/analises/261111-ANALISE-heranca-de-estilos.md`) e
-seguir para `StyleRegistry.ts` e o MVP do canvas com frames de texto e imagem.
+serializer/validador com testes, a herança de estilos (`StyleRegistry.ts`, DEC-014/DEC-015) e o
+boilerplate; o canvas ainda não. O objetivo imediato é o MVP do canvas (`CanvasEngine.ts` e os frames
+de texto e imagem).
 
 **Problema de mercado resolvido:** Nenhuma ferramenta combina edição visual acessível +
 geração em massa + tipos editoriais especializados (dobras, catálogos) em um único
@@ -86,7 +86,8 @@ EditX/
 │   │   ├── FrameValidator.ts      # regras dos frames (texto, imagem, forma)
 │   │   ├── TemplateSerializer.test.ts # Testes Vitest do serializer + validador
 │   │   ├── TemplateRenderer.ts    # Popula template com dados de uma linha CSV
-│   │   └── StyleRegistry.ts      # Estilos de texto globais com herança (observer pattern)
+│   │   ├── StyleRegistry.ts       # resolveStyle / dependentsOf / setStyle / removeStyle — funções puras sobre textStyles (DEC-015)
+│   │   └── StyleRegistry.test.ts  # Testes Vitest da herança de estilos
 │   │
 │   ├── csv/
 │   │   ├── CsvParser.ts           # Lê CSV, detecta colunas e tipos

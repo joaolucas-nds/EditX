@@ -3,16 +3,15 @@
 > Atualizado a cada turno que muda o estado do projeto.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
-**Mudanças nesta revisão (2026-11-11, wo0002):** herança de estilos decidida e aplicada no formato
-(estilo derivado guarda só as diferenças — DEC-014); «Sistema de estilos» e «Estratégia» de testes
-atualizados; «Última conversa» passa à wo0002. Nenhum item de backlog fechou: o `StyleRegistry.ts`
-continua o próximo (wo0003). A nota anterior (wo0001) saiu — o que ela registrava está em DEC-013.
+**Mudanças nesta revisão (2026-11-11, wo0003):** `StyleRegistry.ts` feito (funções puras, DEC-015) —
+sai do backlog, `CanvasEngine.ts` vira o próximo; F1 em 4 de 14; a linha «Suíte» deixa de apontar para
+o relatório de uma WO específica. A nota anterior (wo0002) saiu — o que ela registrava está em DEC-014.
 
 ---
 
 ## Versão Atual
 
-**v0.0.0** — ainda não lançado (Fase 1/F1 do ROADMAP em andamento, 3 de 14 itens prontos)
+**v0.0.0** — ainda não lançado (Fase 1/F1 do ROADMAP em andamento, 4 de 14 itens prontos)
 
 ---
 
@@ -23,7 +22,7 @@ continua o próximo (wo0003). A nota anterior (wo0001) saiu — o que ela regist
 - **Boilerplate do projeto criado** — Vite 8 + React 19 + TypeScript 6, ESLint 9 (flat config) + Prettier configurados, todas as dependências de CONTEXT.md instaladas
 - **Schema validado por exemplo real** — `src/template/__examples__/catalogo-simples.example.ts` satisfaz `EditxTemplate` de ponta a ponta (2 páginas, 3 tipos de frame, herança de estilo via `basedOn`, `isDataPage`, `csvMapping` completo) — compila limpo, passa lint, `npm run build` funciona
 - **Motor de overflow de texto especificado** — 4 modos: `grow-vertical`, `grow-horizontal`, `fixed-shrink`, `fixed-clip` (tipos prontos em `frame.types.ts`; lógica de runtime ainda não implementada — é o `FrameText.ts`, mais à frente no backlog)
-- **Sistema de estilos de texto especificado e validado** — `TextStyle` é raiz (completo, `basedOn: null`) ou derivado (só as diferenças, `basedOn: "<pai>"`), DEC-014; o validador cobra as duas formas. `StyleRegistry.ts` (resolve a cadeia em runtime + observer) ainda não implementado — wo0003
+- **Herança de estilos de texto funcionando** — `TextStyle` é raiz (completo, `basedOn: null`) ou derivado (só as diferenças), DEC-014; o validador cobra as duas formas; `StyleRegistry.ts` resolve o estilo final (`resolveStyle`) e edita o mapa sem quebrar a herança (`setStyle`/`removeStyle`), funções puras — DEC-015. A propagação NA TELA vem com o `documentStore`
 - **Mapeamento CSV especificado e tipado** — colunas tipadas, formatadores (currency, date, uppercase), filtro de linhas, padrão de nomenclatura de saída (`outputNaming`)
 - **Decisões técnicas registradas** — ADRs DEC-NNN e FIX-NNN no DECISIONS.md (conte lá; o número não se repete aqui)
 - **Sistema de documentação operacional** — CONTEXT/STATUS/CHANGELOG/DECISIONS/IDEAS/ROADMAP/GLOSSARY/HISTORY, alinhado ao KCM v1.135.0
@@ -34,7 +33,7 @@ continua o próximo (wo0003). A nota anterior (wo0001) saiu — o que ela regist
 
 ## 🔧 Em Progresso
 
-*Nada em progresso — próximo item do backlog é `StyleRegistry.ts`.*
+*Nada em progresso — próximo item do backlog é `CanvasEngine.ts`.*
 
 ---
 
@@ -59,8 +58,8 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 - [x] Boilerplate: Vite + React + TypeScript + ESLint + Prettier
 - [x] `TemplateSchema.ts` — tipos completos do `.editx`
 - [x] `TemplateSerializer.ts` — serialização/deserialização + validação de schema (+ `TemplateValidator.ts`, Vitest — wo0001)
-- [ ] `StyleRegistry.ts` — estilos globais com herança e observer ← **próximo**
-- [ ] `CanvasEngine.ts` — wrapper Fabric.js com eventos e ciclo de vida
+- [x] `StyleRegistry.ts` — estilos globais com herança (funções puras sobre o mapa do documento — wo0003, DEC-015)
+- [ ] `CanvasEngine.ts` — wrapper Fabric.js com eventos e ciclo de vida ← **próximo**
 - [ ] `FrameText.ts` — frame de texto com overflow básico (grow-vertical e fixed-clip primeiro)
 - [ ] `FrameImage.ts` — frame de imagem com fit modes
 - [ ] `FrameShape.ts` — retângulo, elipse, linha básicos
@@ -76,7 +75,7 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 
 ## 🧪 Testes
 
-- **Suíte:** Vitest (`npm test`, `vitest run`) desde a wo0001 — cobre `TemplateSerializer.ts` e `TemplateValidator.ts`; contagem de testes no relatório da wo0001; cobertura em % não medida (sem `@vitest/coverage-*`)
+- **Suíte:** Vitest (`npm test`, `vitest run`) desde a wo0001 — cobre `TemplateSerializer.ts`, `TemplateValidator.ts` e `StyleRegistry.ts`; a contagem sai do `npm test` e do relatório da última WO (não se repete aqui); cobertura em % não medida (sem `@vitest/coverage-*`)
 - **Validação atual do schema:** compilação limpa (`tsc --noEmit`) do exemplo em `__examples__/` — prova que o schema é ergonômico, mas não substitui testes automatizados quando houver lógica
 - **Estratégia:** Vitest para lógica de negócio — serialização e validação (feito), herança de estilos, overflow engine e CSV parser (a fazer); sem testes de UI no MVP
 - **Módulos críticos que PRECISAM de testes:**
@@ -88,12 +87,11 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 
 ## 💬 Última conversa
 
-**2026-11-11** — wo0001 (serializer + validador + Vitest) e wo0002 (herança de estilos, DEC-014:
-`TextStyle` raiz × derivado no tipo, no validador e no exemplo; motor do validador extraído para
-`ValidationRules.ts`; scaffold formatado pelo Prettier). Relatórios em `../notas-arquivadas/` e
-na pasta-pai; detalhe em `logs/2026-11-11.md`.
-**Onde parou:** próximo item é `StyleRegistry.ts` (wo0003).
+**2026-11-11** — wo0001 (serializer + validador + Vitest), wo0002 (herança de estilos no formato,
+DEC-014) e wo0003 (`StyleRegistry.ts` como funções puras, DEC-015; `satisfies` no validador).
+Relatórios em `../notas-arquivadas/` e na pasta-pai; detalhe em `logs/2026-11-11.md`.
+**Onde parou:** próximo item é `CanvasEngine.ts`.
 
 ---
 
-*Próximo passo: `StyleRegistry.ts` (resolução de `basedOn` em runtime + observer) — WO a escrever pelo chat.*
+*Próximo passo: `CanvasEngine.ts` (wrapper Fabric.js com eventos e ciclo de vida) — WO a escrever pelo chat.*

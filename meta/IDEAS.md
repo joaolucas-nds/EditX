@@ -50,8 +50,8 @@ Overflow Funciona".
 ### 2026-05 — Sistema de estilos de texto globais
 Referência ao Affinity Publisher e ao Word: alterar um estilo atualiza todos os frames
 vinculados automaticamente. **Impacto:** alto — essencial para manter identidade visual
-consistente em lote. **Onde vive:** `StyleRegistry.ts`, observer pattern, herança via
-`basedOn`.
+consistente em lote. **Onde vive:** `StyleRegistry.ts` (funções puras sobre o mapa do documento,
+DEC-015) + herança via `basedOn` (DEC-014); a propagação na tela vem com o `documentStore`.
 
 ### 2026-05 — Suporte a formas, objetos, bordas, ornamentos, paletas de marca
 **Onde vive:** `FrameShape.ts` + `palette.brand` no `.editx`.

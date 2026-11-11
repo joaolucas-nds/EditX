@@ -32,7 +32,7 @@ CSV pequeno, mapear colunas e gerar N arquivos PNG sem travar a UI.
 - [x] Boilerplate: Vite + React + TypeScript + ESLint + Prettier
 - [x] `TemplateSchema.ts` — tipos completos do `.editx`
 - [x] `TemplateSerializer.ts` — serialização/deserialização + validação
-- [ ] `StyleRegistry.ts` — estilos globais com herança e observer
+- [x] `StyleRegistry.ts` — estilos globais com herança (funções puras, DEC-015)
 - [ ] `CanvasEngine.ts` — wrapper Fabric.js
 - [ ] `FrameText.ts` — overflow básico (grow-vertical, fixed-clip)
 - [ ] `FrameImage.ts` — fit modes

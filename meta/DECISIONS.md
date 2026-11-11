@@ -482,6 +482,39 @@ herança não tinha efeito. Raciocínio completo, com as quatro opções:
 
 ---
 
+## DEC-015 — `StyleRegistry.ts` é um conjunto de funções puras, não um registro com estado
+
+**Data:** 2026-11-11
+**Status:** aceita
+**Autor:** Claude (chat), ao escrever a wo0003 — o dono pode vetar antes da aplicação
+
+### Contexto
+Os docs de maio (CONTEXT, IDEAS, GLOSSARY, JSDoc de `TextStyle`) descreviam o `StyleRegistry.ts` como
+«registro com observer pattern», citando a DEC-006 — que não fala de estilos. A DEC-004 (aceita) põe
+**todo** o estado global no Zustand + Immer, com undo/redo por patches. O requisito do dono é de
+comportamento: alterar um estilo atualiza os frames vinculados (IDEAS, 2026-05).
+
+### Decisão
+- `StyleRegistry.ts` exporta funções puras sobre o mapa `textStyles` do documento: `resolveStyle`
+  (estilo final, cache `WeakMap` por mapa), `dependentsOf`, `setStyle` e `removeStyle` (devolvem mapa
+  novo e recusam o que quebraria a herança).
+- O mapa vive no `documentStore` (quando existir). A propagação vem de o estilo final ser sempre
+  resolvido do mapa ATUAL; o «observer» é a assinatura do próprio store.
+
+### Alternativas consideradas
+- **Classe com estado próprio + `subscribe`** — duplica os estilos do documento (duas fontes da mesma
+  verdade) e tira a edição de estilo do histórico do Immer: o undo pararia de desfazer estilo.
+- **Resolver sem cache** — correto, mas recalcula a cadeia a cada leitura do canvas; com Immer o cache
+  por identidade do mapa é de graça.
+
+### Consequências
+- **Positivas:** uma fonte da verdade (o documento); undo/redo cobre estilo sem código extra; testável sem DOM.
+- **Negativas:** o cache supõe que o mapa nunca é mutado no lugar — mutação direta serve estilo velho.
+- **Riscos:** alguém mutar `textStyles` fora do Immer. Sinal: estilo que não muda na tela após edição;
+  conferência: todo `textStyles[` com `=` fora de `produce`/`setStyle` é suspeito.
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown

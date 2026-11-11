@@ -45,8 +45,11 @@ populado a partir do que já se usava em CONTEXT, DECISIONS e no schema.
 
 - **`FrameText.ts`** — motor de overflow de texto 100% customizado (nenhuma lib de canvas
   cobre os 4 modos necessários). Ver DEC-006.
-- **`StyleRegistry.ts`** — registro de estilos de texto globais com observer pattern:
-  alterar um estilo propaga automaticamente para todos os frames vinculados via `basedOn`.
+- **`StyleRegistry.ts`** — funções PURAS sobre o mapa `textStyles` do documento (DEC-015):
+  `resolveStyle` dá o estilo final de um nome subindo a cadeia de `basedOn`; `setStyle`/`removeStyle`
+  devolvem um mapa novo sem quebrar a herança. Não guarda estado: o mapa vive no `documentStore`
+  (Zustand + Immer), e «alterar o pai muda os filhos» acontece porque o estilo final é sempre
+  resolvido do mapa atual.
 - **`BatchGenerator.ts`** — motor de geração em massa (CSV → N arquivos), roda
   exclusivamente em Web Worker para não travar a UI. Ver DEC-007.
 - **`TemplateSchema.ts`** — fonte única de tipos TypeScript do `.editx`. Todos os outros

@@ -22,7 +22,13 @@ import type {
   FilterOperator,
   PageOrientation,
 } from './TemplateSchema';
-import type { TextAlign, TextCase, TextDecoration, VerticalAlign } from '../types/frame.types';
+import type {
+  TextAlign,
+  TextCase,
+  TextDecoration,
+  TextStyleProps,
+  VerticalAlign,
+} from '../types/frame.types';
 import {
   anyNumber,
   array,
@@ -79,8 +85,11 @@ export type ValidationResult =
 
 // --------------------------------------------------------- estilos de texto
 
-/** As 10 propriedades visuais (`TextStyleProps`) e a regra de valor de cada uma — fonte única para raiz e derivado. */
-const textStyleProps: Record<string, Check> = {
+/**
+ * As 10 propriedades visuais (`TextStyleProps`) e a regra de valor de cada uma — fonte única para raiz e derivado.
+ * O `satisfies` faz o build FALHAR se `TextStyleProps` ganhar (ou perder) uma propriedade sem a regra aqui (DEC-013).
+ */
+const textStyleProps = {
   fontFamily: string,
   fontWeight,
   fontSize: positive,
@@ -91,7 +100,7 @@ const textStyleProps: Record<string, Check> = {
   verticalAlign: oneOf<VerticalAlign>(['top', 'middle', 'bottom']),
   transform: oneOf<TextCase>(['none', 'uppercase', 'lowercase', 'capitalize']),
   decoration: oneOf<TextDecoration>(['none', 'underline', 'strikethrough']),
-};
+} satisfies Record<keyof TextStyleProps, Check>;
 
 /** Estilo RAIZ (`basedOn: null`): as 10 propriedades são obrigatórias. */
 const rootStyleSpec: Spec = { ...textStyleProps, basedOn: validated };

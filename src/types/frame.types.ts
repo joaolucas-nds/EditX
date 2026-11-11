@@ -147,9 +147,9 @@ export interface TextStyleProps {
  * Nunca leia uma propriedade de um estilo derivado diretamente: resolva antes
  * pelo `StyleRegistry.ts`. O `Partial` existe para o compilador cobrar isso.
  *
- * Alterar um estilo propaga automaticamente para todos os frames vinculados
- * — implementado por observer pattern em `StyleRegistry.ts` (ver DEC-006,
- * seção de estilos globais em CONTEXT.md § Modos de Overflow).
+ * Alterar um estilo propaga automaticamente para os estilos derivados dele e
+ * para os frames que os usam: o estilo final é sempre resolvido do mapa ATUAL
+ * por `resolveStyle` (`StyleRegistry.ts`), sem cópia a manter em dia — DEC-015.
  */
 export type TextStyle =
   ({ basedOn: null } & TextStyleProps) | ({ basedOn: string } & Partial<TextStyleProps>);
