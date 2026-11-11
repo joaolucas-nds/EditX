@@ -1,14 +1,12 @@
 # HISTORY.md — Conhecimento Consolidado
 
 > **Opcional.** Arquivo-baú para conhecimento denso que já foi aprendido e não muda mais — guias técnicos, análises de viabilidade, notas de migração — que tornariam o CONTEXT pesado demais.
-> Não é lido no início da sessão; o assistente consulta sob demanda quando o assunto aparece.
+> Não é lido na abertura da conversa; o assistente consulta sob demanda quando o assunto aparece.
 
-**Mudanças nesta revisão (2026-07-11):** arquivo renomeado de `HISTORICO.md` para
-`HISTORY.md`, por consistência com os demais arquivos do projeto (CONTEXT, STATUS,
-DECISIONS, CHANGELOG, IDEAS, GLOSSARY, ROADMAP — todos em inglês). Conteúdo idêntico ao
-anterior (ainda vazio — nenhum conhecimento consolidado registrado até o momento).
-**Ação necessária:** delete `meta/HISTORICO.md` do projeto ao aplicar este arquivo, para
-não ficar com os dois.
+**Mudanças nesta revisão (2026-11-10):** acrescentadas as categorias 4 e 5 do template do
+KCM v1.135.0 (ainda vazias, como as demais). Saiu a nota de 2026-07-11, cuja «ação necessária»
+(apagar `meta/HISTORICO.md`) já estava cumprida — o arquivo não existe no repositório; o
+registro dessa renomeação está em DEC-010.
 
 ---
 
@@ -20,3 +18,9 @@ não ficar com os dois.
 
 ## 3. [Procedimento herdado]
 [Passo a passo que raramente muda.]
+
+## 4. [Pesquisa de convenções]
+[O que foi investigado antes de adotar um padrão externo (nome, formato, biblioteca) e o que se decidiu a partir dela. Registra o que JÁ foi pesquisado — é o que impede alguém pesquisar de novo em seis meses.]
+
+## 5. [Autópsia de um problema resolvido]
+[Sintoma → causa raiz → correção → como evitar de novo. Vale sobretudo quando o sintoma apareceu longe da causa.]

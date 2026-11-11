@@ -1,3 +1,5 @@
+# .gitignore — EditX. NAO ignore .claude/, meta/ nem logs/ (versionados de proposito).
+
 # Logs
 # NAO ignorar a pasta logs/ inteira: os logs de sessao (logs/AAAA-MM-DD.md)
 # sao versionados de proposito neste projeto (ver LOG-TEMPLATE.md). So
@@ -26,3 +28,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+Thumbs.db

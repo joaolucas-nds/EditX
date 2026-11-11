@@ -4,15 +4,10 @@
 > Funciona como "segundo cérebro" do projeto.
 > Nunca perde: ideia implementada vai para «Concluídas»; ideia recusada vai para «Descartadas» com o motivo.
 
-**Mudanças nesta revisão (2026-07-11):** reestruturado em seções físicas Ativas /
-Concluídas / Descartadas (antes era só "Suas Ideias" + "Sugestões do Claude" com um
-campo `Status` solto no texto — funcionava, mas não seguia a regra de higiene do próprio
-CEREBRO.md de migrar a ideia de seção). Como nenhuma ideia virou código ainda (projeto
-pré-boilerplate), tudo que estava `aprovada`/`aceita` permanece em **Ativas** — decidido,
-mas não implementado — até a primeira entrega de código real. A tabela "Decisões
-Registradas Aqui" foi removida por duplicar DECISIONS.md; no lugar, uma referência
-cruzada. Nenhum conteúdo foi perdido — ver DECISIONS.md para o raciocínio completo de
-cada decisão. Adicionada a seção "Feedback para o Kit".
+**Mudanças nesta revisão (2026-11-10):** nova seção «🛌 Adiadas» (template do KCM v1.135.0),
+vazia por enquanto; feedback do merge v1.135.0 em «Feedback para o Kit»; corrigida a frase de
+«Concluídas» que ainda dizia «pré-boilerplate». Nenhuma ideia mudou de status. A nota de
+2026-07-11 saiu; a reestruturação que ela descrevia está em DEC-010.
 
 ---
 
@@ -110,9 +105,18 @@ quebra ou fica vazio. **Prioridade:** alta — já está no schema (`FrameImage.
 
 ---
 
+## 🛌 Adiadas
+
+> Decisão consciente de não fazer agora. Cada item com **o gatilho que a traz de volta** («quando o
+> terceiro caso aparecer», «se o build passar de X»): ideia adiada sem gatilho é ideia perdida.
+
+*Nenhuma ainda.*
+
+---
+
 ## ✅ Concluídas
 
-*Nenhuma ainda — o projeto está pré-boilerplate (ver STATUS.md). Uma ideia só migra para
+*Nenhuma ainda — o boilerplate e o schema existem, mas nenhuma funcionalidade de runtime. Uma ideia só migra para
 cá quando o código correspondente estiver de fato funcionando, não quando apenas
 especificado no schema ou decidido em DECISIONS.md.*
 
@@ -168,6 +172,20 @@ higiene do kit, não causados pelo template em si, só expostos por ele ao compa
 estrutura. Também renomeamos `HISTORICO.md` para `HISTORY.md` para consistência de nomes
 em inglês com os demais arquivos (CONTEXT/STATUS/DECISIONS/CHANGELOG/IDEAS/GLOSSARY/ROADMAP).
 Ver DEC-010 para o registro completo da decisão.
+
+### 2026-11-10 — Merge do template-update v1.135.0 (modo Code)
+- **Nota da tabela de gatilhos contradiz o nicho:** o CEREBRO do kit diz que CHANGELOG/ROADMAP são
+  «de outros nichos» e não se criam, mas o manifesto do nicho Desenvolvimento envia os dois. Mantida
+  aqui a nota viva que os declara ativos (DEC-012).
+- **`IDEAS` do template traz «📮 Feedback para o ASU» mesmo com ASU = `nao`** — seção de modo
+  desligado viaja no template. Não adotada aqui.
+- **`settings.json` do kit sem `Bash(date:*)`:** as três skills mandam rodar `date +%y%m%d-%H%M`
+  para nomear o relatório; sem a permissão, cada relatório pede aprovação. Acrescentada aqui.
+- **A contradição do v1.122.0 (CEREBRO «não remova sozinho» × manifesto «remova») está resolvida
+  no v1.135.0** — os dois agora dizem «sobra sai, dita no relatório».
+- **O kit cobra `GIT_OPTIONAL_LOCKS=0` no chat, mas o prompt de merge manda rodar `git status`
+  ANTES de o CEREBRO novo ser lido** — quem está atrás de versão roda o comando sem a variável.
+  Valeria pôr a variável no próprio prompt do merge.
 
 ---
 

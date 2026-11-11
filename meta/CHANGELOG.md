@@ -8,9 +8,9 @@
 > - MINOR: nova funcionalidade (novo tipo de frame, novo modo de exportação, etc.)
 > - PATCH: correção de bug sem quebrar compatibilidade
 
-**Mudanças nesta revisão (2026-07-24):** primeira sessão de código real — 2 itens do
-"Planejado para v0.1.0" migraram para "Adicionado" (boilerplate + TemplateSchema.ts).
-Nenhuma versão foi lançada ainda (v0.1.0 continua não-lançada até o MVP completo).
+**Mudanças nesta revisão (2026-11-10):** nova seção «Modificado» em [Unreleased] com o merge do
+KCM v1.135.0 (modo Code). Nenhuma versão lançada. A nota de 2026-07-24 saiu (o que ela dizia
+está nas entradas «Adicionado» abaixo).
 
 ---
 
@@ -19,6 +19,12 @@ Nenhuma versão foi lançada ainda (v0.1.0 continua não-lançada até o MVP com
 ### Adicionado
 - Boilerplate do projeto: Vite 8 + React 19 + TypeScript 6, ESLint 9 (flat config) + Prettier
 - `TemplateSchema.ts` + `frame.types.ts` + `template.types.ts` — schema completo do `.editx` tipado (documento, páginas, 3 tipos de frame, textStyles com herança, csvMapping), com exemplo de validação em `__examples__/`
+
+### Modificado
+- Documentação e ferramentas alinhadas ao KCM v1.135.0 com modo Code: `CLAUDE.md`, `.claude/`
+  (settings + skills `apply-wo`/`wrap`/`sondar`), `meta/workorders/_TEMPLATE.md`, `meta/SPEC.md`;
+  CEREBRO fundido (seção ASU removida), INSTRUCOES reescritas (7.355 → 5.588 caracteres), cadência
+  por turno/evento no lugar de «por sessão». Ver DEC-012.
 
 ### Notas
 - Sistema de documentação atualizado via template-update do KCM: backlog de fases

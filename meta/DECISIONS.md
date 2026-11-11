@@ -2,13 +2,14 @@
 
 > ADR — Architecture Decision Records (simplificado)
 > Registra TODAS as decisões importantes com contexto e motivo.
-> Evita reabrir discussões já resolvidas e dá contexto ao Claude em novas sessões.
+> Evita reabrir discussões já resolvidas e dá contexto ao Claude em novas conversas.
 > Duas naturezas: **DEC** (arquitetura/design) e **FIX** (bugs graves resolvidos, para não repetir).
-> Quando passar de ~700 linhas, mova as mais antigas para `DECISIONS-archive.md`.
+> Arquiva por EVENTO, não por tamanho: entrada resolvida ou substituída vai para `DECISIONS-archive.md`; ~700 linhas é só alarme. Toda entrada traz `**Status:**` com valor fechado.
 
-**Mudanças nesta revisão (2026-07-11):** adicionado o template de **FIX-N** (faltava —
-só existia o de DEC, mas o CEREBRO.md já previa registrar bugs graves aqui). Adicionado
-DEC-010, registrando a própria integração do template-update do KCM nesta sessão.
+**Mudanças nesta revisão (2026-11-10):** adicionada a DEC-012 (merge do KCM v1.135.0 com modo
+Code). Critério de arquivamento passou de tamanho para evento, e o `Status` dos modelos DEC/FIX
+passou ao conjunto fechado do kit (aceita · substituída por X · resolvida · aberta). A nota de
+2026-07-11 saiu; o que ela registrava (modelo de FIX, DEC-010) continua no corpo do arquivo.
 
 ---
 
@@ -360,13 +361,63 @@ adicionar `@eslint/js` depois de já ter "confirmado" a v10 funcionando.
 
 ---
 
+## DEC-012 — Merge do template-update do KCM v1.135.0 e adoção do modo Code
+
+**Data:** 2026-11-10
+**Status:** aceita
+**Autor:** ambos (o dono aprovou as recomendações do relatório de merge)
+
+### Contexto
+O projeto estava no KCM v2 (2026-07-11). Um pacote v1.122.0 (2026-09-03) foi relatado e nunca
+aplicado. O v1.135.0 veio com **Code sim · ASU não**. O CEREBRO vivo tinha a seção de ASU (marcador
+do modo) e cadência «por sessão», que o kit revogou; `CLAUDE.md` e `.claude/` não existiam.
+
+### Decisão
+- **Modo Code adotado:** `CLAUDE.md` (build `npm run build`, validação `npm run lint`, slug `editx`),
+  `.claude/settings.json` (o do kit + `npm run build`, `npm run lint` e `date` no `allow` — as skills
+  pedem `date` para nomear o relatório), skills `apply-wo`/`wrap`/`sondar`, `meta/workorders/_TEMPLATE.md`
+  e `meta/SPEC.md`. `meta/analises/_TEMPLATE.md` NÃO entrou (modelo-em-espera: a pasta nasce no 1º uso).
+- **ASU removido como sobra:** marcador presente + modo `nao` no pacote; pré-requisitos do ASU
+  (`INSTRUCTION_GUIDE.md`, `PROMPT_IA.md`) nunca existiram aqui. A aplicação cirúrgica passa a ser por WO.
+- **CEREBRO:** texto do kit adotado por inteiro + nota de revisão; carimbo `v1.135.0`.
+- **INSTRUCOES reescritas pelo esqueleto do kit:** 7.355 → **5.588** caracteres (`LC_ALL=C.UTF-8 wc -m`;
+  teto com modo Code ~7.450). Saíram ASU, Feedback ASU, «Nome de download» e o ritual de sessão;
+  entraram ritual de turno, canal da pasta vinculada, análise, WO e fecho de turno. **A cópia do painel
+  do Projeto precisa ser colada à mão** — o arquivo do repo é a fonte.
+- **45 ocorrências de «sessão» que mandam** trocadas por turno/conversa/dia nos meta/ e nas INSTRUCOES;
+  as 20 que relatam fato ficaram (lista no relatório de merge e no log de 2026-11-10).
+- **«📁 Arquivos Críticos» movido do STATUS para o CONTEXT** (conhecimento estável, regra do template).
+- **`.flatdropignore`** passou à forma do kit (`logs/*`, `meta/workorders/*`, `!meta/workorders/_TEMPLATE.md`,
+  dentro do bloco do editor); **`.gitignore`** ganhou o aviso «não ignore `.claude/`, `meta/`, `logs/`» e `Thumbs.db`.
+
+### Desvio registrado
+- **Mantida a nota viva da tabela de gatilhos** que declara CHANGELOG.md e ROADMAP.md ativos neste projeto.
+  O texto do kit os chama de arquivos «de outros nichos» que não se criam — contradiz o próprio
+  manifesto do nicho Desenvolvimento, que envia os dois. Registrado em IDEAS «Feedback para o Kit».
+
+### Alternativas consideradas
+- **Manter o ASU** — rejeitada: modo desligado em dois pacotes seguidos, ferramenta nunca instalada aqui,
+  e a WO cobre o mesmo papel com o executor no repositório.
+- **Remendar as INSTRUCOES vivas** em vez de reescrever — rejeitada: o arquivo já estava acima do teto
+  padrão (7.355 > ~6.900) e a maior parte do texto era a regra revogada.
+- **Renomear arquivos antigos para o vocabulário novo** — rejeitada: vocabulário novo não renomeia
+  arquivo antigo (forja histórico e deixa ponteiros órfãos).
+
+### Consequências
+- **Positivas:** o chat grava direto na pasta; o Code aplica WOs e commita no verde; releitura por turno.
+- **Negativas:** duas cópias das INSTRUCOES (repo e painel) a manter em sincronia.
+- **Riscos:** o primeiro uso real de `/apply-wo` e `/wrap` ainda não aconteceu — conferir as permissões
+  do `settings.json` nessa primeira tarefa (comando que pedir aprovação = falta no `allow`).
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown
 ## DEC-[número] — [Título curto]
 
 **Data:** YYYY-MM-DD
-**Status:** proposta | aceita | rejeitada | substituída por DEC-[N]
+**Status:** aceita | substituída por DEC-[N] | resolvida | aberta
 **Autor:** você | Claude | ambos
 
 ### Contexto
@@ -395,6 +446,7 @@ adicionar `@eslint/js` depois de já ter "confirmado" a v10 funcionando.
 ## FIX-[número] — [Título do bug grave]
 
 **Data:** YYYY-MM-DD
+**Status:** resolvida | aberta
 
 - **Sintoma:** [o que se observava.]
 - **Causa raiz:** [o que realmente estava errado — não o sintoma.]

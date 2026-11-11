@@ -1,16 +1,15 @@
 # CONTEXT.md — EditX — Editor Editorial em Massa
 
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
-> Mantenha-o atualizado a cada sessão de desenvolvimento.
+> Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-07-24):** primeira sessão de código real — boilerplate
-criado, dependências instaladas, `TemplateSchema.ts`/`frame.types.ts`/`template.types.ts`
-implementados e validados (compilação + lint + build de produção, todos limpos). A seção
-"Stack Tecnológica" foi atualizada para as versões REAIS que o npm serviu hoje (React 19,
-Vite 8, TypeScript 6 — bem mais novas que as documentadas em maio), e ESLint+Prettier
-substituíram o `oxlint` que o `create-vite` agora traz por padrão — ver DEC-011 (inclui o
-relato de uma tentativa de upgrade do ESLint para v10 que foi revertida por
-incompatibilidade real de peer dependency). Cinco armadilhas novas registradas.
+**Mudanças nesta revisão (2026-11-10):** merge do KCM v1.135.0 com modo Code (DEC-012).
+(1) A seção «📁 Arquivos Críticos» veio do STATUS.md, sem alteração de conteúdo — o template
+novo a trata como conhecimento estável. (2) A árvore de «Estrutura do Projeto» mostrava os docs
+na raiz e a raiz como `editor-editorial/`; corrigida para o repositório real (`EditX/`, docs em
+`meta/`) e acrescida de `CLAUDE.md`, `.claude/` e `meta/workorders/`. (3) Armadilha do
+`npm audit` atualizada com o número da máquina do dono. A nota de 2026-07-24 saiu; o conteúdo
+dela está em DEC-011 e em `logs/2026-07-24.md`.
 
 ---
 
@@ -69,7 +68,7 @@ e metadados de exportação.
 ## Estrutura do Projeto
 
 ```
-editor-editorial/
+EditX/
 ├── src/
 │   ├── canvas/
 │   │   ├── CanvasEngine.ts        # Wrapper do Fabric.js + gerenciamento de eventos
@@ -121,16 +120,23 @@ editor-editorial/
 │   └── assets/
 │       └── placeholder.png        # Imagem de fallback para frames sem imagem
 │
-├── logs/                          # Logs de sessão (gerados pelo Claude)
-├── CONTEXT.md                     # Este arquivo
-├── STATUS.md                      # Estado atual do projeto
-├── CHANGELOG.md                   # Histórico de versões
-├── IDEAS.md                       # Ideias capturadas e sugestões
-├── DECISIONS.md                   # Decisões arquiteturais registradas
-├── ROADMAP.md                     # Plano de fases de médio/longo prazo
-├── GLOSSARY.md                    # Termos próprios do projeto
-├── HISTORY.md                     # Conhecimento consolidado de fases antigas
-├── LOG-TEMPLATE.md                # Template de formato para logs de sessão
+├── logs/                          # Log do dia (logs/AAAA-MM-DD.md), versionado
+├── meta/                          # Documentação de contexto (KCM)
+│   ├── CEREBRO.md                 # Comportamento do assistente
+│   ├── CONTEXT.md                 # Este arquivo
+│   ├── STATUS.md                  # Estado atual do projeto
+│   ├── CHANGELOG.md               # Histórico de versões
+│   ├── IDEAS.md                   # Ideias capturadas e sugestões
+│   ├── DECISIONS.md               # Decisões arquiteturais registradas
+│   ├── ROADMAP.md                 # Plano de fases de médio/longo prazo
+│   ├── GLOSSARY.md                # Termos próprios do projeto
+│   ├── HISTORY.md                 # Conhecimento consolidado de fases antigas
+│   ├── LOG-TEMPLATE.md            # Formato do log do dia
+│   ├── SPEC.md                    # Modelo de spec de feature (sob demanda)
+│   └── workorders/                # WOs (AAMMDD-woNNNN-desc.md) + _TEMPLATE.md
+├── .claude/                       # Claude Code: settings.json + skills/ (apply-wo, wrap, sondar)
+├── CLAUDE.md                      # Guia raiz do Claude Code
+├── INSTRUCOES-DO-PROJETO.md       # Fonte das Instruções do painel do Projeto
 ├── package.json
 ├── vite.config.ts
 └── tsconfig.json
@@ -288,10 +294,21 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - **`ctx.measureText()` não retorna altura real da linha.** Só retorna `width`. Para altura, usar `opentype.js` (ascender + descender da fonte real) — não depender de `actualBoundingBoxAscent` isoladamente (ver DEC-006).
 - **`OffscreenCanvas` tem suporte limitado no Safari.** Verificar compatibilidade antes de finalizar o `BatchGenerator.ts`; pode exigir fallback para thread principal em Safari antigo (ver DEC-007).
 - **Não confiar cegamente na tabela de versões deste documento.** Ela reflete o estado em que foi escrita; o npm segue evoluindo (React 19/Vite 8/TS 6 já divergem do que foi documentado em maio — ver DEC-011). Antes de instalar ou depender de uma versão específica, rode `npm list` / confira o `package.json` real em vez de copiar o número daqui.
-- **`npm audit` vai sempre mostrar ~11 vulnerabilidades (10 altas, 1 crítica) mesmo num projeto saudável.** A maior cadeia é `fabric` → `canvas`/`jsdom` (optionalDependencies, só para renderização server-side em Node) → `@mapbox/node-pre-gyp` → `tar` vulnerável. Nosso app é 100% client-side e nunca executa esse caminho — ver DEC-011. Não tentar "corrigir" com `npm audit fix --force` (forçaria fabric v7, breaking change não avaliado).
+- **`npm audit` vai sempre mostrar vulnerabilidades mesmo num projeto saudável** (11 no sandbox de 2026-07-24; 6 — 5 altas, 1 crítica — no `npm install` da máquina do dono em 2026-09-03 [relatado pelo dono]). A maior cadeia é `fabric` → `canvas`/`jsdom` (optionalDependencies, só para renderização server-side em Node) → `@mapbox/node-pre-gyp` → `tar` vulnerável. Nosso app é 100% client-side e nunca executa esse caminho — ver DEC-011. Não tentar "corrigir" com `npm audit fix --force` (forçaria fabric v7, breaking change não avaliado).
 - **`eslint@^10.0.0` resolveria a vulnerabilidade do `minimatch`, mas quebra a instalação.** `eslint-plugin-react-hooks@5.2.0` trava o peer dependency em `eslint <= ^9.0.0` — confirmado por tentativa real, não suposição. Manter ESLint em `^9.0.0` até esse plugin liberar suporte à v10 (ver DEC-011).
 - **`npx eslint --version` mostrando a versão nova NÃO prova que o upgrade é seguro.** Só confirma o binário instalado naquele momento — o teste real é instalar mais alguma coisa (ou reinstalar do zero) e ver se os peer dependencies resolvem sem conflito. Isso pegou a gente de surpresa uma vez (ver DEC-011).
-- **O `.gitignore` que o `create-vite` gera por padrão ignora a pasta `logs/` inteira.** Neste projeto `logs/` é versionada de propósito (logs de sessão). Se o boilerplate for regenerado do zero, lembrar de remover essa linha — ver DEC-011.
+- **O `.gitignore` que o `create-vite` gera por padrão ignora a pasta `logs/` inteira.** Neste projeto `logs/` é versionada de propósito (log do dia). Se o boilerplate for regenerado do zero, lembrar de remover essa linha — ver DEC-011.
+
+---
+
+## 📁 Arquivos Críticos (não mexer sem contexto)
+
+| Arquivo | Por que é crítico |
+|---|---|
+| `src/types/template.types.ts` | Fachada de re-export — o contrato que todo o resto do app importa. Mudança de tipo quebra serialização de arquivos existentes |
+| `src/template/TemplateSchema.ts` + `src/types/frame.types.ts` | Fonte real dos tipos (DEC-009). `template.types.ts` só reexporta daqui |
+| `src/template/TemplateSerializer.ts` | Ainda não existe. Quando existir: qualquer bug corromperia arquivos `.editx` de usuários. Requer testes antes de qualquer mudança |
+| `src/canvas/FrameText.ts` | Ainda não existe. Quando existir: motor de overflow customizado, mudanças exigem re-teste visual |
 
 ---
 
@@ -309,4 +326,4 @@ O fluxo de uso principal é:
 
 ---
 
-*Última atualização: 2026-07-24 — Primeira sessão de código: boilerplate + TemplateSchema.ts completos e validados. Versões reais de dependências atualizadas, incluindo o relato de um upgrade de ESLint testado e revertido (ver DEC-011). Sessão anterior: 2026-07-11 (merge do template-update do KCM). Criação original: 2026-05-24.*
+*Última atualização: 2026-11-10 — merge do KCM v1.135.0 (modo Code): estrutura ganhou `CLAUDE.md`, `.claude/` e `meta/workorders/`; «Arquivos Críticos» veio do STATUS. Anterior: 2026-07-24 (primeiro código: boilerplate + TemplateSchema.ts, ver DEC-011). Criação original: 2026-05-24.*

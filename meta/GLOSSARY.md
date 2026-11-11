@@ -1,10 +1,11 @@
 # GLOSSARY.md — Termos do Projeto
 
-> Use quando o projeto tem vocabulário próprio que o assistente reexplicaria a cada sessão sem isto.
+> Use quando o projeto tem vocabulário próprio que o assistente reexplicaria a cada conversa sem isto.
 
-**Mudanças nesta revisão (2026-07-11):** arquivo estava vazio (placeholder nunca
-preenchido). Populado com os termos que o projeto já usa em CONTEXT.md, DECISIONS.md e no
-schema `.editx`, para não precisar reexplicar a cada sessão nova.
+**Mudanças nesta revisão (2026-11-10):** em «Comandos / artefatos», saíram ASU e `demo.yaml`
+(ASU removido em DEC-012; `demo.yaml` e `examples/demo_project/` nunca existiram neste repo) e
+entraram WO, as skills do Claude Code e spec de feature. Nota anterior (2026-07-11): arquivo
+populado a partir do que já se usava em CONTEXT, DECISIONS e no schema.
 
 ---
 
@@ -54,12 +55,13 @@ schema `.editx`, para não precisar reexplicar a cada sessão nova.
 
 ## Comandos / artefatos
 
-- **ASU (Atualizador Automático de Scripts)** — ferramenta usada neste projeto para
-  aplicar patches a arquivos de código existentes via instrução YAML, em vez de reenviar
-  o arquivo inteiro. Referência: `INSTRUCTION_GUIDE.md` e `PROMPT_IA.md`.
-- **`demo.yaml`** — instrução ASU de demonstração, executável de ponta a ponta contra
-  `examples/demo_project/`, cobrindo os quatro tipos de arquivo suportados (Python,
-  Markdown, JSON, texto genérico) + criação de arquivo novo.
+- **WO (ordem de trabalho)** — instrução de aplicação chat → Claude Code em `meta/workorders/`,
+  nome `AAMMDD-woNNNN-desc.md`, com âncora exata e texto exato de cada edição. Modelo em
+  `meta/workorders/_TEMPLATE.md`. Substitui o papel que o ASU tinha (DEC-012).
+- **`/apply-wo`, `/wrap`, `/sondar`** — skills do Claude Code em `.claude/skills/`: aplicar uma WO,
+  fechar a tarefa (STATUS/DECISIONS/log + commit), exploração sem hipótese prévia.
+- **Spec de feature** — `specs/AAMMDD-<nome>.md` a partir de `meta/SPEC.md`: o QUÊ construir; a WO é o COMO aplicar.
+- *ASU (Atualizador Automático de Scripts) — usado até 2026-11 para patch via YAML; removido em DEC-012.*
 
 ---
 
