@@ -48,7 +48,9 @@ ROADMAP ativos neste projeto (o texto do kit os chama de «outros nichos» — r
 
 Comece vazia e escreva quando doer duas vezes: técnica que você precisou explicar de novo é candidata. Formato livre — uma linha por item, com o nome do lugar onde ela vale. Se um item virar regra geral do projeto, promova-o para o corpo do CEREBRO e deixe aqui só o caso particular.
 
-- _(vazio — o primeiro item entra na primeira vez que uma técnica precisar ser repetida)_
+- **Claude Code nesta máquina (Git Bash do Windows): `python3` é o stub da Microsoft Store e TRAVA esperando** —
+  script de apoio do Code se escreve em `node`. No terminal do chat (VM Linux) `python3` funciona. Medido na
+  wo0001 (relatório `261111-0926-code-editx-apply-wo0001.txt`). Ao escrever WO, não peça `python3` ao Code.
 
 ## Princípios de trabalho
 

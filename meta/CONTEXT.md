@@ -3,12 +3,12 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-11):** preparação da wo0001 (`TemplateSerializer.ts` +
-Vitest, DEC-013): Vitest entra na stack; a árvore de `template/` ganha `TemplateValidator.ts` e o
-arquivo de teste; o parágrafo «Vitest ainda não foi instalado» virou a convenção de testes; a linha
-do `TemplateSerializer.ts` em «Arquivos Críticos» deixou de dizer «ainda não existe»; uma armadilha
-nova (validador estrito × campo novo no schema). A nota de 2026-11-10 saiu — o que ela registrava
-(árvore real do repo, Arquivos Críticos vindo do STATUS) está em DEC-012.
+**Mudanças nesta revisão (2026-11-11, depois da wo0001):** árvore de `template/` ganha o
+`FrameValidator.ts` que a wo0001 extraiu (motor de regras + regras de frame, 361 linhas — acima do
+~300; o motor sai dele numa próxima WO); «Objetivo atual» deixou de dizer que não há código de
+produção; armadilha nova do `npm run format`. A nota anterior (mesmo dia, antes da wo0001) saiu — o
+que ela registrava (Vitest, convenção de testes, armadilha do validador estrito) está em DEC-013 e
+continua no corpo deste arquivo.
 
 ---
 
@@ -24,9 +24,10 @@ gráficas), profissionais de marketing que produzem materiais editoriais em volu
 catálogos de produto, cartazes de oferta, cardápios, stories digitais, menus dobráveis
 (C-fold, Z-fold) e PDFs com índice.
 
-**Objetivo atual:** Fase de arquitetura e design técnico. Nenhum código de produção
-existe ainda. O objetivo imediato é finalizar o schema do arquivo `.editx`, implementar
-o boilerplate do projeto e construir o MVP do canvas com frames de texto e imagem.
+**Objetivo atual:** Fase 1 (MVP do editor). Existem o schema do `.editx`, o
+serializer/validador com testes e o boilerplate; o canvas ainda não. O objetivo imediato é
+resolver a herança de estilos (análise `meta/analises/261111-ANALISE-heranca-de-estilos.md`) e
+seguir para `StyleRegistry.ts` e o MVP do canvas com frames de texto e imagem.
 
 **Problema de mercado resolvido:** Nenhuma ferramenta combina edição visual acessível +
 geração em massa + tipos editoriais especializados (dobras, catálogos) em um único
@@ -81,7 +82,8 @@ EditX/
 │   │   ├── __examples__/          # Fixtures que validam o schema por compilação (não é produção)
 │   │   │   └── catalogo-simples.example.ts
 │   │   ├── TemplateSerializer.ts  # serializeTemplate / parseTemplate — salvar e carregar .editx (DEC-013)
-│   │   ├── TemplateValidator.ts   # validateTemplate — regras de runtime que os tipos não expressam
+│   │   ├── TemplateValidator.ts   # validateTemplate — contrato público, raiz e estilos de texto
+│   │   ├── FrameValidator.ts      # motor de regras do validador + regras de frame (wo0001)
 │   │   ├── TemplateSerializer.test.ts # Testes Vitest do serializer + validador
 │   │   ├── TemplateRenderer.ts    # Popula template com dados de uma linha CSV
 │   │   └── StyleRegistry.ts      # Estilos de texto globais com herança (observer pattern)
@@ -301,6 +303,9 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - **`eslint@^10.0.0` resolveria a vulnerabilidade do `minimatch`, mas quebra a instalação.** `eslint-plugin-react-hooks@5.2.0` trava o peer dependency em `eslint <= ^9.0.0` — confirmado por tentativa real, não suposição. Manter ESLint em `^9.0.0` até esse plugin liberar suporte à v10 (ver DEC-011).
 - **`npx eslint --version` mostrando a versão nova NÃO prova que o upgrade é seguro.** Só confirma o binário instalado naquele momento — o teste real é instalar mais alguma coisa (ou reinstalar do zero) e ver se os peer dependencies resolvem sem conflito. Isso pegou a gente de surpresa uma vez (ver DEC-011).
 - **O `.gitignore` que o `create-vite` gera por padrão ignora a pasta `logs/` inteira.** Neste projeto `logs/` é versionada de propósito (log do dia). Se o boilerplate for regenerado do zero, lembrar de remover essa linha — ver DEC-011.
+- **`npm run format` reescreve `src/App.tsx` e `src/main.tsx`** (scaffold do Vite, nunca formatado pelo
+  Prettier do projeto). Medido pelo Code na wo0001, que reverteu os dois duas vezes. Até uma WO formatá-los
+  de uma vez, rode o format e reverta esses dois no `git diff` — ou formate só os arquivos da sua tarefa.
 - **Campo novo em `TemplateSchema.ts`/`frame.types.ts` exige o `TemplateValidator.ts` junto.** O
   validador é escrito à mão e ESTRITO (DEC-013): chave que ele não conhece vira erro `unknown-field`, então
   um `.editx` com o campo novo seria REJEITADO até o validador aprender. Mesma regra para valor novo numa
