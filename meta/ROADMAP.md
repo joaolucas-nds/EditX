@@ -29,9 +29,9 @@ imagem, importação de CSV, mapeamento básico, geração de PNG em lote.
 **Critério de conclusão:** um usuário consegue criar um template simples, importar um
 CSV pequeno, mapear colunas e gerar N arquivos PNG sem travar a UI.
 **Estimativa:** 3–4 meses (solo).
-- [ ] Boilerplate: Vite + React + TypeScript + ESLint + Prettier
-- [ ] `TemplateSchema.ts` — tipos completos do `.editx`
-- [ ] `TemplateSerializer.ts` — serialização/deserialização + validação
+- [x] Boilerplate: Vite + React + TypeScript + ESLint + Prettier
+- [x] `TemplateSchema.ts` — tipos completos do `.editx`
+- [x] `TemplateSerializer.ts` — serialização/deserialização + validação
 - [ ] `StyleRegistry.ts` — estilos globais com herança e observer
 - [ ] `CanvasEngine.ts` — wrapper Fabric.js
 - [ ] `FrameText.ts` — overflow básico (grow-vertical, fixed-clip)

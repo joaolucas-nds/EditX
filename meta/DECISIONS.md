@@ -411,6 +411,42 @@ do modo) e cadência «por sessão», que o kit revogou; `CLAUDE.md` e `.claude/
 
 ---
 
+## DEC-013 — Validação do `.editx` escrita à mão, estrita, com Vitest sem configuração
+
+**Data:** 2026-11-11
+**Status:** aceita
+**Autor:** Claude (chat), dentro do pedido do dono de escrever a wo0001
+
+### Contexto
+O `TemplateSerializer.ts` é o primeiro código de runtime e precisa validar arquivo vindo do disco,
+que tipo TypeScript não protege. A DEC-009 fez de `TemplateSchema.ts` a fonte única dos tipos.
+
+### Decisão
+- Validador **escrito à mão** (`TemplateValidator.ts`), sem biblioteca de schema; **estrito** (chave
+  desconhecida é erro), **coleta todos os erros** com caminho estilo JSONPath, e aceita só as versões
+  de schema listadas em `SUPPORTED_SCHEMA_VERSIONS`.
+- `serializeTemplate` **lança** em template inválido — nunca grava `.editx` inválido.
+- **Vitest 5** sem arquivo de configuração: ambiente Node, `*.test.ts` ao lado do módulo, imports
+  explícitos de `vitest`, `npm test` = `vitest run`.
+
+### Alternativas consideradas
+- **zod / valibot** — o schema da biblioteca viraria a fonte dos tipos (`z.infer`), invertendo a
+  DEC-009; trocar a fonte da verdade é decisão do dono, não efeito colateral de uma WO. Adiada com
+  gatilho em IDEAS «Adiadas».
+- **Validador tolerante (ignora chave desconhecida)** — esconde erro de digitação (`isDatapage` faria
+  a página parar de repetir em silêncio); com versão explícita, estrito é seguro.
+- **Serializar sem validar** — mais simples para autosave, mas grava arquivo que o próprio app depois
+  recusa abrir.
+
+### Consequências
+- **Positivas:** zero dependência nova em produção; a DEC-009 continua valendo; erro aponta o lugar exato.
+- **Negativas:** duas descrições do mesmo formato (o tipo e o validador) que podem divergir — campo novo
+  no schema sem regra no validador faz o `.editx` com esse campo ser REJEITADO (armadilha no CONTEXT).
+- **Riscos:** autosave de trabalho incompleto vai esbarrar na validação estrita — quando o editor tiver
+  autosave, decidir se ele usa um caminho de rascunho próprio.
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown

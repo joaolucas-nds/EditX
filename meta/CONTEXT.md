@@ -3,13 +3,12 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-10):** merge do KCM v1.135.0 com modo Code (DEC-012).
-(1) A seção «📁 Arquivos Críticos» veio do STATUS.md, sem alteração de conteúdo — o template
-novo a trata como conhecimento estável. (2) A árvore de «Estrutura do Projeto» mostrava os docs
-na raiz e a raiz como `editor-editorial/`; corrigida para o repositório real (`EditX/`, docs em
-`meta/`) e acrescida de `CLAUDE.md`, `.claude/` e `meta/workorders/`. (3) Armadilha do
-`npm audit` atualizada com o número da máquina do dono. A nota de 2026-07-24 saiu; o conteúdo
-dela está em DEC-011 e em `logs/2026-07-24.md`.
+**Mudanças nesta revisão (2026-11-11):** preparação da wo0001 (`TemplateSerializer.ts` +
+Vitest, DEC-013): Vitest entra na stack; a árvore de `template/` ganha `TemplateValidator.ts` e o
+arquivo de teste; o parágrafo «Vitest ainda não foi instalado» virou a convenção de testes; a linha
+do `TemplateSerializer.ts` em «Arquivos Críticos» deixou de dizer «ainda não existe»; uma armadilha
+nova (validador estrito × campo novo no schema). A nota de 2026-11-10 saiu — o que ela registrava
+(árvore real do repo, Arquivos Críticos vindo do STATUS) está em DEC-012.
 
 ---
 
@@ -61,7 +60,7 @@ e metadados de exportação.
 - **Leitura de CSV:** PapaParse 5.5.x
 - **Desktop (Fase 2):** Tauri 2.x (Rust) — empacota o app web como executável nativo
 - **Deploy web:** Vercel / Netlify (SPA estática)
-- **Ferramentas:** Git, ESLint 9.39.x (flat config — NÃO 10.x, ver DEC-011), Prettier 3, Vitest (ainda não instalado — entra com TemplateSerializer.ts)
+- **Ferramentas:** Git, ESLint 9.39.x (flat config — NÃO 10.x, ver DEC-011), Prettier 3, Vitest 5.x (testes de lógica em ambiente Node; versão real no `package.json` — entra pela wo0001, DEC-013)
 
 ---
 
@@ -81,7 +80,9 @@ EditX/
 │   │   ├── TemplateSchema.ts      # Documento raiz + CSV mapping (fonte da verdade, DEC-009)
 │   │   ├── __examples__/          # Fixtures que validam o schema por compilação (não é produção)
 │   │   │   └── catalogo-simples.example.ts
-│   │   ├── TemplateSerializer.ts  # Salvar / carregar / validar JSON .editx — PRÓXIMO item do backlog
+│   │   ├── TemplateSerializer.ts  # serializeTemplate / parseTemplate — salvar e carregar .editx (DEC-013)
+│   │   ├── TemplateValidator.ts   # validateTemplate — regras de runtime que os tipos não expressam
+│   │   ├── TemplateSerializer.test.ts # Testes Vitest do serializer + validador
 │   │   ├── TemplateRenderer.ts    # Popula template com dados de uma linha CSV
 │   │   └── StyleRegistry.ts      # Estilos de texto globais com herança (observer pattern)
 │   │
@@ -192,9 +193,11 @@ EditX/
 }
 ```
 
-Vitest ainda não foi instalado — entra junto com `TemplateSerializer.ts`, quando houver
-lógica de runtime de fato testável (o schema em si é só tipos; a "prova" dele hoje é
-compilar limpo, ver `src/template/__examples__/`).
+**Testes (desde a wo0001, DEC-013):** Vitest, rodado por `npm test` (`vitest run`), **sem arquivo de
+configuração** — ambiente Node padrão. Arquivo de teste `*.test.ts` ao lado do módulo testado,
+importando `describe`/`it`/`expect` de `vitest` explicitamente (sem globals). Como os testes ficam em
+`src/`, o `npm run build` (`tsc -b`) também os checa por tipo. O fixture padrão é o exemplo de
+`src/template/__examples__/` — um `.editx` válido de ponta a ponta.
 
 ---
 
@@ -298,6 +301,11 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - **`eslint@^10.0.0` resolveria a vulnerabilidade do `minimatch`, mas quebra a instalação.** `eslint-plugin-react-hooks@5.2.0` trava o peer dependency em `eslint <= ^9.0.0` — confirmado por tentativa real, não suposição. Manter ESLint em `^9.0.0` até esse plugin liberar suporte à v10 (ver DEC-011).
 - **`npx eslint --version` mostrando a versão nova NÃO prova que o upgrade é seguro.** Só confirma o binário instalado naquele momento — o teste real é instalar mais alguma coisa (ou reinstalar do zero) e ver se os peer dependencies resolvem sem conflito. Isso pegou a gente de surpresa uma vez (ver DEC-011).
 - **O `.gitignore` que o `create-vite` gera por padrão ignora a pasta `logs/` inteira.** Neste projeto `logs/` é versionada de propósito (log do dia). Se o boilerplate for regenerado do zero, lembrar de remover essa linha — ver DEC-011.
+- **Campo novo em `TemplateSchema.ts`/`frame.types.ts` exige o `TemplateValidator.ts` junto.** O
+  validador é escrito à mão e ESTRITO (DEC-013): chave que ele não conhece vira erro `unknown-field`, então
+  um `.editx` com o campo novo seria REJEITADO até o validador aprender. Mesma regra para valor novo numa
+  união de literais (`DocumentType`, `OverflowMode`…). O teste de ida-e-volta do exemplo só pega o
+  descompasso se o exemplo usar o campo — ponha-o lá.
 
 ---
 
@@ -307,7 +315,7 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 |---|---|
 | `src/types/template.types.ts` | Fachada de re-export — o contrato que todo o resto do app importa. Mudança de tipo quebra serialização de arquivos existentes |
 | `src/template/TemplateSchema.ts` + `src/types/frame.types.ts` | Fonte real dos tipos (DEC-009). `template.types.ts` só reexporta daqui |
-| `src/template/TemplateSerializer.ts` | Ainda não existe. Quando existir: qualquer bug corromperia arquivos `.editx` de usuários. Requer testes antes de qualquer mudança |
+| `src/template/TemplateSerializer.ts` + `src/template/TemplateValidator.ts` | Qualquer bug corrompe ou rejeita arquivos `.editx` de usuários. Mudança só com `npm test` verde e teste novo para a regra mexida |
 | `src/canvas/FrameText.ts` | Ainda não existe. Quando existir: motor de overflow customizado, mudanças exigem re-teste visual |
 
 ---
@@ -326,4 +334,4 @@ O fluxo de uso principal é:
 
 ---
 
-*Última atualização: 2026-11-10 — merge do KCM v1.135.0 (modo Code): estrutura ganhou `CLAUDE.md`, `.claude/` e `meta/workorders/`; «Arquivos Críticos» veio do STATUS. Anterior: 2026-07-24 (primeiro código: boilerplate + TemplateSchema.ts, ver DEC-011). Criação original: 2026-05-24.*
+*Última atualização: 2026-11-11 — preparação da wo0001 (TemplateSerializer + Vitest, DEC-013). Anterior: 2026-11-10 (merge do KCM v1.135.0, DEC-012). Criação original: 2026-05-24.*

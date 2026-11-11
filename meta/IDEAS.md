@@ -110,7 +110,9 @@ quebra ou fica vazio. **Prioridade:** alta — já está no schema (`FrameImage.
 > Decisão consciente de não fazer agora. Cada item com **o gatilho que a traz de volta** («quando o
 > terceiro caso aparecer», «se o build passar de X»): ideia adiada sem gatilho é ideia perdida.
 
-*Nenhuma ainda.*
+- **Validação do `.editx` por biblioteca de schema (zod/valibot)** — adiada porque faria o schema da
+  biblioteca virar a fonte dos tipos, invertendo a DEC-009 (ver DEC-013) — **volta quando** o
+  `TemplateValidator.ts` divergir do tipo em produção pela segunda vez, ou passar de ~600 linhas.
 
 ---
 

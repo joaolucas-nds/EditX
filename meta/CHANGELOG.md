@@ -19,6 +19,7 @@ está nas entradas «Adicionado» abaixo).
 ### Adicionado
 - Boilerplate do projeto: Vite 8 + React 19 + TypeScript 6, ESLint 9 (flat config) + Prettier
 - `TemplateSchema.ts` + `frame.types.ts` + `template.types.ts` — schema completo do `.editx` tipado (documento, páginas, 3 tipos de frame, textStyles com herança, csvMapping), com exemplo de validação em `__examples__/`
+- `TemplateSerializer.ts` + `TemplateValidator.ts` — salvar e abrir `.editx` com validação estrita (erros com caminho `$.…`, versão de schema explícita, nunca grava arquivo inválido); Vitest 5 configurado (`npm test`). Ver DEC-013
 
 ### Modificado
 - Documentação e ferramentas alinhadas ao KCM v1.135.0 com modo Code: `CLAUDE.md`, `.claude/`
@@ -37,7 +38,6 @@ está nas entradas «Adicionado» abaixo).
   `eslint-plugin-react-hooks`. Ver DEC-011.
 
 ### Planejado para v0.1.0 (MVP do editor)
-- `TemplateSerializer.ts` — salvar e carregar arquivos `.editx`
 - `StyleRegistry.ts` — estilos de texto globais com herança
 - `CanvasEngine.ts` — wrapper Fabric.js básico
 - `FrameText.ts` — frame de texto com modos `grow-vertical` e `fixed-clip`

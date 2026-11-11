@@ -9,9 +9,9 @@ Leia `meta/CEREBRO.md` → `meta/CONTEXT.md` → `meta/STATUS.md` antes de agir.
 
 ## Build / validação
 - Build: `npm run build` (roda `tsc -b` + `vite build` — e a checagem de tipos do projeto).
-- Validação: `npm run lint` — rode antes de commitar mudança de código. Testes: ainda não há suíte (o Vitest entra com `TemplateSerializer.ts`; quando entrar, acrescente `npm test` aqui e no `allow`).
+- Validação: `npm run lint` e `npm test` (Vitest, `vitest run`) — rode os dois antes de commitar mudança de código. Formatação: `npm run format` (Prettier em `src/`).
 - Mudança só de doc (meta/) NÃO precisa de build; a rede é o `git diff`.
-- `npm run build`, `npm run lint` e `date` já estão no `allow` de `.claude/settings.json`.
+- `npm run build`, `npm run lint`, `npm test`, `npm run format`, `date`, `sha1sum` e `git log` estão no `allow` de `.claude/settings.json`. Instalar pacote (`npm install`) pede aprovação de propósito.
 
 ## Convenções
 - Mensagens de commit **sem acento**.
