@@ -551,6 +551,25 @@ o StrictMode do React (medido no código instalado; armadilhas no CONTEXT).
 
 ---
 
+## FIX-001 — Página em branco: a limpeza do `CanvasView` apagava a montagem viva no StrictMode
+
+**Data:** 2026-11-12
+**Status:** resolvida
+
+- **Sintoma:** no primeiro `npm run dev` depois da wo0004, a página ficou inteira branca — nem o fundo
+  cinza do canvas —, sem erro no console (prints do dono, 2026-11-12 14:43).
+- **Causa raiz:** a limpeza do efeito de montagem removia do `<div>` todo filho que não existia antes da
+  montagem. O `dispose()` do Fabric 6 devolve o `<canvas>` original na hora (`cleanupDOM` síncrono) mas só
+  resolve depois do próximo quadro; no StrictMode, quando resolvia, a 2ª montagem já tinha inserido o canvas
+  dela — e a limpeza da 1ª apagava os dois. Medido no navegador: filhos do `<div>` = `CANVAS` + `DIV.canvas-container`
+  antes da promessa resolver.
+- **Solução:** a limpeza remove só o próprio `<canvas>` daquela montagem (wo0005).
+- **Lição:** limpeza assíncrona não pode decidir o que remover por diferença de estado tirada ANTES — outro
+  dono pode ter escrito no meio. Guarde a referência do que é seu. Instrução de WO que diz «remova o que esta
+  montagem inseriu» precisa dizer COMO (por referência, não por diferença). Armadilha no CONTEXT.
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown

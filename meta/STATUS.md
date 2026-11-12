@@ -28,7 +28,7 @@ ser o scaffold do Vite. A nota anterior (wo0003) saiu — o que ela registrava e
 - **Sistema de documentação operacional** — CONTEXT/STATUS/CHANGELOG/DECISIONS/IDEAS/ROADMAP/GLOSSARY/HISTORY, alinhado ao KCM v1.135.0
 - **Modo Code instalado** — `CLAUDE.md` na raiz, `.claude/settings.json`, skills `/apply-wo`, `/wrap` e `/sondar`, modelo de WO em `meta/workorders/`
 - **Salvar/abrir `.editx`** — `TemplateSerializer.ts` (`serializeTemplate`, `parseTemplate`) + `TemplateValidator.ts` (`validateTemplate`, estrito, erros com caminho `$.…`); suíte Vitest verde (`npm test`) — wo0001, DEC-013
-- **Canvas mostra a página** — `npm run dev` abre a página do exemplo (área de corte branca + guia de sangria tracejada) centralizada e com zoom para caber, reenquadrando ao redimensionar a janela; `CanvasEngine.ts` (Fabric) + `PageGeometry.ts` (puro, testado) + `ui/CanvasView.tsx` — wo0004, DEC-016. Ainda sem frames
+- **Canvas mostra a página** *(corrigido na wo0005, FIX-001 — conferência de tela do dono pendente)* — `npm run dev` abre a página do exemplo (área de corte branca + guia de sangria tracejada) centralizada e com zoom para caber, reenquadrando ao redimensionar a janela; `CanvasEngine.ts` (Fabric) + `PageGeometry.ts` (puro, testado) + `ui/CanvasView.tsx` — wo0004, DEC-016. Ainda sem frames
 
 ---
 
@@ -40,7 +40,8 @@ ser o scaffold do Vite. A nota anterior (wo0003) saiu — o que ela registrava e
 
 ## ❌ Quebrado / Com Problema
 
-*Nenhum bug — projeto compila, lint passa, build de produção funciona.* Dois avisos
+*Nenhum bug aberto — projeto compila, lint passa, build de produção funciona.* A página em branco do
+primeiro `npm run dev` (wo0004) foi corrigida na wo0005 (FIX-001); falta o dono confirmar na tela. Dois avisos
 não-bloqueantes valem registro (não são bugs do projeto, são de dependências de
 terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 - `npm audit` na máquina do dono: **6 vulnerabilidades (5 altas, 1 crítica)** [relatado pelo dono —

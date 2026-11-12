@@ -3,10 +3,10 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-12, wo0004):** a árvore ganha `canvas/PageGeometry.ts` (+ teste),
-`ui/CanvasView.tsx` e o papel do `App.tsx` como host de desenvolvimento; duas armadilhas novas do
-Fabric 6 (medidas no código instalado): `data-fabric` × StrictMode e `dispose()` assíncrono. «Objetivo
-atual» aponta para os frames. A nota anterior (wo0003: StyleRegistry puro) saiu — está em DEC-015.
+**Mudanças nesta revisão (2026-11-12, wo0005):** armadilha nova do `dispose()` do Fabric (devolve o
+`<canvas>` original na hora e só resolve depois do próximo quadro), que deixou a página em branco no
+primeiro `npm run dev` — FIX-001. A nota anterior (wo0004: `PageGeometry.ts`, `CanvasView.tsx`, duas
+armadilhas do Fabric) saiu — está em DEC-016 e no corpo deste arquivo.
 
 ---
 
@@ -313,6 +313,13 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
   o `CanvasView.tsx` cria um `<canvas>` NOVO a cada montagem. Não troque por `useRef` num `<canvas>` do JSX.
 - **`canvas.dispose()` do Fabric 6 devolve `Promise<boolean>`;** o `destroy()` síncrono é marcado como inseguro
   na própria tipagem. Use sempre `dispose()`; em cleanup de efeito React, sem `await`, com `.catch`.
+- **O `dispose()` do Fabric devolve o `<canvas>` original ao DOM NA HORA e só resolve DEPOIS do próximo quadro.**
+  `StaticCanvas.dispose` chama `cleanupDOM` (troca o `div.canvas-container` pelo `<canvas>` original) de forma
+  síncrona; a promessa espera a renderização pendente. No StrictMode, quando ela resolve a montagem seguinte JÁ
+  inseriu o canvas dela no mesmo `<div>`: limpeza que remove «o que não existia antes da montagem» apaga a
+  montagem viva e deixa a página em branco, sem erro no console (FIX-001, medido no navegador em 2026-11-12).
+  Na limpeza, remova **só o próprio `<canvas>`** daquela montagem. Em aba oculta o quadro não chega e a
+  promessa fica pendente — não use aba oculta para conferir a limpeza.
 - **Campo novo em `TemplateSchema.ts`/`frame.types.ts` exige o `TemplateValidator.ts` junto.** O
   validador é escrito à mão e ESTRITO (DEC-013): chave que ele não conhece vira erro `unknown-field`, então
   um `.editx` com o campo novo seria REJEITADO até o validador aprender. Mesma regra para valor novo numa

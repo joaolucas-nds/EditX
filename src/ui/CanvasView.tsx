@@ -24,7 +24,6 @@ export function CanvasView({ settings }: CanvasViewProps): JSX.Element {
     const host = hostRef.current;
     if (host === null) return;
 
-    const before = new Set(Array.from(host.childNodes));
     const element = document.createElement('canvas');
     host.appendChild(element);
 
@@ -46,10 +45,10 @@ export function CanvasView({ settings }: CanvasViewProps): JSX.Element {
         .dispose()
         .catch((error: unknown) => console.error('Falha ao liberar o CanvasEngine:', error))
         .finally(() => {
-          // Remove só o que ESTA montagem inseriu (o Fabric embrulha o <canvas> num div.canvas-container).
-          for (const node of Array.from(host.childNodes)) {
-            if (!before.has(node)) host.removeChild(node);
-          }
+          // O dispose() do Fabric já devolveu ESTE <canvas> ao lugar do div.canvas-container
+          // (cleanupDOM é síncrono); aqui só ele sai. Não remova por diferença de filhos: no
+          // StrictMode a montagem seguinte já inseriu o canvas dela no mesmo <div> (FIX-001).
+          element.remove();
         });
     };
   }, []);
