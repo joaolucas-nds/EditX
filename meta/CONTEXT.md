@@ -3,11 +3,10 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-11, wo0003):** `StyleRegistry.ts` descrito como módulo PURO sobre o
-mapa `textStyles` do documento, não como registro com estado e observer — o estado global é do
-Zustand + Immer (DEC-004), e a propagação «altera o pai, muda o filho» vem de o estilo final ser
-sempre resolvido do mapa atual (DEC-015). «Objetivo atual» aponta para o `CanvasEngine.ts`. A nota
-anterior (wo0002: `ValidationRules.ts`, format do scaffold) saiu — está em DEC-014 e no log de 2026-11-11.
+**Mudanças nesta revisão (2026-11-12, wo0004):** a árvore ganha `canvas/PageGeometry.ts` (+ teste),
+`ui/CanvasView.tsx` e o papel do `App.tsx` como host de desenvolvimento; duas armadilhas novas do
+Fabric 6 (medidas no código instalado): `data-fabric` × StrictMode e `dispose()` assíncrono. «Objetivo
+atual» aponta para os frames. A nota anterior (wo0003: StyleRegistry puro) saiu — está em DEC-015.
 
 ---
 
@@ -25,8 +24,8 @@ catálogos de produto, cartazes de oferta, cardápios, stories digitais, menus d
 
 **Objetivo atual:** Fase 1 (MVP do editor). Existem o schema do `.editx`, o
 serializer/validador com testes, a herança de estilos (`StyleRegistry.ts`, DEC-014/DEC-015) e o
-boilerplate; o canvas ainda não. O objetivo imediato é o MVP do canvas (`CanvasEngine.ts` e os frames
-de texto e imagem).
+boilerplate, e o `CanvasEngine.ts` mostra a página vazia (DEC-016). O objetivo imediato são os frames
+no canvas (`FrameText.ts`, `FrameImage.ts`, `FrameShape.ts`).
 
 **Problema de mercado resolvido:** Nenhuma ferramenta combina edição visual acessível +
 geração em massa + tipos editoriais especializados (dobras, catálogos) em um único
@@ -70,7 +69,9 @@ e metadados de exportação.
 EditX/
 ├── src/
 │   ├── canvas/
-│   │   ├── CanvasEngine.ts        # Wrapper do Fabric.js + gerenciamento de eventos
+│   │   ├── PageGeometry.ts        # unidade → px CSS, caixa da página com sangria, zoom para caber (puro, DEC-016)
+│   │   ├── PageGeometry.test.ts   # Testes Vitest da geometria
+│   │   ├── CanvasEngine.ts        # Wrapper do Fabric.js: ciclo de vida, página, zoom (DEC-016)
 │   │   ├── FrameText.ts           # Frame de texto: overflow, grow, estilos
 │   │   ├── FrameImage.ts          # Frame de imagem: fit, auto-fill por nome de arquivo
 │   │   ├── FrameShape.ts          # Formas, bordas, ornamentos vetoriais
@@ -107,6 +108,7 @@ EditX/
 │   │   └── csvStore.ts            # Dados importados, mapeamentos, preview
 │   │
 │   ├── ui/
+│   │   ├── CanvasView.tsx         # Hospeda o CanvasEngine num <div>: cria o <canvas>, ResizeObserver, dispose
 │   │   ├── Toolbar.tsx            # Barra de ferramentas superior
 │   │   ├── PropertiesPanel.tsx    # Painel direito: propriedades do frame selecionado
 │   │   ├── LayersList.tsx         # Painel esquerdo: árvore de camadas/frames
@@ -117,7 +119,8 @@ EditX/
 │   │   ├── template.types.ts      # Fachada de re-export (TemplateSchema.ts + frame.types.ts) — nunca redefine tipos
 │   │   └── frame.types.ts         # Tipos de frames, overflow, estilos, transformações (extraído de TemplateSchema.ts por tamanho)
 │   │
-│   └── main.tsx                   # Ponto de entrada React
+│   ├── App.tsx                    # Host de desenvolvimento: CanvasView com a página do exemplo (até existir a UI)
+│   └── main.tsx                   # Ponto de entrada React (StrictMode)
 │
 ├── src-tauri/                     # App desktop Tauri (Fase 2 — não inicializar ainda)
 ├── public/
@@ -304,6 +307,12 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - **`eslint@^10.0.0` resolveria a vulnerabilidade do `minimatch`, mas quebra a instalação.** `eslint-plugin-react-hooks@5.2.0` trava o peer dependency em `eslint <= ^9.0.0` — confirmado por tentativa real, não suposição. Manter ESLint em `^9.0.0` até esse plugin liberar suporte à v10 (ver DEC-011).
 - **`npx eslint --version` mostrando a versão nova NÃO prova que o upgrade é seguro.** Só confirma o binário instalado naquele momento — o teste real é instalar mais alguma coisa (ou reinstalar do zero) e ver se os peer dependencies resolvem sem conflito. Isso pegou a gente de surpresa uma vez (ver DEC-011).
 - **O `.gitignore` que o `create-vite` gera por padrão ignora a pasta `logs/` inteira.** Neste projeto `logs/` é versionada de propósito (log do dia). Se o boilerplate for regenerado do zero, lembrar de remover essa linha — ver DEC-011.
+- **Fabric 6 recusa reinicializar um `<canvas>` que ainda carrega `data-fabric`.** Lança «Trying to initialize a
+  canvas that has already been initialized» (`StaticCanvasDOMManager.createLowerCanvas`, fabric 6.9.1). Com o
+  StrictMode do React (monta, desmonta, monta) e o `dispose()` ASSÍNCRONO, reaproveitar o mesmo elemento quebra:
+  o `CanvasView.tsx` cria um `<canvas>` NOVO a cada montagem. Não troque por `useRef` num `<canvas>` do JSX.
+- **`canvas.dispose()` do Fabric 6 devolve `Promise<boolean>`;** o `destroy()` síncrono é marcado como inseguro
+  na própria tipagem. Use sempre `dispose()`; em cleanup de efeito React, sem `await`, com `.catch`.
 - **Campo novo em `TemplateSchema.ts`/`frame.types.ts` exige o `TemplateValidator.ts` junto.** O
   validador é escrito à mão e ESTRITO (DEC-013): chave que ele não conhece vira erro `unknown-field`, então
   um `.editx` com o campo novo seria REJEITADO até o validador aprender. Mesma regra para valor novo numa

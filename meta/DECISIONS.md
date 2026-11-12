@@ -515,6 +515,42 @@ comportamento: alterar um estilo atualiza os frames vinculados (IDEAS, 2026-05).
 
 ---
 
+## DEC-016 — CanvasEngine em duas camadas: geometria pura + adaptador fino do Fabric
+
+**Data:** 2026-11-12
+**Status:** aceita
+**Autor:** Claude (chat), ao escrever a wo0004 — o dono pode vetar antes da aplicação
+
+### Contexto
+O Fabric precisa de DOM e de `<canvas>`; o Vitest do projeto roda em Node, sem DOM (DEC-013), e o
+`canvas`/`jsdom` do Fabric são dependências opcionais que o projeto decidiu não usar (DEC-011). O Fabric
+6.9.1 tem `dispose()` assíncrono e recusa reinicializar um elemento com `data-fabric` — o que colide com
+o StrictMode do React (medido no código instalado; armadilhas no CONTEXT).
+
+### Decisão
+- Toda conta (unidade → px CSS a 96 px/pol, caixa com sangria, zoom para caber, centralização) mora em
+  `canvas/PageGeometry.ts`, puro e testado em Node. O `CanvasEngine.ts` só traduz isso para o Fabric.
+- O adaptador é conferido pelo **dono, na tela** (roteiro da wo0004), não por teste automático.
+- `width`/`height` do documento mandam; `orientation` é metadado e não gira a página.
+- `ui/CanvasView.tsx` cria um `<canvas>` novo a cada montagem e libera com `dispose()` sem `await`.
+
+### Alternativas consideradas
+- **Testar o adaptador com jsdom + `canvas` (node-canvas)** — reativa as dependências opcionais que a
+  DEC-011 deixou de fora (e a vulnerabilidade da cadeia `canvas`→`tar`), e mede o Fabric, não a tela.
+- **Vitest em modo navegador** — ferramenta a mais para conferir uma página vazia; reavaliar quando os
+  frames tiverem lógica de desenho que valha teste visual.
+- **`<canvas>` do JSX com `useRef`** — quebra no StrictMode (elemento reaproveitado com `data-fabric`).
+
+### Consequências
+- **Positivas:** a parte com lógica tem teste; o adaptador é pequeno o bastante para ler; dev e produção
+  montam igual.
+- **Negativas:** regressão visual do canvas só aparece no roteiro do dono.
+- **Riscos:** lógica de desenho escorregar para dentro do `CanvasEngine.ts` sem teste — sinal: operador
+  aritmético (`+ - * /`) aplicado a `bleed`, `zoom` ou px no `CanvasEngine.ts`; é checagem de LEITURA (o
+  adaptador usa esses nomes legitimamente ao repassar valores do `PageGeometry.ts`, então `grep` não separa).
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown

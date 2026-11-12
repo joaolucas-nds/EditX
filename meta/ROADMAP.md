@@ -33,7 +33,7 @@ CSV pequeno, mapear colunas e gerar N arquivos PNG sem travar a UI.
 - [x] `TemplateSchema.ts` — tipos completos do `.editx`
 - [x] `TemplateSerializer.ts` — serialização/deserialização + validação
 - [x] `StyleRegistry.ts` — estilos globais com herança (funções puras, DEC-015)
-- [ ] `CanvasEngine.ts` — wrapper Fabric.js
+- [x] `CanvasEngine.ts` — wrapper Fabric.js (ciclo de vida, página, zoom — DEC-016)
 - [ ] `FrameText.ts` — overflow básico (grow-vertical, fixed-clip)
 - [ ] `FrameImage.ts` — fit modes
 - [ ] `FrameShape.ts` — retângulo, elipse, linha

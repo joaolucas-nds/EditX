@@ -57,7 +57,7 @@ function chainOf(styles: TextStyleMap, name: string): string[] {
     if (seen.has(current)) {
       throw new StyleRegistryError(
         current,
-        `Ciclo de heranca de estilos: ${[...chain, current].join(' -> ')}.`,
+        `Ciclo de herança de estilos: ${[...chain, current].join(' -> ')}.`,
       );
     }
     const style: TextStyle | undefined = Object.hasOwn(styles, current)
@@ -66,8 +66,8 @@ function chainOf(styles: TextStyleMap, name: string): string[] {
     if (style === undefined) {
       const msg =
         current === name
-          ? `O estilo "${name}" nao existe.`
-          : `O estilo "${chain[chain.length - 1]}" herda de "${current}", que nao existe.`;
+          ? `O estilo "${name}" não existe.`
+          : `O estilo "${chain[chain.length - 1]}" herda de "${current}", que não existe.`;
       throw new StyleRegistryError(current, msg);
     }
     seen.add(current);
@@ -109,7 +109,7 @@ export function resolveStyle(styles: TextStyleMap, name: string): Readonly<TextS
     const root = chain[chain.length - 1];
     throw new StyleRegistryError(
       root,
-      `O estilo raiz "${root}" nao tem as propriedades: ${missing.join(', ')}.`,
+      `O estilo raiz "${root}" não tem as propriedades: ${missing.join(', ')}.`,
     );
   }
 
@@ -131,7 +131,7 @@ export function resolveStyle(styles: TextStyleMap, name: string): Readonly<TextS
  */
 export function dependentsOf(styles: TextStyleMap, name: string): string[] {
   if (!Object.hasOwn(styles, name)) {
-    throw new StyleRegistryError(name, `O estilo "${name}" nao existe.`);
+    throw new StyleRegistryError(name, `O estilo "${name}" não existe.`);
   }
   return Object.keys(styles)
     .filter((other) => {
@@ -157,27 +157,28 @@ export function setStyle(styles: TextStyleMap, name: string, style: TextStyle): 
   const parent = style.basedOn;
   if (parent !== null) {
     if (parent === name) {
-      throw new StyleRegistryError(name, `O estilo "${name}" nao pode herdar de si mesmo.`);
+      throw new StyleRegistryError(name, `O estilo "${name}" não pode herdar de si mesmo.`);
     }
     if (!Object.hasOwn(styles, parent)) {
       throw new StyleRegistryError(
         name,
-        `O estilo "${name}" herda de "${parent}", que nao existe.`,
+        `O estilo "${name}" herda de "${parent}", que não existe.`,
       );
     }
     // Se `name` já está na cadeia do novo pai, o novo elo fecharia um ciclo.
-    // Cadeia já quebrada no mapa recebido não é problema desta operação: segue.
-    let chain: string[] = [];
-    try {
-      chain = chainOf(styles, parent);
-    } catch {
-      // ignorado de propósito
-    }
-    if (chain.includes(name)) {
-      throw new StyleRegistryError(
-        name,
-        `Herdar de "${parent}" criaria um ciclo: ${[name, ...chain].join(' -> ')}.`,
-      );
+    // Caminha sem exigir a cadeia inteira: para em `null`, em pai inexistente ou
+    // em nome já visitado — cadeia já quebrada no mapa recebido não esconde o ciclo.
+    const visited: string[] = [];
+    let current: string | null = parent;
+    while (current !== null && !visited.includes(current) && Object.hasOwn(styles, current)) {
+      if (current === name) {
+        throw new StyleRegistryError(
+          name,
+          `Herdar de "${parent}" criaria um ciclo: ${[name, ...visited].join(' -> ')}.`,
+        );
+      }
+      visited.push(current);
+      current = styles[current].basedOn;
     }
   }
   return { ...styles, [name]: style };
@@ -192,7 +193,7 @@ export function setStyle(styles: TextStyleMap, name: string, style: TextStyle): 
  */
 export function removeStyle(styles: TextStyleMap, name: string): TextStyleMap {
   if (!Object.hasOwn(styles, name)) {
-    throw new StyleRegistryError(name, `O estilo "${name}" nao existe.`);
+    throw new StyleRegistryError(name, `O estilo "${name}" não existe.`);
   }
   const children = Object.keys(styles)
     .filter((other) => styles[other].basedOn === name)
@@ -200,7 +201,7 @@ export function removeStyle(styles: TextStyleMap, name: string): TextStyleMap {
   if (children.length > 0) {
     throw new StyleRegistryError(
       name,
-      `O estilo "${name}" nao pode ser removido: ${children.join(', ')} herda(m) dele.`,
+      `O estilo "${name}" não pode ser removido: ${children.join(', ')} herda(m) dele.`,
     );
   }
   const rest = { ...styles };

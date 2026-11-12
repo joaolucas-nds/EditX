@@ -121,4 +121,12 @@ describe('StyleRegistry', () => {
     }
     expect(validateTemplate(catalogoSimplesExample).ok).toBe(true);
   });
+
+  it('S14: setStyle acusa ciclo mesmo quando a cadeia do novo pai cai num pai inexistente', () => {
+    const styles: TextStyleMap = {
+      a: { basedOn: 'fantasma', fontSize: 10 },
+      b: { basedOn: 'a' },
+    };
+    expect(() => setStyle(styles, 'a', { basedOn: 'b' })).toThrow(StyleRegistryError);
+  });
 });

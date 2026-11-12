@@ -113,6 +113,10 @@ quebra ou fica vazio. **Prioridade:** alta — já está no schema (`FrameImage.
 - **Validação do `.editx` por biblioteca de schema (zod/valibot)** — adiada porque faria o schema da
   biblioteca virar a fonte dos tipos, invertendo a DEC-009 (ver DEC-013) — **volta quando** o
   `TemplateValidator.ts` divergir do tipo em produção pela segunda vez, ou passar de ~600 linhas.
+- **`orientation` coerente com `width`/`height`** — hoje `width`/`height` mandam e `orientation` é só
+  metadado (DEC-016); nada impede um `.editx` com `orientation: 'landscape'` e página em pé. Adiada porque
+  ninguém troca a orientação ainda — **volta quando** a UI permitir trocar a orientação (aí trocar deve
+  girar `width`/`height`, e o validador pode cobrar a coerência).
 
 ---
 

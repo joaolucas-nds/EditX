@@ -3,15 +3,15 @@
 > Atualizado a cada turno que muda o estado do projeto.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
-**Mudanças nesta revisão (2026-11-11, wo0003):** `StyleRegistry.ts` feito (funções puras, DEC-015) —
-sai do backlog, `CanvasEngine.ts` vira o próximo; F1 em 4 de 14; a linha «Suíte» deixa de apontar para
-o relatório de uma WO específica. A nota anterior (wo0002) saiu — o que ela registrava está em DEC-014.
+**Mudanças nesta revisão (2026-11-12, wo0004):** `CanvasEngine.ts` feito (página vazia com sangria e
+zoom para caber, DEC-016) — sai do backlog, `FrameText.ts` vira o próximo; F1 em 5 de 14; o app deixa de
+ser o scaffold do Vite. A nota anterior (wo0003) saiu — o que ela registrava está em DEC-015.
 
 ---
 
 ## Versão Atual
 
-**v0.0.0** — ainda não lançado (Fase 1/F1 do ROADMAP em andamento, 4 de 14 itens prontos)
+**v0.0.0** — ainda não lançado (Fase 1/F1 do ROADMAP em andamento, 5 de 14 itens prontos)
 
 ---
 
@@ -28,12 +28,13 @@ o relatório de uma WO específica. A nota anterior (wo0002) saiu — o que ela 
 - **Sistema de documentação operacional** — CONTEXT/STATUS/CHANGELOG/DECISIONS/IDEAS/ROADMAP/GLOSSARY/HISTORY, alinhado ao KCM v1.135.0
 - **Modo Code instalado** — `CLAUDE.md` na raiz, `.claude/settings.json`, skills `/apply-wo`, `/wrap` e `/sondar`, modelo de WO em `meta/workorders/`
 - **Salvar/abrir `.editx`** — `TemplateSerializer.ts` (`serializeTemplate`, `parseTemplate`) + `TemplateValidator.ts` (`validateTemplate`, estrito, erros com caminho `$.…`); suíte Vitest verde (`npm test`) — wo0001, DEC-013
+- **Canvas mostra a página** — `npm run dev` abre a página do exemplo (área de corte branca + guia de sangria tracejada) centralizada e com zoom para caber, reenquadrando ao redimensionar a janela; `CanvasEngine.ts` (Fabric) + `PageGeometry.ts` (puro, testado) + `ui/CanvasView.tsx` — wo0004, DEC-016. Ainda sem frames
 
 ---
 
 ## 🔧 Em Progresso
 
-*Nada em progresso — próximo item do backlog é `CanvasEngine.ts`.*
+*Nada em progresso — próximo item do backlog é `FrameText.ts`.*
 
 ---
 
@@ -59,8 +60,8 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 - [x] `TemplateSchema.ts` — tipos completos do `.editx`
 - [x] `TemplateSerializer.ts` — serialização/deserialização + validação de schema (+ `TemplateValidator.ts`, Vitest — wo0001)
 - [x] `StyleRegistry.ts` — estilos globais com herança (funções puras sobre o mapa do documento — wo0003, DEC-015)
-- [ ] `CanvasEngine.ts` — wrapper Fabric.js com eventos e ciclo de vida ← **próximo**
-- [ ] `FrameText.ts` — frame de texto com overflow básico (grow-vertical e fixed-clip primeiro)
+- [x] `CanvasEngine.ts` — wrapper Fabric.js: ciclo de vida, página e zoom (wo0004, DEC-016; eventos de objeto entram com `SelectionManager.ts`)
+- [ ] `FrameText.ts` — frame de texto com overflow básico (grow-vertical e fixed-clip primeiro) ← **próximo**
 - [ ] `FrameImage.ts` — frame de imagem com fit modes
 - [ ] `FrameShape.ts` — retângulo, elipse, linha básicos
 - [ ] Sanitizar `customSvg` antes do primeiro render de SVG — prometido no JSDoc de `ShapeFrame.customSvg`; fora da wo0001 (o validador só exige presença)
@@ -87,11 +88,12 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 
 ## 💬 Última conversa
 
-**2026-11-11** — wo0001 (serializer + validador + Vitest), wo0002 (herança de estilos no formato,
-DEC-014) e wo0003 (`StyleRegistry.ts` como funções puras, DEC-015; `satisfies` no validador).
-Relatórios em `../notas-arquivadas/` e na pasta-pai; detalhe em `logs/2026-11-11.md`.
-**Onde parou:** próximo item é `CanvasEngine.ts`.
+**2026-11-12** — wo0004: `CanvasEngine.ts` mostra a página do exemplo no `npm run dev` (DEC-016),
+geometria pura testada em `PageGeometry.ts`, scaffold do Vite removido; `StyleRegistry.ts` com
+mensagens acentuadas e ciclo detectado mesmo com cadeia quebrada. Dias anteriores em
+`logs/2026-11-11.md`; detalhe de hoje em `logs/2026-11-12.md`.
+**Onde parou:** próximo item é `FrameText.ts`.
 
 ---
 
-*Próximo passo: `CanvasEngine.ts` (wrapper Fabric.js com eventos e ciclo de vida) — WO a escrever pelo chat.*
+*Próximo passo: `FrameText.ts` (frame de texto no canvas, overflow grow-vertical e fixed-clip) — WO a escrever pelo chat.*
