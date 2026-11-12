@@ -93,7 +93,8 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 geometria pura testada em `PageGeometry.ts`, scaffold do Vite removido; `StyleRegistry.ts` com
 mensagens acentuadas e ciclo detectado mesmo com cadeia quebrada. Dias anteriores em
 `logs/2026-11-11.md`; detalhe de hoje em `logs/2026-11-12.md`.
-**Onde parou:** próximo item é `FrameText.ts`.
+wo0005 (FIX-001): a página em branco do primeiro `npm run dev` era a limpeza do `CanvasView` apagando a montagem viva no StrictMode; corrigida, falta o dono conferir na tela.
+**Onde parou:** conferência de tela do dono; depois `FrameText.ts`.
 
 ---
 

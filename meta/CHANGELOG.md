@@ -23,6 +23,9 @@ está nas entradas «Adicionado» abaixo).
 - `StyleRegistry.ts` — estilo de texto final resolvido pela cadeia de `basedOn` (`resolveStyle`, com cache por mapa), estilos derivados (`dependentsOf`) e edição do mapa sem quebrar a herança (`setStyle`/`removeStyle`); funções puras sobre o mapa do documento. Ver DEC-015
 - `CanvasEngine.ts` + `PageGeometry.ts` + `ui/CanvasView.tsx` — a página do documento aparece no canvas (área de corte, guia de sangria, zoom para caber, reenquadra ao redimensionar); o app deixa de ser o scaffold do Vite. Ver DEC-016
 
+### Corrigido
+- Página em branco no `npm run dev`: a limpeza do `CanvasView` removia por diferença de filhos e apagava o canvas da 2ª montagem (StrictMode); agora remove só o próprio `<canvas>`. Ver FIX-001
+
 ### Modificado
 - Documentação e ferramentas alinhadas ao KCM v1.135.0 com modo Code: `CLAUDE.md`, `.claude/`
   (settings + skills `apply-wo`/`wrap`/`sondar`), `meta/workorders/_TEMPLATE.md`, `meta/SPEC.md`;
