@@ -22,6 +22,7 @@ está nas entradas «Adicionado» abaixo).
 - `TemplateSerializer.ts` + `TemplateValidator.ts` — salvar e abrir `.editx` com validação estrita (erros com caminho `$.…`, versão de schema explícita, nunca grava arquivo inválido); Vitest 5 configurado (`npm test`). Ver DEC-013
 - `StyleRegistry.ts` — estilo de texto final resolvido pela cadeia de `basedOn` (`resolveStyle`, com cache por mapa), estilos derivados (`dependentsOf`) e edição do mapa sem quebrar a herança (`setStyle`/`removeStyle`); funções puras sobre o mapa do documento. Ver DEC-015
 - `CanvasEngine.ts` + `PageGeometry.ts` + `ui/CanvasView.tsx` — a página do documento aparece no canvas (área de corte, guia de sangria, zoom para caber, reenquadra ao redimensionar); o app deixa de ser o scaffold do Vite. Ver DEC-016
+- Texto no canvas — fontes Montserrat embarcadas (`public/fonts/`, `text/FontRegistry.ts`), motor de layout com os 4 modos de overflow (`text/TextLayout.ts`) e desenho como contorno das letras (`text/TextDrawing.ts`, `canvas/FrameText.ts`). Ver DEC-017 e DEC-018
 
 ### Corrigido
 - Página em branco no `npm run dev`: a limpeza do `CanvasView` removia por diferença de filhos e apagava o canvas da 2ª montagem (StrictMode); agora remove só o próprio `<canvas>`. Ver FIX-001
@@ -46,7 +47,6 @@ está nas entradas «Adicionado» abaixo).
   `eslint-plugin-react-hooks`. Ver DEC-011.
 
 ### Planejado para v0.1.0 (MVP do editor)
-- `FrameText.ts` — frame de texto com modos `grow-vertical` e `fixed-clip`
 - `FrameImage.ts` — frame de imagem com fit modes
 - `documentStore.ts`, `selectionStore.ts`, `historyStore.ts`
 - `CsvParser.ts` — importação e parsing de CSV

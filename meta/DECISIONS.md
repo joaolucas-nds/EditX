@@ -607,6 +607,36 @@ nome. O `opentype.js` 1.3.4 não lê WOFF2 nem fonte variável (medido). Racioc�
 
 ---
 
+## DEC-018 — Texto desenhado no canvas como contorno das letras
+
+**Data:** 2026-11-15
+**Status:** aceita
+**Autor:** dono (escolha entre as duas formas), Claude (forma e medições)
+
+### Contexto
+O motor de layout (DEC-017) mede com o `opentype.js`. Desenhar com o texto do Fabric faria o NAVEGADOR medir de
+novo, com o motor de texto dele: as larguras podem divergir das do motor, mudando quebra de linha e encaixe —
+exatamente o que a geração em massa não tolera.
+
+### Decisão
+- Cada linha é desenhada como o contorno vetorial do `opentype.js` (`font.getPath(...).toPathData`), com a mesma
+  fonte, tamanho e posições do layout, e vira um `Path` do Fabric posicionado pelas próprias coordenadas.
+- Frames de dados mostram `{coluna}` até haver CSV importado. Rotação ainda não é desenhada (ponto de giro
+  indefinido no formato — ideia adiada).
+- Frame cujo estilo/fonte falha vira um retângulo vermelho tracejado no lugar, e os outros seguem.
+
+### Alternativas consideradas
+- **Texto do Fabric (`Textbox`/`IText`) com a fonte carregada pelo navegador** — permite digitar no canvas mais
+  cedo, mas o desenho deixa de ser o que o motor mediu. Escolha do dono: fidelidade primeiro.
+
+### Consequências
+- **Positivas:** o que aparece é o que o motor calculou, em qualquer máquina; sem corrida de carregamento de fonte.
+- **Negativas:** editar texto digitando direto no canvas exige, depois, uma caixa de edição por cima do frame (ou o
+  painel de propriedades). Texto desenhado não é selecionável como texto no canvas (o PDF da F3 é outra rota).
+- **Riscos:** passar `left`/`top` a um `Path` de texto o desloca da linha de base — armadilha no CONTEXT.
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown

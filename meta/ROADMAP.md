@@ -34,7 +34,7 @@ CSV pequeno, mapear colunas e gerar N arquivos PNG sem travar a UI.
 - [x] `TemplateSerializer.ts` — serialização/deserialização + validação
 - [x] `StyleRegistry.ts` — estilos globais com herança (funções puras, DEC-015)
 - [x] `CanvasEngine.ts` — wrapper Fabric.js (ciclo de vida, página, zoom — DEC-016)
-- [ ] `FrameText.ts` — overflow (motor de layout com os 4 modos + fontes: wo0006, DEC-017; falta o desenho no canvas)
+- [x] `FrameText.ts` — overflow e desenho (motor de layout com os 4 modos + fontes: wo0006, DEC-017; contorno das letras no canvas: wo0007, DEC-018)
 - [ ] `FrameImage.ts` — fit modes
 - [ ] `FrameShape.ts` — retângulo, elipse, linha
 - [ ] `SelectionManager.ts` — seleção, mover, redimensionar

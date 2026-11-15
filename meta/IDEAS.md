@@ -120,6 +120,12 @@ quebra ou fica vazio. **Prioridade:** alta — já está no schema (`FrameImage.
 - **`align: 'justify'` de verdade** — na F1 o motor de layout trata `justify` como `left` (DEC-017). Adiada porque
   justificar exige distribuir espaço entre palavras no desenho e no PDF — **volta quando** um template real usar
   texto justificado em várias linhas (catálogo com descrição longa, cardápio).
+- **Rotação de frame desenhada** — `transform.rotation` existe no formato, mas o ponto de giro (canto ou centro)
+  não está definido; na F1 o frame sai sem girar e avisa no console (DEC-018). **Volta quando** o
+  `SelectionManager.ts` permitir girar um frame — aí definir o ponto de giro no JSDoc de `Transform` e desenhar.
+- **Editar texto digitando direto no canvas** — com o texto como contorno (DEC-018), a edição na tela pede uma caixa
+  de edição por cima do frame. **Volta quando** a UI mínima (Toolbar/PropertiesPanel) existir e editar pelo painel
+  se mostrar lento no uso real.
 
 ---
 

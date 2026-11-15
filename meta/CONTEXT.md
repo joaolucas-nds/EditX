@@ -3,10 +3,10 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-15, wo0006):** fontes do app decididas (DEC-017): pasta `src/text/`
-(`FontRegistry.ts`, `TextLayout.ts` e testes) e `public/fonts/montserrat/` na árvore; stack registra que o
-`opentype.js` 1.3.4 não lê WOFF2 nem fonte variável; armadilha do mesmo fato. A nota anterior (wo0005: dispose do
-Fabric) saiu — está em FIX-001 e no corpo deste arquivo.
+**Mudanças nesta revisão (2026-11-15, wo0007):** texto desenhado como CONTORNO das letras (DEC-018): árvore
+ganha `text/TextDrawing.ts` (+ teste) e `canvas/FrameText.test.ts`, e o `FrameText.ts` vira a cola assíncrona
+(estilo → fonte → desenho); o `App.tsx` mostra a página de produto; armadilha nova do `Path` do Fabric. A nota
+anterior (wo0006: fontes, `src/text/`, WOFF2) saiu — está em DEC-017 e no corpo deste arquivo.
 
 ---
 
@@ -72,7 +72,8 @@ EditX/
 │   │   ├── PageGeometry.ts        # unidade → px CSS, caixa da página com sangria, zoom para caber (puro, DEC-016)
 │   │   ├── PageGeometry.test.ts   # Testes Vitest da geometria
 │   │   ├── CanvasEngine.ts        # Wrapper do Fabric.js: ciclo de vida, página, zoom (DEC-016)
-│   │   ├── FrameText.ts           # Frame de texto: overflow, grow, estilos
+│   │   ├── FrameText.ts           # prepareTextDrawings: estilo resolvido → fonte → desenho de cada frame de texto da página (DEC-018)
+│   │   ├── FrameText.test.ts      # Testes Vitest — fonte real do disco
 │   │   ├── FrameImage.ts          # Frame de imagem: fit, auto-fill por nome de arquivo
 │   │   ├── FrameShape.ts          # Formas, bordas, ornamentos vetoriais
 │   │   └── SelectionManager.ts   # Seleção, multi-select, alinhamento, distribuição
@@ -94,7 +95,9 @@ EditX/
 │   │   ├── FontRegistry.ts        # catálogo de fontes do app (família+peso → arquivo), peso mais próximo, cache (DEC-017)
 │   │   ├── TextLayout.ts          # motor de layout PURO: quebra de linha + os 4 modos de overflow (DEC-006/DEC-017)
 │   │   ├── FontRegistry.test.ts   # Testes Vitest — leem os .ttf reais do disco
-│   │   └── TextLayout.test.ts     # Testes Vitest do motor, com a Montserrat real
+│   │   ├── TextLayout.test.ts     # Testes Vitest do motor, com a Montserrat real
+│   │   ├── TextDrawing.ts         # frame de texto → contorno das linhas em coordenadas da página (puro, DEC-018)
+│   │   └── TextDrawing.test.ts    # Testes Vitest do desenho, com a Montserrat real
 │   │
 │   ├── csv/
 │   │   ├── CsvParser.ts           # Lê CSV, detecta colunas e tipos
@@ -125,7 +128,7 @@ EditX/
 │   │   ├── template.types.ts      # Fachada de re-export (TemplateSchema.ts + frame.types.ts) — nunca redefine tipos
 │   │   └── frame.types.ts         # Tipos de frames, overflow, estilos, transformações (extraído de TemplateSchema.ts por tamanho)
 │   │
-│   ├── App.tsx                    # Host de desenvolvimento: CanvasView com a página do exemplo (até existir a UI)
+│   ├── App.tsx                    # Host de desenvolvimento: CanvasView com a página de PRODUTO do exemplo (até existir a UI)
 │   └── main.tsx                   # Ponto de entrada React (StrictMode)
 │
 ├── src-tauri/                     # App desktop Tauri (Fase 2 — não inicializar ainda)
@@ -327,6 +330,10 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
   montagem viva e deixa a página em branco, sem erro no console (FIX-001, medido no navegador em 2026-11-12).
   Na limpeza, remova **só o próprio `<canvas>`** daquela montagem. Em aba oculta o quadro não chega e a
   promessa fica pendente — não use aba oculta para conferir a limpeza.
+- **`new Path(contorno)` do Fabric 6 se posiciona SOZINHO pela caixa do contorno** (`Path.setBoundingBox` →
+  `setPositionByOrigin(pathOffset, CENTER, CENTER)`, fabric 6.9.1). Contorno gerado já em coordenadas da página
+  fica onde foi calculado; passar `left`/`top` desloca o desenho da linha de base. Não passe `left`/`top` a um
+  `Path` de texto (DEC-018).
 - **O `opentype.js` 1.3.4 não lê WOFF2 e não trata fonte variável.** O README declara WOFF/OTF/TTF; `grep -i woff2`
   no `dist/` = 0 (medido em 2026-11-12). Fonte nova entra como `.ttf`/`.otf` ESTÁTICO, um arquivo por peso — nada de
   `[wght].ttf` nem do CSS do Google Fonts (que serve WOFF2). Ver DEC-017.

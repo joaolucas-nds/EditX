@@ -3,16 +3,15 @@
 > Atualizado a cada turno que muda o estado do projeto.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
-**Mudanças nesta revisão (2026-11-15, wo0006):** fontes do app (Montserrat 400/600/700/800, DEC-017) e motor
-de layout de texto puro com os 4 modos de overflow, testados com a fonte real; `FrameText.ts` continua o próximo
-(falta o desenho no canvas). A conferência de tela da wo0005 deixa de constar como pendente (feita pelo dono em
-2026-11-12). A nota anterior (wo0004) saiu — o que ela registrava está em DEC-016.
+**Mudanças nesta revisão (2026-11-15, wo0007):** o texto aparece no canvas, desenhado como contorno das letras
+(DEC-018) — `FrameText.ts` sai do backlog (conferência de tela do dono pendente), `FrameImage.ts` vira o próximo;
+F1 em 6 de 14. A nota anterior (wo0006) saiu — o que ela registrava está em DEC-017.
 
 ---
 
 ## Versão Atual
 
-**v0.0.0** — ainda não lançado (Fase 1/F1 do ROADMAP em andamento, 5 de 14 itens prontos)
+**v0.0.0** — ainda não lançado (Fase 1/F1 do ROADMAP em andamento, 6 de 14 itens prontos)
 
 ---
 
@@ -22,6 +21,7 @@ de layout de texto puro com os 4 modos de overflow, testados com a fonte real; `
 - **Schema `.editx` desenhado e IMPLEMENTADO** — `TemplateSchema.ts` (documento raiz + CSV mapping) e `frame.types.ts` (frames/overflow/estilos) com tipos TypeScript completos, zero `any`, JSDoc em cada export público
 - **Boilerplate do projeto criado** — Vite 8 + React 19 + TypeScript 6, ESLint 9 (flat config) + Prettier configurados, todas as dependências de CONTEXT.md instaladas
 - **Schema validado por exemplo real** — `src/template/__examples__/catalogo-simples.example.ts` satisfaz `EditxTemplate` de ponta a ponta (2 páginas, 3 tipos de frame, herança de estilo via `basedOn`, `isDataPage`, `csvMapping` completo) — compila limpo, passa lint, `npm run build` funciona
+- **Texto aparece no canvas** *(conferência de tela do dono pendente)* — os frames de texto da página são desenhados como contorno das letras gerado pelo `opentype.js` com a mesma medida do motor (`text/TextDrawing.ts` puro + `canvas/FrameText.ts`, testados com a fonte real; `CanvasEngine.setTextDrawings`); frames de dados mostram `{coluna}`; frame com fonte/estilo inválido aparece como retângulo vermelho tracejado — wo0007, DEC-018. Rotação ainda não é desenhada
 - **Motor de layout de texto funcionando (puro)** — `src/text/TextLayout.ts`: quebra de linha e os 4 modos (`grow-vertical`, `grow-horizontal`, `fixed-shrink`, `fixed-clip`), medindo com a fonte real via `opentype.js`; `src/text/FontRegistry.ts` liga família+peso ao `.ttf` (Montserrat 400/600/700/800 em `public/fonts/`) — wo0006, DEC-017. Ainda não desenhado no canvas
 - **Herança de estilos de texto funcionando** — `TextStyle` é raiz (completo, `basedOn: null`) ou derivado (só as diferenças), DEC-014; o validador cobra as duas formas; `StyleRegistry.ts` resolve o estilo final (`resolveStyle`) e edita o mapa sem quebrar a herança (`setStyle`/`removeStyle`), funções puras — DEC-015. A propagação NA TELA vem com o `documentStore`
 - **Mapeamento CSV especificado e tipado** — colunas tipadas, formatadores (currency, date, uppercase), filtro de linhas, padrão de nomenclatura de saída (`outputNaming`)
@@ -35,7 +35,7 @@ de layout de texto puro com os 4 modos de overflow, testados com a fonte real; `
 
 ## 🔧 Em Progresso
 
-*Nada em progresso — próximo item do backlog é `FrameText.ts`.*
+*Nada em progresso — próximo item do backlog é `FrameImage.ts`.*
 
 ---
 
@@ -63,8 +63,8 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 - [x] `TemplateSerializer.ts` — serialização/deserialização + validação de schema (+ `TemplateValidator.ts`, Vitest — wo0001)
 - [x] `StyleRegistry.ts` — estilos globais com herança (funções puras sobre o mapa do documento — wo0003, DEC-015)
 - [x] `CanvasEngine.ts` — wrapper Fabric.js: ciclo de vida, página e zoom (wo0004, DEC-016; eventos de objeto entram com `SelectionManager.ts`)
-- [ ] `FrameText.ts` — frame de texto desenhado no canvas ← **próximo** (motor de layout com os 4 modos e fontes já existem — wo0006, DEC-017)
-- [ ] `FrameImage.ts` — frame de imagem com fit modes
+- [x] `FrameText.ts` — frame de texto desenhado no canvas como contorno das letras (wo0006 + wo0007, DEC-017/DEC-018; conferência de tela do dono pendente)
+- [ ] `FrameImage.ts` — frame de imagem com fit modes ← **próximo**
 - [ ] `FrameShape.ts` — retângulo, elipse, linha básicos
 - [ ] Sanitizar `customSvg` antes do primeiro render de SVG — prometido no JSDoc de `ShapeFrame.customSvg`; fora da wo0001 (o validador só exige presença)
 - [ ] `SelectionManager.ts` — seleção simples, mover, redimensionar
@@ -90,11 +90,10 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 
 ## 💬 Última conversa
 
-**2026-11-15** — wo0006: fontes Montserrat embarcadas (DEC-017) e motor de layout de texto puro com os 4 modos
-de overflow, testado com a fonte real. Antes: wo0004/wo0005 (canvas mostra a página; FIX-001, conferido pelo
-dono na tela em 2026-11-12). Detalhe em `logs/2026-11-12.md` e `logs/2026-11-15.md`.
-**Onde parou:** próximo item é o desenho do texto no canvas (`FrameText.ts`).
+**2026-11-15** — wo0006 (fontes Montserrat e motor de layout, DEC-017) e wo0007 (texto desenhado como contorno
+das letras na página de produto, DEC-018). Detalhe em `logs/2026-11-15.md`.
+**Onde parou:** conferência de tela do texto pelo dono; depois `FrameImage.ts`.
 
 ---
 
-*Próximo passo: `FrameText.ts` — desenhar no Fabric os frames de texto do exemplo, usando `TextLayout.ts` e `FontRegistry.ts` — WO a escrever pelo chat.*
+*Próximo passo: `FrameImage.ts` (frame de imagem com fit modes) — WO a escrever pelo chat, depois da conferência de tela do texto.*

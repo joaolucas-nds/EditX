@@ -7,9 +7,10 @@
  * repassam valores ao Fabric. Eventos de objeto entram com `SelectionManager.ts`.
  */
 
-import { Canvas, Rect } from 'fabric';
+import { Canvas, Path, Rect } from 'fabric';
 import type { FabricObject } from 'fabric';
 import type { DocumentSettings } from '../template/TemplateSchema';
+import type { TextFrameDrawing } from '../text/TextDrawing';
 import { centeredOffset, fitZoom, pageBox } from './PageGeometry';
 import type { PageBox } from './PageGeometry';
 
@@ -22,6 +23,7 @@ export class CanvasEngine {
   private readonly canvas: Canvas;
   private readonly fitMargin: number;
   private pageObjects: FabricObject[] = [];
+  private textObjects: FabricObject[] = [];
   private box: PageBox | null = null;
   private disposal: Promise<void> | null = null;
 
@@ -40,6 +42,8 @@ export class CanvasEngine {
     this.assertAlive();
     for (const object of this.pageObjects) this.canvas.remove(object);
     this.pageObjects = [];
+    // Página nova = desenhos de texto velhos não valem; quem chama manda os novos.
+    this.clearText();
 
     const box = pageBox(document);
     this.box = box;
@@ -84,6 +88,58 @@ export class CanvasEngine {
     this.canvas.requestRenderAll();
   }
 
+  /** Substitui os desenhos de texto da página. Contornos prontos, em coordenadas do mundo. */
+  setTextDrawings(drawings: readonly TextFrameDrawing[]): void {
+    this.assertAlive();
+    this.clearText();
+
+    const common = {
+      originX: 'left',
+      originY: 'top',
+      selectable: false,
+      evented: false,
+    } as const;
+
+    for (const drawing of drawings) {
+      if (drawing.kind === 'text') {
+        for (const data of drawing.paths) {
+          // Sem left/top: o Path se posiciona pelas próprias coordenadas (Fabric 6, DEC-018).
+          const path = new Path(data, { fill: drawing.fill, selectable: false, evented: false });
+          if (drawing.clip !== null) {
+            path.clipPath = new Rect({
+              left: drawing.clip.left,
+              top: drawing.clip.top,
+              width: drawing.clip.width,
+              height: drawing.clip.height,
+              originX: 'left',
+              originY: 'top',
+              absolutePositioned: true,
+            });
+          }
+          this.textObjects.push(path);
+        }
+      } else {
+        this.textObjects.push(
+          new Rect({
+            ...common,
+            left: drawing.frame.left,
+            top: drawing.frame.top,
+            width: drawing.frame.width,
+            height: drawing.frame.height,
+            fill: 'rgba(217, 48, 37, 0.08)',
+            stroke: '#D93025',
+            strokeWidth: 1,
+            strokeDashArray: [4, 4],
+            strokeUniform: true,
+          }),
+        );
+      }
+    }
+
+    this.canvas.add(...this.textObjects);
+    this.canvas.requestRenderAll();
+  }
+
   /** Ajusta o tamanho do canvas ao contêiner e reenquadra a página. */
   resize(width: number, height: number): void {
     this.assertAlive();
@@ -115,6 +171,12 @@ export class CanvasEngine {
     const zoom = fitZoom(width, height, this.box, this.fitMargin);
     const { x, y } = centeredOffset(width, height, this.box, zoom);
     this.canvas.setViewportTransform([zoom, 0, 0, zoom, x, y]);
+  }
+
+  /** Remove só os objetos que `setTextDrawings` criou. */
+  private clearText(): void {
+    for (const object of this.textObjects) this.canvas.remove(object);
+    this.textObjects = [];
   }
 
   private assertAlive(): void {
