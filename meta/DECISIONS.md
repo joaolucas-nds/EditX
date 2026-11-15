@@ -570,6 +570,43 @@ o StrictMode do React (medido no código instalado; armadilhas no CONTEXT).
 
 ---
 
+## DEC-017 — Fontes estáticas embarcadas no app; motor de layout de texto puro
+
+**Data:** 2026-11-15
+**Status:** aceita
+**Autor:** dono (decisão das fontes), Claude (análise e motor)
+
+### Contexto
+O motor de overflow mede com o `opentype.js` (DEC-006), que precisa dos bytes da fonte; o `.editx` só tem o
+nome. O `opentype.js` 1.3.4 não lê WOFF2 nem fonte variável (medido). Raciocínio completo e opções descartadas:
+`meta/analises/261112-ANALISE-fontes-do-frame-de-texto.md`.
+
+### Decisão
+- Fontes do app = `.ttf` ESTÁTICOS versionados em `public/fonts/<família>/` com a licença. F1: Montserrat
+  400/600/700/800, do repositório oficial `JulietaUla/Montserrat` fixado no commit
+  `555facfb2a18c72c3c0380f0d9c0f060453a9058` (SIL OFL 1.1).
+- `src/text/FontRegistry.ts`: catálogo família+peso → URL; peso pela regra de correspondência do CSS; família
+  fora do catálogo é ERRO visível, nunca troca silenciosa. O validador NÃO passa a recusar família desconhecida.
+- `src/text/TextLayout.ts`: motor PURO (quebra de linha + os 4 modos), testado no Vitest com a fonte real lida
+  do disco. Unidades: px CSS; `fontSize` em pt → `ptToPx` (`PageGeometry.ts`).
+- Teste que lê disco declara `/// <reference types="node" />` na primeira linha — o `tsconfig.app.json` carrega
+  só `vite/client`, e sem a referência o `tsc -b` falha (`TS2591`, medido).
+
+### Alternativas consideradas
+- **Google Fonts em tempo de execução** — WOFF2, que o `opentype.js` não lê; rede obrigatória; quebra offline.
+- **Fontes do sistema medidas pelo canvas** — layout diferente por máquina; sem bytes para o PDF.
+- **Upload de fontes já na F1** — escopo da F2; o app precisa de fontes padrão de qualquer forma.
+- **`"types": ["node"]` no `tsconfig.app.json`** — daria tipos do Node ao código do app inteiro (`process`,
+  `Buffer`) para servir dois arquivos de teste.
+
+### Consequências
+- **Positivas:** mesmo `.editx`, mesmo layout em qualquer máquina; funciona offline; o PDF da F3 já tem os bytes.
+- **Negativas:** ~1,8 MB de binário no repositório; uma família só na F1.
+- **Riscos:** a referência de tipos do Node num teste vale para a compilação inteira do app — sinal: uso de
+  `process`/`Buffer` em arquivo que não é `*.test.ts` (`grep -rln "process\.\|Buffer\." src --include=*.ts | grep -v test`).
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown

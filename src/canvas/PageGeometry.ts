@@ -80,3 +80,11 @@ export function centeredOffset(
     y: (viewportHeight - box.height * zoom) / 2,
   };
 }
+
+/** Pontos tipográficos por polegada (1pt = 1/72in). `TextStyle.fontSize` está em pt. */
+export const PT_PER_INCH = 72;
+
+/** Converte pontos tipográficos para px CSS (72pt = 1in = 96px). */
+export function ptToPx(pt: number): number {
+  return (pt * CSS_PX_PER_INCH) / PT_PER_INCH;
+}

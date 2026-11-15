@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { catalogoSimplesExample } from '../template/__examples__/catalogo-simples.example';
 import type { DocumentSettings } from '../template/TemplateSchema';
-import { centeredOffset, fitZoom, MAX_ZOOM, MIN_ZOOM, pageBox, toPx } from './PageGeometry';
+import { centeredOffset, fitZoom, MAX_ZOOM, MIN_ZOOM, pageBox, ptToPx, toPx } from './PageGeometry';
 
 const doc = (): DocumentSettings => structuredClone(catalogoSimplesExample.document);
 
@@ -55,5 +55,10 @@ describe('PageGeometry', () => {
   it('G10: centraliza a caixa ampliada na janela', () => {
     const box = { trimWidth: 200, trimHeight: 100, bleed: 0, width: 200, height: 100 };
     expect(centeredOffset(1000, 800, box, 2)).toEqual({ x: 300, y: 300 });
+  });
+
+  it('G11: pt para px (72pt = 96px)', () => {
+    expect(ptToPx(72)).toBe(96);
+    expect(ptToPx(12)).toBe(16);
   });
 });

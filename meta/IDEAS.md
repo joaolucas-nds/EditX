@@ -117,6 +117,9 @@ quebra ou fica vazio. **Prioridade:** alta — já está no schema (`FrameImage.
   metadado (DEC-016); nada impede um `.editx` com `orientation: 'landscape'` e página em pé. Adiada porque
   ninguém troca a orientação ainda — **volta quando** a UI permitir trocar a orientação (aí trocar deve
   girar `width`/`height`, e o validador pode cobrar a coerência).
+- **`align: 'justify'` de verdade** — na F1 o motor de layout trata `justify` como `left` (DEC-017). Adiada porque
+  justificar exige distribuir espaço entre palavras no desenho e no PDF — **volta quando** um template real usar
+  texto justificado em várias linhas (catálogo com descrição longa, cardápio).
 
 ---
 

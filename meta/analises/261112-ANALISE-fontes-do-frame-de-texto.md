@@ -1,6 +1,11 @@
 # ANALISE — De onde vêm os arquivos de fonte do `FrameText.ts` na F1
 
-> **Status:** Em discussao
+> **Status:** Decidida — dono aprovou a Opção A em 2026-11-15 → DEC-017; aplicação: wo0006 (fontes, registro,
+> motor de layout) e a WO seguinte (desenho no canvas). **Duas correções feitas ao escrever a wo0006, por medição:**
+> (1) a ORIGEM dos arquivos passa a ser o repositório oficial da fonte, `JulietaUla/Montserrat` (pasta `fonts/ttf/`,
+> licença `OFL.txt` = SIL OFL 1.1, conferida pela API do GitHub), fixado no commit `555facfb2a18c72c3c0380f0d9c0f060453a9058`
+> — é o projeto que alimenta o Google Fonts e tem os estáticos por peso; (2) o TAMANHO é ~1,8 MB (445–455 KB por
+> arquivo), não «centenas de KB». O texto abaixo fica como estava quando foi decidido.
 > **Data:** 2026-11-12 (data de criacao; nao muda depois)
 > **Origem:** preparação da WO do `FrameText.ts`, logo depois de o canvas da wo0004/wo0005 ser conferido pelo dono na tela.
 

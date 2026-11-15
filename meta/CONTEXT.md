@@ -3,10 +3,10 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-12, wo0005):** armadilha nova do `dispose()` do Fabric (devolve o
-`<canvas>` original na hora e só resolve depois do próximo quadro), que deixou a página em branco no
-primeiro `npm run dev` — FIX-001. A nota anterior (wo0004: `PageGeometry.ts`, `CanvasView.tsx`, duas
-armadilhas do Fabric) saiu — está em DEC-016 e no corpo deste arquivo.
+**Mudanças nesta revisão (2026-11-15, wo0006):** fontes do app decididas (DEC-017): pasta `src/text/`
+(`FontRegistry.ts`, `TextLayout.ts` e testes) e `public/fonts/montserrat/` na árvore; stack registra que o
+`opentype.js` 1.3.4 não lê WOFF2 nem fonte variável; armadilha do mesmo fato. A nota anterior (wo0005: dispose do
+Fabric) saiu — está em FIX-001 e no corpo deste arquivo.
 
 ---
 
@@ -52,7 +52,7 @@ e metadados de exportação.
 - **Framework UI:** React 19.2.7 + Vite 8.1.5 (documentado originalmente: React 18 + Vite 5)
 - **Motor de canvas:** Fabric.js 6.9.1 (canvas 2D interativo)
 - **Estado global:** Zustand 4.5.7 + Immer 10.2.0 (estado imutável, patches para undo/redo)
-- **Tipografia avançada:** opentype.js 1.3.x (leitura de fontes TTF/OTF, métricas precisas)
+- **Tipografia avançada:** opentype.js 1.3.x (leitura de fontes TTF/OTF/WOFF, métricas precisas — **não lê WOFF2 nem fonte variável**) + `@types/opentype.js`; fontes do app em `public/fonts/` (DEC-017)
 - **Exportação PDF:** pdf-lib 1.17.x (multipáginas, links internos, índice, sangria)
 - **Exportação raster:** html2canvas 1.4.x + Canvas API nativa
 - **Empacotamento em lote:** JSZip 3.10.x
@@ -90,6 +90,12 @@ EditX/
 │   │   ├── StyleRegistry.ts       # resolveStyle / dependentsOf / setStyle / removeStyle — funções puras sobre textStyles (DEC-015)
 │   │   └── StyleRegistry.test.ts  # Testes Vitest da herança de estilos
 │   │
+│   ├── text/
+│   │   ├── FontRegistry.ts        # catálogo de fontes do app (família+peso → arquivo), peso mais próximo, cache (DEC-017)
+│   │   ├── TextLayout.ts          # motor de layout PURO: quebra de linha + os 4 modos de overflow (DEC-006/DEC-017)
+│   │   ├── FontRegistry.test.ts   # Testes Vitest — leem os .ttf reais do disco
+│   │   └── TextLayout.test.ts     # Testes Vitest do motor, com a Montserrat real
+│   │
 │   ├── csv/
 │   │   ├── CsvParser.ts           # Lê CSV, detecta colunas e tipos
 │   │   ├── ColumnMapper.ts        # Lógica de mapeamento coluna → frame
@@ -124,6 +130,7 @@ EditX/
 │
 ├── src-tauri/                     # App desktop Tauri (Fase 2 — não inicializar ainda)
 ├── public/
+│   ├── fonts/montserrat/          # Montserrat 400/600/700/800 (.ttf estáticos) + OFL.txt — versionados (DEC-017)
 │   └── assets/
 │       └── placeholder.png        # Imagem de fallback para frames sem imagem
 │
@@ -320,6 +327,9 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
   montagem viva e deixa a página em branco, sem erro no console (FIX-001, medido no navegador em 2026-11-12).
   Na limpeza, remova **só o próprio `<canvas>`** daquela montagem. Em aba oculta o quadro não chega e a
   promessa fica pendente — não use aba oculta para conferir a limpeza.
+- **O `opentype.js` 1.3.4 não lê WOFF2 e não trata fonte variável.** O README declara WOFF/OTF/TTF; `grep -i woff2`
+  no `dist/` = 0 (medido em 2026-11-12). Fonte nova entra como `.ttf`/`.otf` ESTÁTICO, um arquivo por peso — nada de
+  `[wght].ttf` nem do CSS do Google Fonts (que serve WOFF2). Ver DEC-017.
 - **Campo novo em `TemplateSchema.ts`/`frame.types.ts` exige o `TemplateValidator.ts` junto.** O
   validador é escrito à mão e ESTRITO (DEC-013): chave que ele não conhece vira erro `unknown-field`, então
   um `.editx` com o campo novo seria REJEITADO até o validador aprender. Mesma regra para valor novo numa
