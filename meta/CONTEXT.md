@@ -3,10 +3,11 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-17, wo0010):** regressão da wo0009 medida e corrigida (FIX-002): o estilo do
-canvas passa a ser `100%` do contêiner (a armadilha do retina foi ajustada) e entra a armadilha do `ResizeObserver`
-que não dispara com o zoom do navegador. A nota anterior (wo0009: `canvasSize` e as armadilhas do retina e dos px
-da tela) saiu — o conteúdo está no corpo deste arquivo e em FIX-002.
+**Mudanças nesta revisão (2026-11-17, wo0012):** imagens no canvas (DEC-019): a árvore ganha `src/project/`
+(caminhos do projeto e a fonte de arquivos), `canvas/ImageLayout.ts` e o `FrameImage.ts` real, e
+`public/exemplo/` (a pasta de projeto do exemplo); arquitetura e armadilhas novas sobre caminhos e sobre ler
+arquivo no navegador. A nota anterior (wo0010: estilo `100%` e a armadilha do `ResizeObserver`) saiu — o conteúdo
+está no corpo deste arquivo e em FIX-002.
 
 ---
 
@@ -74,7 +75,10 @@ EditX/
 │   │   ├── CanvasEngine.ts        # Wrapper do Fabric.js: ciclo de vida, página, zoom (DEC-016)
 │   │   ├── FrameText.ts           # prepareTextDrawings: estilo resolvido → fonte → desenho de cada frame de texto da página (DEC-018)
 │   │   ├── FrameText.test.ts      # Testes Vitest — fonte real do disco
-│   │   ├── FrameImage.ts          # Frame de imagem: fit, auto-fill por nome de arquivo
+│   │   ├── ImageLayout.ts         # onde a imagem cai no frame pelos 4 `fit` e o `align` (puro, DEC-019)
+│   │   ├── ImageLayout.test.ts    # Testes Vitest do posicionamento
+│   │   ├── FrameImage.ts          # prepareImageDrawings: caminho → bytes (ProjectFiles) → imagem decodificada → desenho (DEC-019)
+│   │   ├── FrameImage.test.ts     # Testes Vitest — arquivos e decodificador falsos, sem DOM
 │   │   ├── FrameShape.ts          # Formas, bordas, ornamentos vetoriais
 │   │   └── SelectionManager.ts   # Seleção, multi-select, alinhamento, distribuição
 │   │
@@ -98,6 +102,12 @@ EditX/
 │   │   ├── TextLayout.test.ts     # Testes Vitest do motor, com a Montserrat real
 │   │   ├── TextDrawing.ts         # frame de texto → contorno das linhas em coordenadas da página (puro, DEC-018)
 │   │   └── TextDrawing.test.ts    # Testes Vitest do desenho, com a Montserrat real
+│   │
+│   ├── project/
+│   │   ├── ProjectPath.ts         # caminho relativo à pasta do projeto: normaliza, recusa o que sai dela (puro, DEC-019)
+│   │   ├── ProjectPath.test.ts    # Testes Vitest dos caminhos
+│   │   ├── ProjectFiles.ts        # contrato «bytes por caminho» + UrlProjectFiles (fetch; desenvolvimento) (DEC-019)
+│   │   └── ProjectFiles.test.ts   # Testes Vitest com fetch falso
 │   │
 │   ├── csv/
 │   │   ├── CsvParser.ts           # Lê CSV, detecta colunas e tipos
@@ -134,8 +144,8 @@ EditX/
 ├── src-tauri/                     # App desktop Tauri (Fase 2 — não inicializar ainda)
 ├── public/
 │   ├── fonts/montserrat/          # Montserrat 400/600/700/800 (.ttf estáticos) + OFL.txt — versionados (DEC-017)
-│   └── assets/
-│       └── placeholder.png        # Imagem de fallback para frames sem imagem
+│   ├── exemplo/                   # pasta de PROJETO do exemplo, servida pelo Vite: imagens/_placeholder.png (DEC-019)
+│   └── assets/                    # vazia (o placeholder.png previsto aqui não existe — o do exemplo está em exemplo/imagens/)
 │
 ├── logs/                          # Log do dia (logs/AAAA-MM-DD.md), versionado
 ├── meta/                          # Documentação de contexto (KCM)
@@ -261,6 +271,7 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 
 - Formato de template é JSON próprio com extensão `.editx` — ver DEC-001.
 - Imagens são referenciadas por caminho relativo, não embutidas por padrão — ver DEC-002.
+- Projeto = pasta (o `.editx` e as imagens); todo arquivo do projeto é lido por um `ProjectFiles` («bytes por caminho»), e quem desenha não sabe de onde os bytes vêm — ver DEC-019.
 - Fabric.js é o motor de canvas (não Konva.js) — ver DEC-003.
 - Zustand + Immer para todo o estado global (não Redux/Context) — ver DEC-004.
 - Tauri para desktop na Fase 2 (não Electron) — ver DEC-005.
@@ -306,6 +317,17 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - **Não usar `any` em TemplateSchema.ts.** Cada campo deve ser tipado explicitamente — esse arquivo é o contrato entre todos os módulos.
 - **Não rodar geração em massa no thread principal.** Com 500+ linhas no CSV, a UI trava. BatchGenerator.ts deve sempre rodar em Web Worker.
 - **Não embutir imagens em base64 no `.editx` por padrão.** O arquivo fica imenso e não é versionável. Referências por caminho relativo são o padrão; base64 é opção de "empacotar".
+- **No navegador, abrir um arquivo NÃO dá acesso à pasta dele** — por isso o projeto é uma PASTA escolhida pelo usuário
+  (DEC-019). `showDirectoryPicker` só existe no Chrome/Edge (Firefox: posição negativa; Safari: se opõe); no
+  Firefox/Safari a pasta vem por `<input webkitdirectory>`, só leitura e sem persistência. Pesquisado em 2026-11-17
+  (`meta/analises/261117-ANALISE-leitura-de-imagens-por-caminho.md`). Não leia imagem por `fetch` de caminho do
+  usuário: o `UrlProjectFiles` serve só o exemplo de `public/exemplo/`.
+- **Caminho de imagem passa SEMPRE por `normalizeProjectPath`** (`src/project/ProjectPath.ts`): `./` some, `\` vira
+  `/`, e `..` que sai da pasta do projeto vira `null` — um handle de pasta não sobe para a pasta-mãe, e o validador
+  recusa o caso (DEC-019). `src` e `fallback` são relativos ao `.editx`; o valor da coluna de imagem do CSV, a
+  `imageBasePath`.
+- **Nome de arquivo pode vir com a caixa trocada** (`Coca.JPG` × `coca.jpg`): o Windows não distingue, o handle de
+  pasta e o mapa de arquivos distinguem. O `ImageResolver.ts` (F3) procura sem diferenciar caixa e avisa.
 - **Não inicializar o Tauri (src-tauri/) antes da Fase 2.** A pasta existe na estrutura de referência mas não deve ser criada no boilerplate inicial — adiciona complexidade desnecessária.
 - **Não usar Konva.js** — foi avaliado e descartado em favor do Fabric.js (ver DECISIONS.md DEC-003).
 - **Fabric.js v6 quebrou a API de serialização do v5.** Se encontrar tutoriais usando `toJSON()` com estrutura de v5, não seguir cegamente — verificar a documentação da v6.

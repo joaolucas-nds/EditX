@@ -150,6 +150,25 @@ describe('validateTemplate / serializeTemplate / parseTemplate', () => {
     expectError(t, '$.pages[1].frames[2].fallback', 'invalid-value');
   });
 
+  it('T28: fallback que sai da pasta do projeto é invalid-value', () => {
+    const t = fresh();
+    at(t, 'pages', 1, 'frames', 2).fallback = '../fora/x.png';
+    expectError(t, '$.pages[1].frames[2].fallback', 'invalid-value');
+  });
+
+  it('T29: imageBasePath que sai da pasta do projeto é invalid-value', () => {
+    const t = fresh();
+    at(t, 'csvMapping').imageBasePath = './imagens/../../fotos';
+    expectError(t, '$.csvMapping.imageBasePath', 'invalid-value');
+  });
+
+  it('T30: ".." que volta para dentro da pasta é válido', () => {
+    const t = fresh();
+    at(t, 'pages', 1, 'frames', 2).fallback = './imagens/../logo.png';
+    at(t, 'csvMapping').imageBasePath = '.';
+    expect(validateTemplate(t).ok).toBe(true);
+  });
+
   it('T17: serializeTemplate de template inválido lança TemplateValidationError', () => {
     const t = fresh();
     delete t.name;

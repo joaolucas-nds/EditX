@@ -23,6 +23,7 @@ está nas entradas «Adicionado» abaixo).
 - `StyleRegistry.ts` — estilo de texto final resolvido pela cadeia de `basedOn` (`resolveStyle`, com cache por mapa), estilos derivados (`dependentsOf`) e edição do mapa sem quebrar a herança (`setStyle`/`removeStyle`); funções puras sobre o mapa do documento. Ver DEC-015
 - `CanvasEngine.ts` + `PageGeometry.ts` + `ui/CanvasView.tsx` — a página do documento aparece no canvas (área de corte, guia de sangria, zoom para caber, reenquadra ao redimensionar); o app deixa de ser o scaffold do Vite. Ver DEC-016
 - Texto no canvas — fontes Montserrat embarcadas (`public/fonts/`, `text/FontRegistry.ts`), motor de layout com os 4 modos de overflow (`text/TextLayout.ts`) e desenho como contorno das letras (`text/TextDrawing.ts`, `canvas/FrameText.ts`). Ver DEC-017 e DEC-018
+- Imagem no canvas — arquivos do projeto lidos por caminho relativo ao `.editx` (`project/ProjectFiles.ts`, `project/ProjectPath.ts`), posicionamento pelos 4 `fit` e o `align` (`canvas/ImageLayout.ts`) e desenho recortado pelo frame (`canvas/FrameImage.ts`, `CanvasEngine.setImageDrawings`); o validador passa a recusar caminho com `..` que sai da pasta do projeto; o exemplo ganha a pasta `public/exemplo/`. Ver DEC-019
 
 ### Corrigido
 - Página em branco no `npm run dev`: a limpeza do `CanvasView` removia por diferença de filhos e apagava o canvas da 2ª montagem (StrictMode); agora remove só o próprio `<canvas>`. Ver FIX-001
@@ -48,7 +49,6 @@ está nas entradas «Adicionado» abaixo).
   `eslint-plugin-react-hooks`. Ver DEC-011.
 
 ### Planejado para v0.1.0 (MVP do editor)
-- `FrameImage.ts` — frame de imagem com fit modes
 - `documentStore.ts`, `selectionStore.ts`, `historyStore.ts`
 - `CsvParser.ts` — importação e parsing de CSV
 - `BatchGenerator.ts` em Web Worker — geração PNG básica

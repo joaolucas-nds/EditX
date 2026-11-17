@@ -195,9 +195,9 @@ export type ImageFrame = BaseFrame & {
   /** Raio de borda em mm, para cantos arredondados. 0 = cantos retos. */
   borderRadius: number;
   /**
-   * Caminho relativo (à pasta de imagens do `.editx`) usado quando a
-   * imagem não é encontrada — evita que o lote quebre por uma linha de
-   * CSV com nome de arquivo inválido ou ausente.
+   * Caminho relativo ao arquivo `.editx` (como `src`; NÃO à `imageBasePath`)
+   * usado quando a imagem não é encontrada — evita que o lote quebre por uma
+   * linha de CSV com nome de arquivo inválido ou ausente. Ver DEC-019.
    */
   fallback?: string;
 } & ({ role: 'data'; csvColumn: string } | { role: 'static'; src: string });

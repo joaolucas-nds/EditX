@@ -2,7 +2,9 @@ import { useEffect, useRef } from 'react';
 import type { JSX } from 'react';
 import { CanvasEngine } from '../canvas/CanvasEngine';
 import { canvasSize } from '../canvas/PageGeometry';
+import { decodeImageInBrowser, prepareImageDrawings } from '../canvas/FrameImage';
 import { prepareTextDrawings } from '../canvas/FrameText';
+import type { ProjectFiles } from '../project/ProjectFiles';
 import type { EditxTemplate } from '../template/TemplateSchema';
 import { FontRegistry } from '../text/FontRegistry';
 
@@ -11,6 +13,8 @@ export interface CanvasViewProps {
   template: EditxTemplate;
   /** Id da página a mostrar. */
   pageId: string;
+  /** Arquivos do projeto (imagens), lidos por caminho relativo ao `.editx` (DEC-019). */
+  files: ProjectFiles;
 }
 
 /** No escopo do módulo: o cache das fontes dura entre montagens (StrictMode, troca de página). */
@@ -21,7 +25,7 @@ const fonts = new FontRegistry();
  * O `<canvas>` é criado a cada montagem (não vem do JSX): o Fabric 6 recusa
  * reaproveitar elemento com `data-fabric`, e o StrictMode monta duas vezes (DEC-016).
  */
-export function CanvasView({ template, pageId }: CanvasViewProps): JSX.Element {
+export function CanvasView({ template, pageId, files }: CanvasViewProps): JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<CanvasEngine | null>(null);
   // Sempre o template mais recente, para o efeito de montagem desenhar já na criação.
@@ -100,11 +104,17 @@ export function CanvasView({ template, pageId }: CanvasViewProps): JSX.Element {
       },
       (error: unknown) => console.error('Falha ao preparar o texto da página:', error),
     );
+    prepareImageDrawings(template, pageId, files, decodeImageInBrowser).then(
+      (drawings) => {
+        if (!cancelado && !engine.disposed) engine.setImageDrawings(drawings);
+      },
+      (error: unknown) => console.error('Falha ao preparar as imagens da página:', error),
+    );
 
     return () => {
       cancelado = true;
     };
-  }, [template, pageId]);
+  }, [template, pageId, files]);
 
   return <div ref={hostRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }} />;
 }

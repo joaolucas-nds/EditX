@@ -7,10 +7,11 @@
  * repassam valores ao Fabric. Eventos de objeto entram com `SelectionManager.ts`.
  */
 
-import { Canvas, Path, Rect } from 'fabric';
+import { Canvas, FabricImage, Path, Rect } from 'fabric';
 import type { FabricObject } from 'fabric';
 import type { DocumentSettings } from '../template/TemplateSchema';
-import type { TextFrameDrawing } from '../text/TextDrawing';
+import type { DrawRect, TextFrameDrawing } from '../text/TextDrawing';
+import type { ImageFrameDrawing } from './FrameImage';
 import { centeredOffset, fitZoom, pageBox } from './PageGeometry';
 import type { CanvasSize, PageBox } from './PageGeometry';
 
@@ -19,11 +20,53 @@ export interface CanvasEngineOptions {
   fitMargin?: number;
 }
 
+/** Opções comuns aos objetos de frame: canto superior esquerdo como origem; nada interativo ainda. */
+const FRAME_OBJECT = {
+  originX: 'left',
+  originY: 'top',
+  selectable: false,
+  evented: false,
+} as const;
+
+/** Recorte no mundo (`absolutePositioned`: não acompanha o objeto recortado). */
+function clipRect(rect: DrawRect, radius: number): Rect {
+  return new Rect({
+    left: rect.left,
+    top: rect.top,
+    width: rect.width,
+    height: rect.height,
+    rx: radius,
+    ry: radius,
+    originX: 'left',
+    originY: 'top',
+    absolutePositioned: true,
+  });
+}
+
+/** Frame que não pôde ser desenhado: retângulo vermelho tracejado no lugar dele. */
+function frameErrorRect(rect: DrawRect): Rect {
+  return new Rect({
+    ...FRAME_OBJECT,
+    left: rect.left,
+    top: rect.top,
+    width: rect.width,
+    height: rect.height,
+    fill: 'rgba(217, 48, 37, 0.08)',
+    stroke: '#D93025',
+    strokeWidth: 1,
+    strokeDashArray: [4, 4],
+    strokeUniform: true,
+  });
+}
+
 export class CanvasEngine {
   private readonly canvas: Canvas;
   private readonly fitMargin: number;
   private pageObjects: FabricObject[] = [];
   private textObjects: FabricObject[] = [];
+  private imageObjects: FabricObject[] = [];
+  /** `zIndex` do frame de cada objeto de texto/imagem — a ordem de empilhamento (`relayer`). */
+  private readonly frameZ = new WeakMap<FabricObject, number>();
   private box: PageBox | null = null;
   private disposal: Promise<void> | null = null;
   /** px do dispositivo por px CSS do último `resize` (FIX-002); 1 até o primeiro. */
@@ -47,8 +90,9 @@ export class CanvasEngine {
     this.assertAlive();
     for (const object of this.pageObjects) this.canvas.remove(object);
     this.pageObjects = [];
-    // Página nova = desenhos de texto velhos não valem; quem chama manda os novos.
+    // Página nova = desenhos de texto e de imagem velhos não valem; quem chama manda os novos.
     this.clearText();
+    this.clearImages();
 
     const box = pageBox(document);
     this.box = box;
@@ -98,51 +142,69 @@ export class CanvasEngine {
     this.assertAlive();
     this.clearText();
 
-    const common = {
-      originX: 'left',
-      originY: 'top',
-      selectable: false,
-      evented: false,
-    } as const;
-
     for (const drawing of drawings) {
       if (drawing.kind === 'text') {
         for (const data of drawing.paths) {
           // Sem left/top: o Path se posiciona pelas próprias coordenadas (Fabric 6, DEC-018).
           const path = new Path(data, { fill: drawing.fill, selectable: false, evented: false });
-          if (drawing.clip !== null) {
-            path.clipPath = new Rect({
-              left: drawing.clip.left,
-              top: drawing.clip.top,
-              width: drawing.clip.width,
-              height: drawing.clip.height,
-              originX: 'left',
-              originY: 'top',
-              absolutePositioned: true,
-            });
-          }
+          if (drawing.clip !== null) path.clipPath = clipRect(drawing.clip, 0);
+          this.frameZ.set(path, drawing.zIndex);
           this.textObjects.push(path);
         }
       } else {
-        this.textObjects.push(
-          new Rect({
-            ...common,
-            left: drawing.frame.left,
-            top: drawing.frame.top,
-            width: drawing.frame.width,
-            height: drawing.frame.height,
-            fill: 'rgba(217, 48, 37, 0.08)',
-            stroke: '#D93025',
-            strokeWidth: 1,
-            strokeDashArray: [4, 4],
-            strokeUniform: true,
-          }),
-        );
+        const rect = frameErrorRect(drawing.frame);
+        this.frameZ.set(rect, drawing.zIndex);
+        this.textObjects.push(rect);
       }
     }
 
-    this.canvas.add(...this.textObjects);
-    this.canvas.requestRenderAll();
+    this.relayer();
+  }
+
+  /**
+   * Substitui os desenhos de imagem da página (DEC-019). Cada imagem é recortada pelo
+   * frame, com o raio dos cantos; área reservada vira retângulo cinza tracejado, e erro,
+   * o vermelho tracejado do texto.
+   */
+  setImageDrawings(drawings: readonly ImageFrameDrawing<HTMLImageElement>[]): void {
+    this.assertAlive();
+    this.clearImages();
+
+    for (const drawing of drawings) {
+      let object: FabricObject;
+      if (drawing.kind === 'image') {
+        const { image, place } = drawing;
+        object = new FabricImage(image.source, {
+          ...FRAME_OBJECT,
+          left: place.left,
+          top: place.top,
+          scaleX: place.width / image.width,
+          scaleY: place.height / image.height,
+        });
+        object.clipPath = clipRect(drawing.frame, drawing.radius);
+      } else if (drawing.kind === 'placeholder') {
+        object = new Rect({
+          ...FRAME_OBJECT,
+          left: drawing.frame.left,
+          top: drawing.frame.top,
+          width: drawing.frame.width,
+          height: drawing.frame.height,
+          rx: drawing.radius,
+          ry: drawing.radius,
+          fill: '#F1F3F4',
+          stroke: '#9AA0A6',
+          strokeWidth: 1,
+          strokeDashArray: [4, 4],
+          strokeUniform: true,
+        });
+      } else {
+        object = frameErrorRect(drawing.frame);
+      }
+      this.frameZ.set(object, drawing.zIndex);
+      this.imageObjects.push(object);
+    }
+
+    this.relayer();
   }
 
   /**
@@ -199,6 +261,26 @@ export class CanvasEngine {
   private clearText(): void {
     for (const object of this.textObjects) this.canvas.remove(object);
     this.textObjects = [];
+  }
+
+  /** Remove só os objetos que `setImageDrawings` criou. */
+  private clearImages(): void {
+    for (const object of this.imageObjects) this.canvas.remove(object);
+    this.imageObjects = [];
+  }
+
+  /**
+   * Empilha os objetos de frame (imagem e texto) pelo `zIndex`, acima da página. Empate:
+   * imagem embaixo do texto (foto sob a legenda); dentro de cada tipo, a ordem recebida.
+   * Texto e imagem chegam em momentos diferentes (promessas separadas), por isso a ordem é
+   * refeita a cada chegada.
+   */
+  private relayer(): void {
+    const objects = [...this.imageObjects, ...this.textObjects];
+    this.canvas.remove(...objects);
+    objects.sort((a, b) => (this.frameZ.get(a) ?? 0) - (this.frameZ.get(b) ?? 0));
+    this.canvas.add(...objects);
+    this.canvas.requestRenderAll();
   }
 
   private assertAlive(): void {

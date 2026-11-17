@@ -670,6 +670,46 @@ exatamente o que a geração em massa não tolera.
 
 ---
 
+## DEC-019 — Projeto = pasta; arquivos do projeto lidos por um contrato único (`ProjectFiles`)
+
+**Data:** 2026-11-17
+**Status:** aceita
+**Autor:** dono (escolha das opções) + chat (análise)
+
+### Contexto
+O DEC-002 guarda imagens por caminho relativo ao `.editx`, mas no navegador abrir um arquivo não dá acesso à pasta
+dele. `showDirectoryPicker` só existe no Chrome/Edge (Firefox: posição negativa; Safari: se opõe); `<input
+webkitdirectory>` existe em todos, só leitura e sem persistência. Análise: `meta/analises/261117-ANALISE-leitura-de-imagens-por-caminho.md`.
+
+### Decisão
+- **Projeto = pasta:** o usuário abre a pasta que contém o `.editx` e as imagens.
+- **Um contrato só** para ler arquivos do projeto: `ProjectFiles.read(caminho) → Blob | null` (`src/project/ProjectFiles.ts`).
+  Implementações: pasta por `showDirectoryPicker` no Chrome/Edge (handle no IndexedDB, grava o `.editx`); pasta por
+  `webkitdirectory` no Firefox/Safari (só leitura); `UrlProjectFiles` só para o exemplo em desenvolvimento
+  (`public/exemplo/`); Tauri na F5. As duas da pasta entram com a UI de abrir projeto.
+- **Caminhos:** `src` e `fallback` relativos ao `.editx`; valor da coluna de imagem do CSV relativo a `imageBasePath`.
+  Todo caminho passa por `normalizeProjectPath`; `..` que sai da pasta do projeto é recusado, também pelo validador.
+- **Desenho** (wo0012): estático tenta `src` e depois `fallback`; dados (sem CSV ainda) tenta o `fallback`; sem
+  caminho → área reservada; nada legível → erro. Vertical sempre centralizado; `borderRadius` em mm; empate de
+  `zIndex` põe a imagem embaixo do texto.
+
+### Alternativas consideradas
+- **Copiar as imagens para o armazenamento do navegador (OPFS/IndexedDB)** — a pasta deixaria de ser a fonte de
+  verdade; cópias divergem em silêncio.
+- **Base64 sempre** — já recusado no DEC-002.
+- **Esperar o Tauri (F5)** — travaria a F3 inteira.
+- **Só Chrome/Edge na F1** — mais barato, mas o editor não abriria no Firefox/Safari; o dono escolheu manter os dois.
+
+### Consequências
+- **Positivas:** quem desenha não sabe de onde vêm os bytes; o Tauri entra pela mesma porta; caminho inválido é pego
+  ao abrir o arquivo, não no meio de um lote.
+- **Negativas:** duas implementações de navegador para manter; no Firefox/Safari salvar = baixar um `.editx` novo e
+  a pasta é escolhida de novo a cada sessão.
+- **Riscos:** caixa de nome de arquivo trocada (`Coca.JPG` × `coca.jpg`) — o `ImageResolver.ts` procura sem diferenciar
+  caixa; permissão de pasta negada ou esquecida; pasta enorme no `webkitdirectory` (não medido). Armadilhas no CONTEXT.
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown

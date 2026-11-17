@@ -10,6 +10,7 @@
  * de módulos sem ciclo em tempo de execução. Ver DEC-013.
  */
 
+import { normalizeProjectPath } from '../project/ProjectPath';
 import type { ValidationError, ValidationErrorCode } from './TemplateValidator';
 
 export type Obj = Record<string, unknown>;
@@ -144,11 +145,16 @@ export const hexColor: Check = (v, p, c) => {
   else if (!HEX_COLOR.test(v)) fail(c, p, 'invalid-value', `${p}: cor deve ser #RRGGBB.`);
 };
 
-/** DEC-002: caminhos de imagem são relativos ao `.editx`, nunca absolutos (`/x`, `\x`, `C:`). */
+/**
+ * DEC-002: caminhos de imagem são relativos ao `.editx`, nunca absolutos (`/x`, `\x`, `C:`).
+ * DEC-019: e não saem da pasta do projeto (`../x`) — o navegador só lê dentro dela.
+ */
 export const relativePath: Check = (v, p, c) => {
   if (typeof v !== 'string') typeError(c, p, 'um texto', v);
   else if (/^[/\\]/.test(v) || /^[A-Za-z]:/.test(v)) {
     fail(c, p, 'invalid-value', `${p}: o caminho deve ser relativo ao arquivo, não absoluto.`);
+  } else if (normalizeProjectPath(v) === null) {
+    fail(c, p, 'invalid-value', `${p}: o caminho não pode sair da pasta do projeto (\`..\`).`);
   }
 };
 
