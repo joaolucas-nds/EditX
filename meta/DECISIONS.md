@@ -640,7 +640,7 @@ exatamente o que a geração em massa não tolera.
 ## FIX-002 — Canvas borrado com o zoom do navegador diferente de 100%
 
 **Data:** 2026-11-16
-**Status:** aberta — corrigida no código (wo0009 + wo0010); fecha com a conferência de tela depois da wo0010
+**Status:** resolvida — conferida pelo chat no navegador embutido em 2026-11-17 depois da wo0010: com a página aberta, zoom de CSS 1 → 1.1 → 1.25 → 0.9, o buffer bateu com a tela em todos (1280×720), e o contêiner de 1000,5×700,5 px CSS deu buffer 1001×701 = os px de tela que o navegador informa para o canvas. Limite: o painel roda em DPR 1 — monitor HiDPI e zoom real do navegador (que muda o `devicePixelRatio`) não foram conferidos; se o borrão voltar num deles, reabrir aqui
 
 - **Sintoma:** em 100% a página e o texto ficam nítidos; em qualquer outro zoom do navegador ficam borrados, e
   continuam assim esperando minutos [relatado pelo dono, 2026-11-15].

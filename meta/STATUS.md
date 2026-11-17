@@ -3,9 +3,9 @@
 > Atualizado a cada turno que muda o estado do projeto.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
-**Mudanças nesta revisão (2026-11-17, wo0010):** a conferência de tela do FIX-002 achou uma regressão da wo0009
-(trocar o zoom com a página aberta voltava a borrar), corrigida nesta WO; o item segue em «Em Progresso» até a
-conferência depois dela. A nota anterior (wo0009) saiu — o que ela registrava está em FIX-002 e no log de 2026-11-16.
+**Mudanças nesta revisão (2026-11-17, wo0011):** FIX-002 conferido na tela pelo chat depois da wo0010 e fechado; o
+item sai de «Em Progresso» e a nitidez entra no item do canvas em «Funcionando». A nota anterior (wo0010) saiu — o
+que ela registrava está em FIX-002 e no log de 2026-11-17.
 
 ---
 
@@ -29,13 +29,13 @@ conferência depois dela. A nota anterior (wo0009) saiu — o que ela registrava
 - **Sistema de documentação operacional** — CONTEXT/STATUS/CHANGELOG/DECISIONS/IDEAS/ROADMAP/GLOSSARY/HISTORY, alinhado ao KCM v1.135.0
 - **Modo Code instalado** — `CLAUDE.md` na raiz, `.claude/settings.json`, skills `/apply-wo`, `/wrap` e `/sondar`, modelo de WO em `meta/workorders/`
 - **Salvar/abrir `.editx`** — `TemplateSerializer.ts` (`serializeTemplate`, `parseTemplate`) + `TemplateValidator.ts` (`validateTemplate`, estrito, erros com caminho `$.…`); suíte Vitest verde (`npm test`) — wo0001, DEC-013
-- **Canvas mostra a página** *(corrigido na wo0005, FIX-001; conferido pelo dono na tela em 2026-11-12)* — `npm run dev` abre a página do exemplo (área de corte branca + guia de sangria tracejada) centralizada e com zoom para caber, reenquadrando ao redimensionar a janela; `CanvasEngine.ts` (Fabric) + `PageGeometry.ts` (puro, testado) + `ui/CanvasView.tsx` — wo0004, DEC-016. Ainda sem frames
+- **Canvas mostra a página** *(corrigido na wo0005, FIX-001; conferido pelo dono na tela em 2026-11-12)* — `npm run dev` abre a página do exemplo (área de corte branca + guia de sangria tracejada) centralizada e com zoom para caber, reenquadrando ao redimensionar a janela; `CanvasEngine.ts` (Fabric) + `PageGeometry.ts` (puro, testado) + `ui/CanvasView.tsx` — wo0004, DEC-016. Ainda sem frames. **Nítido em qualquer zoom do navegador**, inclusive trocando o zoom com a página aberta: buffer em px do dispositivo, estilo `100%`, dois `ResizeObserver` (FIX-002, wo0009 + wo0010; conferido pelo chat no navegador embutido em 2026-11-17, em DPR 1 com zoom de CSS — DPR ≠ 1 real não conferido)
 
 ---
 
 ## 🔧 Em Progresso
 
-- **Nitidez fora do zoom 100%** — corrigida no código (wo0009 + wo0010, FIX-002: buffer do canvas em px do dispositivo, retina do Fabric desligado, estilo `100%`, dois `ResizeObserver`); falta a conferência de tela depois da wo0010 — o chat confere no navegador embutido com o `npm run dev` do dono rodando (o painel roda em DPR 1; DPR ≠ 1 real fica sinalizado). Depois dela, o próximo item do backlog é `FrameImage.ts`.
+*Nada em progresso — próximo item do backlog é `FrameImage.ts`.*
 
 ---
 
@@ -91,9 +91,10 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 ## 💬 Última conversa
 
 **2026-11-17** — conferência de tela do FIX-002 feita pelo chat no navegador embutido: achou a regressão da wo0009
-(zoom trocado com a página aberta), corrigida na wo0010. Detalhe em `logs/2026-11-17.md`.
-**Onde parou:** wo0010 aplicada; falta a conferência de tela depois dela.
+(zoom trocado com a página aberta), corrigida na wo0010 e conferida de novo — FIX-002 fechado (wo0011). Detalhe em
+`logs/2026-11-17.md`.
+**Onde parou:** canvas nítido em qualquer zoom; o próximo item do backlog é `FrameImage.ts`.
 
 ---
 
-*Próximo passo: conferência de tela do FIX-002 depois da wo0010 (chat, navegador embutido); depois, `FrameImage.ts` (frame de imagem com fit modes) — WO a escrever pelo chat.*
+*Próximo passo: `FrameImage.ts` (frame de imagem com fit modes) — como o navegador lê a imagem por caminho relativo (DEC-002) ainda não está decidido; provável análise antes da WO, pelo chat.*
