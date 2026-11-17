@@ -3,9 +3,9 @@
 > Atualizado a cada turno que muda o estado do projeto.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
-**Mudanças nesta revisão (2026-11-16, wo0009):** o borrão fora do zoom 100% foi corrigido no código (FIX-002) e sai
-de «Quebrado» para «Em Progresso» até o dono conferir na tela. A nota anterior (wo0008) saiu — o que ela registrava
-está no log de 2026-11-15 e no bug, agora em FIX-002.
+**Mudanças nesta revisão (2026-11-17, wo0010):** a conferência de tela do FIX-002 achou uma regressão da wo0009
+(trocar o zoom com a página aberta voltava a borrar), corrigida nesta WO; o item segue em «Em Progresso» até a
+conferência depois dela. A nota anterior (wo0009) saiu — o que ela registrava está em FIX-002 e no log de 2026-11-16.
 
 ---
 
@@ -35,7 +35,7 @@ está no log de 2026-11-15 e no bug, agora em FIX-002.
 
 ## 🔧 Em Progresso
 
-- **Nitidez fora do zoom 100%** — corrigida no código (wo0009, FIX-002: buffer do canvas em px do dispositivo, retina do Fabric desligado); falta a conferência do dono na tela em 90%, 110% e 125%. Depois dela, o próximo item do backlog é `FrameImage.ts`.
+- **Nitidez fora do zoom 100%** — corrigida no código (wo0009 + wo0010, FIX-002: buffer do canvas em px do dispositivo, retina do Fabric desligado, estilo `100%`, dois `ResizeObserver`); falta a conferência de tela depois da wo0010 — o chat confere no navegador embutido com o `npm run dev` do dono rodando (o painel roda em DPR 1; DPR ≠ 1 real fica sinalizado). Depois dela, o próximo item do backlog é `FrameImage.ts`.
 
 ---
 
@@ -90,10 +90,10 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 
 ## 💬 Última conversa
 
-**2026-11-16** — causa raiz do borrão fora do zoom 100% medida no navegador e corrigida (wo0009, FIX-002). Detalhe
-em `logs/2026-11-16.md`.
-**Onde parou:** correção aplicada; falta o roteiro de tela do dono (90%, 110%, 125%).
+**2026-11-17** — conferência de tela do FIX-002 feita pelo chat no navegador embutido: achou a regressão da wo0009
+(zoom trocado com a página aberta), corrigida na wo0010. Detalhe em `logs/2026-11-17.md`.
+**Onde parou:** wo0010 aplicada; falta a conferência de tela depois dela.
 
 ---
 
-*Próximo passo: conferência de tela do FIX-002 pelo dono; depois, `FrameImage.ts` (frame de imagem com fit modes) — WO a escrever pelo chat.*
+*Próximo passo: conferência de tela do FIX-002 depois da wo0010 (chat, navegador embutido); depois, `FrameImage.ts` (frame de imagem com fit modes) — WO a escrever pelo chat.*

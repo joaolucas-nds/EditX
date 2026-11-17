@@ -146,9 +146,10 @@ export class CanvasEngine {
   }
 
   /**
-   * Ajusta o canvas ao contêiner e reenquadra a página. O buffer recebe px do DISPOSITIVO
-   * e o estilo recebe px CSS: um pixel do buffer cai num pixel da tela em qualquer zoom do
-   * navegador (FIX-002). As coordenadas do canvas passam a ser px do dispositivo; o zoom de
+   * Ajusta o canvas ao contêiner e reenquadra a página. O buffer recebe px do DISPOSITIVO;
+   * o estilo é `100%` do contêiner, então o tamanho na tela acompanha o contêiner mesmo se
+   * um evento de resize faltar (FIX-002). Um pixel do buffer cai num pixel da tela em
+   * qualquer zoom do navegador. As coordenadas do canvas são px do dispositivo; o zoom de
    * enquadramento já as inclui.
    *
    * @param size - tamanhos vindos de `canvasSize` (`PageGeometry.ts`)
@@ -160,7 +161,9 @@ export class CanvasEngine {
       { width: size.pixelWidth, height: size.pixelHeight },
       { backstoreOnly: true },
     );
-    this.canvas.setDimensions({ width: size.cssWidth, height: size.cssHeight }, { cssOnly: true });
+    // 100%, não px: px fixos ficam velhos quando o zoom do navegador muda sem evento, e o
+    // CSSOM ainda arredonda a 6 algarismos (1163.625 → "1163.62px", medido).
+    this.canvas.setDimensions({ width: '100%', height: '100%' }, { cssOnly: true });
     this.reframe();
     this.canvas.requestRenderAll();
   }

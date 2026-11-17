@@ -43,7 +43,9 @@ export function CanvasView({ template, pageId }: CanvasViewProps): JSX.Element {
     engine.resize(canvasSize(rect.width, rect.height, window.devicePixelRatio));
     engine.showPage(templateRef.current.document);
 
-    const observer = new ResizeObserver((entries) => {
+    // Um callback para os dois observadores: a entrada traz as medidas CSS e em px do
+    // dispositivo qualquer que seja a caixa observada.
+    const onResize = (entries: ResizeObserverEntry[]): void => {
       const entry = entries[0];
       const { width, height } = entry.contentRect;
       // Quantos pixels da TELA o contêiner ocupa, já arredondados pelo navegador como ele
@@ -55,17 +57,22 @@ export function CanvasView({ template, pageId }: CanvasViewProps): JSX.Element {
       if (!engine.disposed) {
         engine.resize(canvasSize(width, height, window.devicePixelRatio, devicePixels));
       }
-    });
+    };
+    // DOIS observadores, porque cada um só dispara quando a SUA caixa muda (FIX-002):
+    // - caixa de conteúdo: muda com o zoom do navegador (a janela mantém os px físicos);
+    // - caixa em px do dispositivo: muda quando só o DPR muda (outro monitor).
+    const observer = new ResizeObserver(onResize);
+    observer.observe(host);
+    const deviceObserver = new ResizeObserver(onResize);
     try {
-      // Esta caixa também dispara quando só o DPR muda (outro monitor), sem mudar o tamanho CSS.
-      observer.observe(host, { box: 'device-pixel-content-box' });
+      deviceObserver.observe(host, { box: 'device-pixel-content-box' });
     } catch {
-      // Navegador sem a caixa: a de conteúdo dispara quando o tamanho CSS muda.
-      observer.observe(host);
+      // Navegador sem a caixa (Safari): fica só o observador da caixa de conteúdo.
     }
 
     return () => {
       observer.disconnect();
+      deviceObserver.disconnect();
       engineRef.current = null;
       engine
         .dispose()

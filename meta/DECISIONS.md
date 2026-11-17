@@ -640,7 +640,7 @@ exatamente o que a geração em massa não tolera.
 ## FIX-002 — Canvas borrado com o zoom do navegador diferente de 100%
 
 **Data:** 2026-11-16
-**Status:** aberta — corrigida no código (wo0009); fecha quando o dono conferir na tela em 90%, 110% e 125%
+**Status:** aberta — corrigida no código (wo0009 + wo0010); fecha com a conferência de tela depois da wo0010
 
 - **Sintoma:** em 100% a página e o texto ficam nítidos; em qualquer outro zoom do navegador ficam borrados, e
   continuam assim esperando minutos [relatado pelo dono, 2026-11-15].
@@ -656,6 +656,13 @@ exatamente o que a geração em massa não tolera.
   (wo0009).
 - **Alternativa descartada:** manter o retina do Fabric e compensar o arredondamento — não cobre o zoom abaixo de
   100%, onde o Fabric não escala.
+- **Regressão da wo0009 (corrigida na wo0010):** o `CanvasView` observava SÓ a caixa `device-pixel-content-box`, e o
+  estilo do canvas recebia px CSS. Trocar o zoom com a página aberta não muda os px físicos da janela — nenhum
+  evento — e o estilo ficava velho: medido em 2026-11-17 (zoom de CSS no `<html>`, 1.1 → 1.25), 0 disparos e o
+  canvas ocupando 1454 px da tela para um buffer de 1280. Na carga da página saía certo, por isso passou. Correção:
+  estilo `100%` do contêiner e dois observadores (caixa de conteúdo + caixa em px do dispositivo) com o mesmo
+  callback (wo0010). Conferência que só olha a página recém-carregada não pega isso: o roteiro de tela do canvas
+  troca o zoom COM a página aberta.
 - **Lição:** buffer de canvas é inteiro e precisa bater com o pixel da tela; quem sabe quantos pixels a tela dá é o
   navegador (`devicePixelContentBoxSize`), não a conta `css × dpr`. Conferência visual em 100% não testa isso —
   todo roteiro de tela do canvas inclui um zoom ≠ 100%. Armadilhas no CONTEXT (retina truncando; px da tela nos

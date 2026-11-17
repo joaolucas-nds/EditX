@@ -51,6 +51,14 @@ Comece vazia e escreva quando doer duas vezes: técnica que você precisou expli
 - **Claude Code nesta máquina (Git Bash do Windows): `python3` é o stub da Microsoft Store e TRAVA esperando** —
   script de apoio do Code se escreve em `node`. No terminal do chat (VM Linux) `python3` funciona. Medido na
   wo0001 (relatório `261111-0926-code-editx-apply-wo0001.txt`). Ao escrever WO, não peça `python3` ao Code.
+- **Conferência de tela: o dono deixa o `npm run dev` rodando e o CHAT confere no navegador embutido** (preferência
+  do dono, 2026-11-17: «vale mais eu deixar rodando o npm e vc verificar do que eu tentar»). Roteiro de tela vira
+  passo do chat; ao dono vai só o que o painel não cobre, sinalizado. Limites medidos do painel: não muda o zoom
+  do navegador (atalho não suportado) e roda em DPR 1; com o painel oculto o `ResizeObserver` e o desenho param —
+  uma captura (`screenshot`) força um quadro, às vezes com timeout; captura com zoom de CSS sai deslocada (leia os
+  pixels do buffer com `getImageData` em vez de confiar nela). Para simular zoom do navegador, `zoom` de CSS no
+  `<html>` muda px CSS × px da tela pelo mesmo caminho do código, mas NÃO muda `devicePixelRatio`. Antes de sair:
+  recarregar a página e fechar a aba.
 
 ## Princípios de trabalho
 

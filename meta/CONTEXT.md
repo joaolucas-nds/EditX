@@ -3,10 +3,10 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-16, wo0009):** canvas nítido em qualquer zoom do navegador (FIX-002): o
-`PageGeometry.ts` ganha o tamanho do buffer em px do dispositivo (`canvasSize`) e duas armadilhas novas do Fabric
-(buffer truncado e retina só acima de 1). A nota anterior (wo0007: contorno das letras, DEC-018) saiu — está em
-DEC-018 e no corpo deste arquivo.
+**Mudanças nesta revisão (2026-11-17, wo0010):** regressão da wo0009 medida e corrigida (FIX-002): o estilo do
+canvas passa a ser `100%` do contêiner (a armadilha do retina foi ajustada) e entra a armadilha do `ResizeObserver`
+que não dispara com o zoom do navegador. A nota anterior (wo0009: `canvasSize` e as armadilhas do retina e dos px
+da tela) saiu — o conteúdo está no corpo deste arquivo e em FIX-002.
 
 ---
 
@@ -339,8 +339,16 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
   é inteiro: 1919,99995 vira 1919 numa tela de 1920 px; e `getDevicePixelRatio()` devolve `Math.max(dpr, 1)`, então
   no zoom 90% o buffer fica MAIOR que a tela. Buffer de tamanho diferente da tela = o navegador reamostra o canvas
   inteiro e tudo borra (fabric 6.9.1, lido em 2026-11-16). O `CanvasEngine` dá ao buffer os px do DISPOSITIVO
-  (`devicePixelContentBoxSize` do `ResizeObserver`, ou `css × dpr` arredondado) e ao CSS os px CSS; as coordenadas
-  do canvas viram px do dispositivo e o zoom de enquadramento as inclui. **Não religue `enableRetinaScaling`.**
+  (`devicePixelContentBoxSize` do `ResizeObserver`, ou `css × dpr` arredondado) e ao CSS `100%` do contêiner; as
+  coordenadas do canvas viram px do dispositivo e o zoom de enquadramento as inclui. **Não religue `enableRetinaScaling`.**
+- **`ResizeObserver` com `box: 'device-pixel-content-box'` NÃO dispara quando o zoom do navegador muda** — e
+  `100%` no CSS do canvas, não px (FIX-002, regressão da wo0009). Cada observação só dispara quando a SUA caixa
+  muda; no zoom, a janela continua com os mesmos pixels físicos e só o tamanho CSS muda. Medido em 2026-11-17 no
+  navegador embutido (zoom de CSS no `<html>`, 110% → 125%): 0 disparos da caixa em px do dispositivo, 1 da caixa de
+  conteúdo — e a entrada da caixa de conteúdo já traz `devicePixelContentBoxSize` certo. O inverso vale ao trocar de
+  monitor (só o DPR muda). Por isso o `CanvasView` usa DOIS observadores com o mesmo callback. E o estilo do canvas é
+  `100%`: com px fixos ele fica velho se um evento faltar (e o CSSOM ainda arredonda a 6 algarismos —
+  `1163.625` virou `1163.62px`, medido).
 - **Com o buffer em px do dispositivo, tamanho que não escala com o zoom do viewport é em px da TELA.** Traço e
   tracejado de objeto escalam com o viewport (o `strokeUniform` só compensa a escala do OBJETO — fabric 6.9.1,
   `_renderStroke`), então a guia de sangria fica igual. Mas controles de seleção (`cornerSize`, `padding`,
