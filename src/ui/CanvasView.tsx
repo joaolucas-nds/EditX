@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { JSX } from 'react';
 import { CanvasEngine } from '../canvas/CanvasEngine';
+import { canvasSize } from '../canvas/PageGeometry';
 import { prepareTextDrawings } from '../canvas/FrameText';
 import type { EditxTemplate } from '../template/TemplateSchema';
 import { FontRegistry } from '../text/FontRegistry';
@@ -36,14 +37,32 @@ export function CanvasView({ template, pageId }: CanvasViewProps): JSX.Element {
 
     const engine = new CanvasEngine(element);
     engineRef.current = engine;
-    engine.resize(host.clientWidth, host.clientHeight);
+    // Primeiro enquadramento com a melhor estimativa; o ResizeObserver dispara logo em
+    // seguida com a medida exata em px do dispositivo e corrige (FIX-002).
+    const rect = host.getBoundingClientRect();
+    engine.resize(canvasSize(rect.width, rect.height, window.devicePixelRatio));
     engine.showPage(templateRef.current.document);
 
     const observer = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      if (!engine.disposed) engine.resize(width, height);
+      const entry = entries[0];
+      const { width, height } = entry.contentRect;
+      // Quantos pixels da TELA o contêiner ocupa, já arredondados pelo navegador como ele
+      // vai desenhar (escrita horizontal: inline = largura). Safari não tem; aí canvasSize
+      // arredonda css × dpr.
+      const device = entry.devicePixelContentBoxSize?.[0];
+      const devicePixels =
+        device === undefined ? null : { width: device.inlineSize, height: device.blockSize };
+      if (!engine.disposed) {
+        engine.resize(canvasSize(width, height, window.devicePixelRatio, devicePixels));
+      }
     });
-    observer.observe(host);
+    try {
+      // Esta caixa também dispara quando só o DPR muda (outro monitor), sem mudar o tamanho CSS.
+      observer.observe(host, { box: 'device-pixel-content-box' });
+    } catch {
+      // Navegador sem a caixa: a de conteúdo dispara quando o tamanho CSS muda.
+      observer.observe(host);
+    }
 
     return () => {
       observer.disconnect();

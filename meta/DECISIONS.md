@@ -637,6 +637,32 @@ exatamente o que a geração em massa não tolera.
 
 ---
 
+## FIX-002 — Canvas borrado com o zoom do navegador diferente de 100%
+
+**Data:** 2026-11-16
+**Status:** aberta — corrigida no código (wo0009); fecha quando o dono conferir na tela em 90%, 110% e 125%
+
+- **Sintoma:** em 100% a página e o texto ficam nítidos; em qualquer outro zoom do navegador ficam borrados, e
+  continuam assim esperando minutos [relatado pelo dono, 2026-11-15].
+- **Causa raiz:** o buffer do `<canvas>` ficava com tamanho diferente do que o canvas ocupa na tela, e o navegador
+  reamostrava tudo. O retina do Fabric 6.9.1 grava `css × dpr` como atributo de largura, que é inteiro (a fração é
+  truncada), e trata DPR < 1 como 1; o `ResizeObserver` entregava px CSS fracionários. Medido no navegador em
+  2026-11-16: contêiner de 1000,5 × 700,5 px CSS → buffer 1000 × 700, quando a tela dá 1001 × 701
+  (`devicePixelContentBoxSize`). A hipótese do cache dos objetos caiu na leitura do código: ele é refeito quando
+  `zoom × retina` muda.
+- **Solução:** retina do Fabric desligado; o `CanvasEngine.resize` recebe `canvasSize(...)` (`PageGeometry.ts`,
+  puro, testado) — px do dispositivo no buffer (a medida do navegador, ou `css × dpr` arredondado), px CSS no estilo;
+  margem do enquadramento e `getZoom()` convertidos pela razão; o `CanvasView` observa `device-pixel-content-box`
+  (wo0009).
+- **Alternativa descartada:** manter o retina do Fabric e compensar o arredondamento — não cobre o zoom abaixo de
+  100%, onde o Fabric não escala.
+- **Lição:** buffer de canvas é inteiro e precisa bater com o pixel da tela; quem sabe quantos pixels a tela dá é o
+  navegador (`devicePixelContentBoxSize`), não a conta `css × dpr`. Conferência visual em 100% não testa isso —
+  todo roteiro de tela do canvas inclui um zoom ≠ 100%. Armadilhas no CONTEXT (retina truncando; px da tela nos
+  controles de seleção).
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown

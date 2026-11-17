@@ -3,10 +3,10 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-15, wo0007):** texto desenhado como CONTORNO das letras (DEC-018): árvore
-ganha `text/TextDrawing.ts` (+ teste) e `canvas/FrameText.test.ts`, e o `FrameText.ts` vira a cola assíncrona
-(estilo → fonte → desenho); o `App.tsx` mostra a página de produto; armadilha nova do `Path` do Fabric. A nota
-anterior (wo0006: fontes, `src/text/`, WOFF2) saiu — está em DEC-017 e no corpo deste arquivo.
+**Mudanças nesta revisão (2026-11-16, wo0009):** canvas nítido em qualquer zoom do navegador (FIX-002): o
+`PageGeometry.ts` ganha o tamanho do buffer em px do dispositivo (`canvasSize`) e duas armadilhas novas do Fabric
+(buffer truncado e retina só acima de 1). A nota anterior (wo0007: contorno das letras, DEC-018) saiu — está em
+DEC-018 e no corpo deste arquivo.
 
 ---
 
@@ -69,7 +69,7 @@ e metadados de exportação.
 EditX/
 ├── src/
 │   ├── canvas/
-│   │   ├── PageGeometry.ts        # unidade → px CSS, caixa da página com sangria, zoom para caber (puro, DEC-016)
+│   │   ├── PageGeometry.ts        # unidade → px CSS, caixa da página com sangria, zoom para caber, tamanho do buffer em px do dispositivo (puro, DEC-016/FIX-002)
 │   │   ├── PageGeometry.test.ts   # Testes Vitest da geometria
 │   │   ├── CanvasEngine.ts        # Wrapper do Fabric.js: ciclo de vida, página, zoom (DEC-016)
 │   │   ├── FrameText.ts           # prepareTextDrawings: estilo resolvido → fonte → desenho de cada frame de texto da página (DEC-018)
@@ -334,6 +334,19 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
   `setPositionByOrigin(pathOffset, CENTER, CENTER)`, fabric 6.9.1). Contorno gerado já em coordenadas da página
   fica onde foi calculado; passar `left`/`top` desloca o desenho da linha de base. Não passe `left`/`top` a um
   `Path` de texto (DEC-018).
+- **O retina do Fabric 6 trunca o buffer e ignora DPR abaixo de 1** — e por isso está DESLIGADO aqui (FIX-002).
+  `setCanvasDimensions` grava `width × retina` como atributo (`toString()`), e o atributo de largura do `<canvas>`
+  é inteiro: 1919,99995 vira 1919 numa tela de 1920 px; e `getDevicePixelRatio()` devolve `Math.max(dpr, 1)`, então
+  no zoom 90% o buffer fica MAIOR que a tela. Buffer de tamanho diferente da tela = o navegador reamostra o canvas
+  inteiro e tudo borra (fabric 6.9.1, lido em 2026-11-16). O `CanvasEngine` dá ao buffer os px do DISPOSITIVO
+  (`devicePixelContentBoxSize` do `ResizeObserver`, ou `css × dpr` arredondado) e ao CSS os px CSS; as coordenadas
+  do canvas viram px do dispositivo e o zoom de enquadramento as inclui. **Não religue `enableRetinaScaling`.**
+- **Com o buffer em px do dispositivo, tamanho que não escala com o zoom do viewport é em px da TELA.** Traço e
+  tracejado de objeto escalam com o viewport (o `strokeUniform` só compensa a escala do OBJETO — fabric 6.9.1,
+  `_renderStroke`), então a guia de sangria fica igual. Mas controles de seleção (`cornerSize`, `padding`,
+  `borderScaleFactor`) são desenhados em unidades do canvas: no `SelectionManager.ts`, multiplique-os pelo
+  `pixelRatio` do engine, senão encolhem em telas HiDPI. O ponteiro já sai certo (o Fabric divide o tamanho do
+  buffer pelo tamanho na tela).
 - **O `opentype.js` 1.3.4 não lê WOFF2 e não trata fonte variável.** O README declara WOFF/OTF/TTF; `grep -i woff2`
   no `dist/` = 0 (medido em 2026-11-12). Fonte nova entra como `.ttf`/`.otf` ESTÁTICO, um arquivo por peso — nada de
   `[wght].ttf` nem do CSS do Google Fonts (que serve WOFF2). Ver DEC-017.

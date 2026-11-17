@@ -88,3 +88,41 @@ export const PT_PER_INCH = 72;
 export function ptToPx(pt: number): number {
   return (pt * CSS_PX_PER_INCH) / PT_PER_INCH;
 }
+
+/** Tamanho do canvas: o que ele ocupa na página (px CSS) e o buffer de pixels (px do dispositivo). */
+export interface CanvasSize {
+  /** Largura do contêiner em px CSS (pode ser fracionária). */
+  cssWidth: number;
+  /** Altura do contêiner em px CSS (pode ser fracionária). */
+  cssHeight: number;
+  /** Largura do buffer em px do dispositivo — inteiro: um pixel do buffer por pixel da tela. */
+  pixelWidth: number;
+  /** Altura do buffer em px do dispositivo — inteiro. */
+  pixelHeight: number;
+  /** px do dispositivo por px CSS de fato usados (`pixelWidth / cssWidth`); o DPR quando a largura é 0. */
+  pixelRatio: number;
+}
+
+/**
+ * Tamanho do buffer para que cada pixel do canvas caia num pixel da tela (FIX-002).
+ * `devicePixels` é a medida exata do navegador (`devicePixelContentBoxSize` do
+ * `ResizeObserver`) e vence quando existe; sem ela, arredonda `css × dpr`. Nunca
+ * trunca: buffer 1 px menor que a tela faz o navegador reamostrar o canvas inteiro.
+ *
+ * @param cssWidth - largura do contêiner em px CSS
+ * @param cssHeight - altura do contêiner em px CSS
+ * @param devicePixelRatio - `window.devicePixelRatio` (pode ser < 1 no zoom abaixo de 100%)
+ * @param devicePixels - medida exata em px do dispositivo, ou `null` se o navegador não a dá
+ * @returns tamanhos CSS e do buffer, e a razão entre eles
+ */
+export function canvasSize(
+  cssWidth: number,
+  cssHeight: number,
+  devicePixelRatio: number,
+  devicePixels: { width: number; height: number } | null = null,
+): CanvasSize {
+  const pixelWidth = devicePixels?.width ?? Math.round(cssWidth * devicePixelRatio);
+  const pixelHeight = devicePixels?.height ?? Math.round(cssHeight * devicePixelRatio);
+  const pixelRatio = cssWidth > 0 && pixelWidth > 0 ? pixelWidth / cssWidth : devicePixelRatio;
+  return { cssWidth, cssHeight, pixelWidth, pixelHeight, pixelRatio };
+}

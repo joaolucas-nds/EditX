@@ -12,7 +12,7 @@ import type { FabricObject } from 'fabric';
 import type { DocumentSettings } from '../template/TemplateSchema';
 import type { TextFrameDrawing } from '../text/TextDrawing';
 import { centeredOffset, fitZoom, pageBox } from './PageGeometry';
-import type { PageBox } from './PageGeometry';
+import type { CanvasSize, PageBox } from './PageGeometry';
 
 export interface CanvasEngineOptions {
   /** Margem em px CSS ao redor da página no enquadramento. Padrão: 32. */
@@ -26,6 +26,8 @@ export class CanvasEngine {
   private textObjects: FabricObject[] = [];
   private box: PageBox | null = null;
   private disposal: Promise<void> | null = null;
+  /** px do dispositivo por px CSS do último `resize` (FIX-002); 1 até o primeiro. */
+  private pixelRatio = 1;
 
   constructor(element: HTMLCanvasElement, options: CanvasEngineOptions = {}) {
     this.fitMargin = options.fitMargin ?? 32;
@@ -33,7 +35,10 @@ export class CanvasEngine {
       selection: false,
       backgroundColor: '#E5E5E5',
       renderOnAddRemove: false,
-      enableRetinaScaling: true,
+      // DESLIGADO de propósito (FIX-002): o retina do Fabric 6 trunca `css × dpr` e ignora
+      // DPR < 1, e o buffer fica de tamanho diferente da tela. Quem dá os px do dispositivo
+      // é o `resize`, já medidos pelo navegador.
+      enableRetinaScaling: false,
     });
   }
 
@@ -140,17 +145,30 @@ export class CanvasEngine {
     this.canvas.requestRenderAll();
   }
 
-  /** Ajusta o tamanho do canvas ao contêiner e reenquadra a página. */
-  resize(width: number, height: number): void {
+  /**
+   * Ajusta o canvas ao contêiner e reenquadra a página. O buffer recebe px do DISPOSITIVO
+   * e o estilo recebe px CSS: um pixel do buffer cai num pixel da tela em qualquer zoom do
+   * navegador (FIX-002). As coordenadas do canvas passam a ser px do dispositivo; o zoom de
+   * enquadramento já as inclui.
+   *
+   * @param size - tamanhos vindos de `canvasSize` (`PageGeometry.ts`)
+   */
+  resize(size: CanvasSize): void {
     this.assertAlive();
-    this.canvas.setDimensions({ width, height });
+    this.pixelRatio = size.pixelRatio;
+    this.canvas.setDimensions(
+      { width: size.pixelWidth, height: size.pixelHeight },
+      { backstoreOnly: true },
+    );
+    this.canvas.setDimensions({ width: size.cssWidth, height: size.cssHeight }, { cssOnly: true });
     this.reframe();
     this.canvas.requestRenderAll();
   }
 
+  /** Zoom da página em px CSS por px do mundo (1 = tamanho físico), independente do DPR. */
   getZoom(): number {
     this.assertAlive();
-    return this.canvas.getZoom();
+    return this.canvas.getZoom() / this.pixelRatio;
   }
 
   get disposed(): boolean {
@@ -168,7 +186,8 @@ export class CanvasEngine {
     if (this.box === null) return;
     const width = this.canvas.getWidth();
     const height = this.canvas.getHeight();
-    const zoom = fitZoom(width, height, this.box, this.fitMargin);
+    // width/height são px do dispositivo; a margem é configurada em px CSS.
+    const zoom = fitZoom(width, height, this.box, this.fitMargin * this.pixelRatio);
     const { x, y } = centeredOffset(width, height, this.box, zoom);
     this.canvas.setViewportTransform([zoom, 0, 0, zoom, x, y]);
   }

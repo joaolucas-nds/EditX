@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { catalogoSimplesExample } from '../template/__examples__/catalogo-simples.example';
 import type { DocumentSettings } from '../template/TemplateSchema';
-import { centeredOffset, fitZoom, MAX_ZOOM, MIN_ZOOM, pageBox, ptToPx, toPx } from './PageGeometry';
+import {
+  canvasSize,
+  centeredOffset,
+  fitZoom,
+  MAX_ZOOM,
+  MIN_ZOOM,
+  pageBox,
+  ptToPx,
+  toPx,
+} from './PageGeometry';
 
 const doc = (): DocumentSettings => structuredClone(catalogoSimplesExample.document);
 
@@ -60,5 +69,40 @@ describe('PageGeometry', () => {
   it('G11: pt para px (72pt = 96px)', () => {
     expect(ptToPx(72)).toBe(96);
     expect(ptToPx(12)).toBe(16);
+  });
+
+  it('G12: a medida exata do navegador vence o arredondamento', () => {
+    // Medido no navegador em 2026-11-16: 1000,5 × 700,5 px CSS ocupam 1001 × 701 px da tela.
+    expect(canvasSize(1000.5, 700.5, 1, { width: 1001, height: 701 })).toEqual({
+      cssWidth: 1000.5,
+      cssHeight: 700.5,
+      pixelWidth: 1001,
+      pixelHeight: 701,
+      pixelRatio: 1001 / 1000.5,
+    });
+  });
+
+  it('G13: sem a medida, arredonda css × dpr — nunca trunca (zoom 110%)', () => {
+    // 1745,4545 × 1,1 = 1919,99995: truncar daria 1919 numa tela de 1920 px.
+    const size = canvasSize(1745.4545, 859.0909, 1.1);
+    expect(size.pixelWidth).toBe(1920);
+    expect(size.pixelHeight).toBe(945);
+  });
+
+  it('G14: DPR abaixo de 1 também vale (zoom 90%)', () => {
+    const size = canvasSize(2133.3333, 1050, 0.9);
+    expect(size.pixelWidth).toBe(1920);
+    expect(size.pixelHeight).toBe(945);
+    expect(size.pixelRatio).toBeCloseTo(0.9, 4);
+  });
+
+  it('G15: contêiner vazio não divide por zero', () => {
+    expect(canvasSize(0, 0, 1.25)).toEqual({
+      cssWidth: 0,
+      cssHeight: 0,
+      pixelWidth: 0,
+      pixelHeight: 0,
+      pixelRatio: 1.25,
+    });
   });
 });

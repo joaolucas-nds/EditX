@@ -3,9 +3,9 @@
 > Atualizado a cada turno que muda o estado do projeto.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
-**Mudanças nesta revisão (2026-11-15, wo0008):** conferência de tela da wo0007 registrada — texto conferido pelo
-dono; aberto o bug «canvas borrado fora do zoom 100%». A nota anterior (wo0007) saiu — o que ela registrava está em
-DEC-018 e no CHANGELOG.
+**Mudanças nesta revisão (2026-11-16, wo0009):** o borrão fora do zoom 100% foi corrigido no código (FIX-002) e sai
+de «Quebrado» para «Em Progresso» até o dono conferir na tela. A nota anterior (wo0008) saiu — o que ela registrava
+está no log de 2026-11-15 e no bug, agora em FIX-002.
 
 ---
 
@@ -35,15 +35,13 @@ DEC-018 e no CHANGELOG.
 
 ## 🔧 Em Progresso
 
-*Nada em progresso — próximo item do backlog é `FrameImage.ts`.*
+- **Nitidez fora do zoom 100%** — corrigida no código (wo0009, FIX-002: buffer do canvas em px do dispositivo, retina do Fabric desligado); falta a conferência do dono na tela em 90%, 110% e 125%. Depois dela, o próximo item do backlog é `FrameImage.ts`.
 
 ---
 
 ## ❌ Quebrado / Com Problema
 
-- **Canvas borrado com o zoom do navegador diferente de 100%** — em 100% a página e o texto ficam nítidos; em qualquer outro zoom ficam borrados e continuam assim mesmo esperando minutos [relatado pelo dono, 2026-11-15]. Causa raiz não investigada; hipóteses e o que já foi lido no Fabric estão em `logs/2026-11-15.md` («Chat (planejamento) — noite»).
-
-*Fora esse, nenhum bug aberto — projeto compila, lint passa, build de produção funciona.* A página em branco do
+*Nenhum bug aberto — projeto compila, lint passa, build de produção funciona.* A página em branco do
 primeiro `npm run dev` (wo0004) foi corrigida na wo0005 (FIX-001) e conferida pelo dono na tela. Dois avisos
 não-bloqueantes valem registro (não são bugs do projeto, são de dependências de
 terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
@@ -92,10 +90,10 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 
 ## 💬 Última conversa
 
-**2026-11-15** — wo0006 (fontes Montserrat e motor de layout, DEC-017) e wo0007 (texto desenhado como contorno
-das letras na página de produto, DEC-018). Detalhe em `logs/2026-11-15.md`.
-**Onde parou:** texto conferido na tela pelo dono; bug de nitidez fora do zoom 100% aberto (causa raiz a investigar). A ordem entre investigar o bug e `FrameImage.ts` não está decidida.
+**2026-11-16** — causa raiz do borrão fora do zoom 100% medida no navegador e corrigida (wo0009, FIX-002). Detalhe
+em `logs/2026-11-16.md`.
+**Onde parou:** correção aplicada; falta o roteiro de tela do dono (90%, 110%, 125%).
 
 ---
 
-*Próximo passo: decidir a ordem entre investigar o borrão fora do zoom 100% (bug aberto) e `FrameImage.ts` (frame de imagem com fit modes) — WO a escrever pelo chat.*
+*Próximo passo: conferência de tela do FIX-002 pelo dono; depois, `FrameImage.ts` (frame de imagem com fit modes) — WO a escrever pelo chat.*

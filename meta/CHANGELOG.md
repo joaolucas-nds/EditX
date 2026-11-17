@@ -26,6 +26,7 @@ está nas entradas «Adicionado» abaixo).
 
 ### Corrigido
 - Página em branco no `npm run dev`: a limpeza do `CanvasView` removia por diferença de filhos e apagava o canvas da 2ª montagem (StrictMode); agora remove só o próprio `<canvas>`. Ver FIX-001
+- Canvas borrado com o zoom do navegador diferente de 100%: o buffer do `<canvas>` ficava de tamanho diferente da tela (retina do Fabric truncando e ignorando DPR < 1); agora o buffer recebe os px do dispositivo medidos pelo navegador. Ver FIX-002
 
 ### Modificado
 - Documentação e ferramentas alinhadas ao KCM v1.135.0 com modo Code: `CLAUDE.md`, `.claude/`
