@@ -3,9 +3,9 @@
 > Atualizado a cada turno que muda o estado do projeto.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
-**Mudanças nesta revisão (2026-11-18, wo0016):** stores do editor feitos (DEC-021) e o backlog reordenado — stores
-antes da seleção; conferência de tela pelo chat em «Em Progresso». A nota anterior (wo0015) saiu — o que ela
-registrava está no log de 2026-11-18.
+**Mudanças nesta revisão (2026-11-18, wo0017):** stores conferidos na tela pelo chat; «Em Progresso» passa a ser o
+merge do KCM v1.151.0 (antes do `SelectionManager.ts`). A nota anterior (wo0016) saiu — o que ela registrava está em
+DEC-021, no CHANGELOG e no log de 2026-11-18.
 
 ---
 
@@ -21,7 +21,7 @@ registrava está no log de 2026-11-18.
 - **Schema `.editx` desenhado e IMPLEMENTADO** — `TemplateSchema.ts` (documento raiz + CSV mapping) e `frame.types.ts` (frames/overflow/estilos) com tipos TypeScript completos, zero `any`, JSDoc em cada export público
 - **Boilerplate do projeto criado** — Vite 8 + React 19 + TypeScript 6, ESLint 9 (flat config) + Prettier configurados, todas as dependências de CONTEXT.md instaladas
 - **Schema validado por exemplo real** — `src/template/__examples__/catalogo-simples.example.ts` satisfaz `EditxTemplate` de ponta a ponta (2 páginas, 3 tipos de frame, herança de estilo via `basedOn`, `isDataPage`, `csvMapping` completo) — compila limpo, passa lint, `npm run build` funciona
-- **Documento nos stores, com desfazer e refazer** *(wo0016, DEC-021; conferência de tela pendente — ver «Em Progresso»)* — `createEditorStores(template)` (`store/documentStore.ts`) guarda uma cópia do template e a página ativa; toda mudança passa por `edit` (`produceWithPatches` do Immer) e entra no `historyStore` (limite 100; mudança vazia não entra); `undo`/`redo` aplicam os patches; `selectionStore` guarda os ids selecionados. Página e seleção não entram no histórico. Primeira ação: `setFrameTransform`. O `App` lê o documento com `useStore`; no `npm run dev` os stores ficam em `window.__editx`. Testado em Node (H1–H13)
+- **Documento nos stores, com desfazer e refazer** *(wo0016, DEC-021; conferido pelo chat no navegador embutido em 2026-11-18)* — `createEditorStores(template)` (`store/documentStore.ts`) guarda uma cópia do template e a página ativa; toda mudança passa por `edit` (`produceWithPatches` do Immer) e entra no `historyStore` (limite 100; mudança vazia não entra); `undo`/`redo` aplicam os patches; `selectionStore` guarda os ids selecionados. Página e seleção não entram no histórico. Primeira ação: `setFrameTransform`. O `App` lê o documento com `useStore`; no `npm run dev` os stores ficam em `window.__editx`. Testado em Node (H1–H13)
 - **Forma aparece no canvas** *(wo0014, DEC-020; conferido pelo chat no navegador embutido em 2026-11-18)* — os frames de forma da página viram contorno SVG calculado em `canvas/FrameShape.ts` (puro, testado) e pintado como `Path` (`CanvasEngine.setShapeDrawings`): `rect` com cantos arredondados, `ellipse` e `line` (horizontal, no meio do frame); preenchimento sólido ou nenhum; traço contínuo, tracejado ou pontilhado, por DENTRO do frame. Polígono (sem pontos no formato) e SVG customizado (sem sanitização) saem como retângulo vermelho. Forma, imagem e texto empilham pelo `zIndex` (empate: forma < imagem < texto). `?page=page-capa` na URL mostra a capa. Rotação ainda não é desenhada
 - **Imagem aparece no canvas** *(wo0012, DEC-019; conferido pelo chat no navegador embutido em 2026-11-17)* — os frames de imagem da página são lidos por caminho relativo ao `.editx` pelo contrato `ProjectFiles` (`project/ProjectFiles.ts`; no `npm run dev`, `UrlProjectFiles` serve a pasta do exemplo em `public/exemplo/`), decodificados e posicionados pelos 4 `fit` e o `align` (`canvas/ImageLayout.ts`, puro), recortados pelo frame com o raio dos cantos (`CanvasEngine.setImageDrawings`); estático tenta `src` e depois `fallback`, dados usa o `fallback`; sem caminho → área reservada cinza; nada legível → retângulo vermelho. Caminhos passam por `normalizeProjectPath` (`project/ProjectPath.ts`) e o validador recusa `..` que sai da pasta. Rotação ainda não é desenhada
 - **Texto aparece no canvas** *(conferido pelo dono na tela em 2026-11-15; nítido em qualquer zoom desde o FIX-002)* — os frames de texto da página são desenhados como contorno das letras gerado pelo `opentype.js` com a mesma medida do motor (`text/TextDrawing.ts` puro + `canvas/FrameText.ts`, testados com a fonte real; `CanvasEngine.setTextDrawings`); frames de dados mostram `{coluna}`; frame com fonte/estilo inválido aparece como retângulo vermelho tracejado — wo0007, DEC-018. Rotação ainda não é desenhada
@@ -38,7 +38,7 @@ registrava está no log de 2026-11-18.
 
 ## 🔧 Em Progresso
 
-- **Conferência de tela dos stores** — o chat confere no navegador embutido com o `npm run dev` do dono rodando: o canvas igual a antes, e pelo console (`window.__editx`) mover um frame, ver o canvas acompanhar, desfazer e refazer. Depois dela, o próximo item do backlog é `SelectionManager.ts`.
+- **Merge do template-update do KCM v1.151.0** (pacote `261118-kcm-update-v1.151.0/` na pasta-pai; o projeto está em v1.135.0) — fase 1 (preliminares) feita pelo chat em 2026-11-18: superfícies presentes, linhas revogadas sem ocorrência a corrigir, modos coerentes, correções obrigatórias do `settings.json` já satisfeitas (detalhe no log). Falta: comparar os 23 arquivos do pacote, o dono decidir, a fusão do CEREBRO e das Instruções, a instalação das skills e o `GUIA-DO-KIT.md` novo. Vem ANTES do `SelectionManager.ts` — o pacote manda instalar as skills novas antes de aplicar qualquer WO.
 
 ---
 
@@ -97,8 +97,8 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 **2026-11-18** — `FrameShape.ts` (wo0014, DEC-020): retângulo, elipse e linha com o traço por dentro do frame. Detalhe
 em `logs/2026-11-18.md`. Antes, em 2026-11-17: FIX-002 fechado, DEC-019 e `FrameImage.ts` conferido (`logs/2026-11-17.md`).
 Depois: análise da ordem entre seleção e stores, decidida pelo dono (DEC-021), e os stores (wo0016).
-**Onde parou:** wo0016 aplicada; falta a conferência de tela dos stores pelo chat.
+**Onde parou:** stores conferidos na tela (wo0017); chegou o pacote do KCM v1.151.0 e o merge está na fase 1.
 
 ---
 
-*Próximo passo: conferência de tela dos stores (chat, navegador embutido); depois, `SelectionManager.ts` — WO a escrever pelo chat.*
+*Próximo passo: fase 2 do merge do KCM v1.151.0 (o chat compara os 23 arquivos do pacote e apresenta o que adotar); depois, `SelectionManager.ts` — WO a escrever pelo chat.*
