@@ -9,12 +9,15 @@ import { CanvasView } from './ui/CanvasView';
 const exampleFiles = new UrlProjectFiles('/exemplo/');
 
 /**
- * Host de desenvolvimento: mostra a página de PRODUTO do exemplo no canvas, ocupando a
- * janela. A capa ainda não serve para conferir: o título dela é branco sobre a forma de
- * fundo, e formas ainda não são desenhadas. Some quando existir a UI do editor.
+ * Página mostrada: `?page=<id>` na URL (ex.: `?page=page-capa`), ou a de produto. Atalho de
+ * desenvolvimento para conferir cada página do exemplo até existir a UI do editor.
+ */
+const pageId = new URLSearchParams(window.location.search).get('page') ?? 'page-produto';
+
+/**
+ * Host de desenvolvimento: mostra uma página do exemplo no canvas, ocupando a janela. Some
+ * quando existir a UI do editor.
  */
 export default function App() {
-  return (
-    <CanvasView template={catalogoSimplesExample} pageId="page-produto" files={exampleFiles} />
-  );
+  return <CanvasView template={catalogoSimplesExample} pageId={pageId} files={exampleFiles} />;
 }

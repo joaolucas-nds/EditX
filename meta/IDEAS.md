@@ -126,6 +126,9 @@ quebra ou fica vazio. **Prioridade:** alta — já está no schema (`FrameImage.
 - **Editar texto digitando direto no canvas** — com o texto como contorno (DEC-018), a edição na tela pede uma caixa
   de edição por cima do frame. **Volta quando** a UI mínima (Toolbar/PropertiesPanel) existir e editar pelo painel
   se mostrar lento no uso real.
+- **Polígono com pontos** — `shape: 'polygon'` existe no formato, mas sem os pontos (DEC-020); na F1 sai como
+  retângulo vermelho de erro. **Volta quando** um template real precisar de selo ou estrela — aí acrescentar
+  `points` (relativos ao frame, de 0 a 1) ao `ShapeFrame` e ao validador, com o exemplo usando o campo.
 
 ---
 

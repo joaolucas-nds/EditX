@@ -24,6 +24,7 @@ está nas entradas «Adicionado» abaixo).
 - `CanvasEngine.ts` + `PageGeometry.ts` + `ui/CanvasView.tsx` — a página do documento aparece no canvas (área de corte, guia de sangria, zoom para caber, reenquadra ao redimensionar); o app deixa de ser o scaffold do Vite. Ver DEC-016
 - Texto no canvas — fontes Montserrat embarcadas (`public/fonts/`, `text/FontRegistry.ts`), motor de layout com os 4 modos de overflow (`text/TextLayout.ts`) e desenho como contorno das letras (`text/TextDrawing.ts`, `canvas/FrameText.ts`). Ver DEC-017 e DEC-018
 - Imagem no canvas — arquivos do projeto lidos por caminho relativo ao `.editx` (`project/ProjectFiles.ts`, `project/ProjectPath.ts`), posicionamento pelos 4 `fit` e o `align` (`canvas/ImageLayout.ts`) e desenho recortado pelo frame (`canvas/FrameImage.ts`, `CanvasEngine.setImageDrawings`); o validador passa a recusar caminho com `..` que sai da pasta do projeto; o exemplo ganha a pasta `public/exemplo/`. Ver DEC-019
+- Forma no canvas — retângulo (com cantos arredondados), elipse e linha, preenchimento sólido ou nenhum, traço contínuo, tracejado ou pontilhado por dentro do frame (`canvas/FrameShape.ts`, `CanvasEngine.setShapeDrawings`); forma, imagem e texto empilhados pelo `zIndex`; `?page=` na URL do host de desenvolvimento. Ver DEC-020
 
 ### Corrigido
 - Página em branco no `npm run dev`: a limpeza do `CanvasView` removia por diferença de filhos e apagava o canvas da 2ª montagem (StrictMode); agora remove só o próprio `<canvas>`. Ver FIX-001

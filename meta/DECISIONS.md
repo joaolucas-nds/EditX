@@ -710,6 +710,45 @@ webkitdirectory>` existe em todos, só leitura e sem persistência. Análise: `m
 
 ---
 
+## DEC-020 — Como as formas são desenhadas: traço por dentro, linha horizontal, polígono e SVG adiados
+
+**Data:** 2026-11-18
+**Status:** aceita
+**Autor:** chat (escolhas técnicas dentro do formato; apresentadas ao dono com a wo0014)
+
+### Contexto
+O `ShapeFrame` define `shape`, `fill`, `stroke` (mm) e `borderRadius` (mm), mas não diz onde o traço fica em relação ao
+frame, de onde a linha vai a onde, nem quais são os pontos de um polígono; e o JSDoc de `customSvg` promete
+sanitização antes de desenhar (item aberto do backlog).
+
+### Decisão
+- **Traço por DENTRO do frame:** o contorno recua meia espessura de cada lado; a borda externa do traço coincide com o
+  frame. O raio de `borderRadius` é o da borda externa.
+- **Linha:** horizontal, no meio do frame, de borda a borda, traço centrado nela, sem preenchimento. Inclinação virá
+  com a rotação (`transform.rotation`), quando ela for desenhada.
+- **Tracejado:** traço 3× e vão 2× a espessura. **Pontilhado:** pontos redondos (traço 0, ponta redonda) a cada 2× a
+  espessura.
+- **Polígono e SVG customizado** saem como o retângulo vermelho de erro até existirem os pontos no formato e a
+  sanitização.
+- **Empilhamento:** forma, imagem e texto pelo `zIndex`; empate: forma < imagem < texto.
+- Contorno calculado puro (`FrameShape.ts`, testado em Node) e pintado como `Path` do Fabric (DEC-016/DEC-018).
+
+### Alternativas consideradas
+- **Traço centrado na borda (o padrão do Fabric e do SVG)** — metade do traço sairia do frame: o que se vê passa do
+  retângulo que o usuário desenhou, e o PDF teria de repetir a mesma sobra.
+- **Linha diagonal do canto superior esquerdo ao inferior direito** — o desenho dependeria da proporção do frame; o
+  caso comum no varejo (fio separador) é horizontal.
+- **Objetos `Rect`/`Ellipse`/`Line` do Fabric** — cada um com regra própria de posição e de traço; o `Path` único
+  calculado fora do Fabric é testável e é o mesmo caminho do texto.
+
+### Consequências
+- **Positivas:** o tamanho visual da forma é o do frame; o mesmo contorno serve ao PDF (F4).
+- **Negativas:** polígono e SVG ainda não aparecem; traço mais grosso que meio frame «enche» a forma.
+- **Riscos:** quem portar o desenho para outro destino (PDF, PNG) e usar o retângulo do frame com traço centrado erra
+  meia espessura — armadilha no CONTEXT.
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown

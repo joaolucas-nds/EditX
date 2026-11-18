@@ -3,11 +3,11 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-17, wo0012):** imagens no canvas (DEC-019): a árvore ganha `src/project/`
-(caminhos do projeto e a fonte de arquivos), `canvas/ImageLayout.ts` e o `FrameImage.ts` real, e
-`public/exemplo/` (a pasta de projeto do exemplo); arquitetura e armadilhas novas sobre caminhos e sobre ler
-arquivo no navegador. A nota anterior (wo0010: estilo `100%` e a armadilha do `ResizeObserver`) saiu — o conteúdo
-está no corpo deste arquivo e em FIX-002.
+**Mudanças nesta revisão (2026-11-18, wo0014):** formas no canvas (DEC-020): a árvore troca a linha prevista do
+`FrameShape.ts` pela real (+ teste), o «Objetivo atual» deixa de dizer que o canvas está vazio, e entram as
+armadilhas do traço por DENTRO do frame e das formas que ainda não são desenhadas (polígono, SVG). A nota anterior
+(wo0012: `src/project/`, `ImageLayout.ts`, `FrameImage.ts`, `public/exemplo/`) saiu — o conteúdo está no corpo deste
+arquivo e em DEC-019.
 
 ---
 
@@ -25,8 +25,8 @@ catálogos de produto, cartazes de oferta, cardápios, stories digitais, menus d
 
 **Objetivo atual:** Fase 1 (MVP do editor). Existem o schema do `.editx`, o
 serializer/validador com testes, a herança de estilos (`StyleRegistry.ts`, DEC-014/DEC-015) e o
-boilerplate, e o `CanvasEngine.ts` mostra a página vazia (DEC-016). O objetivo imediato são os frames
-no canvas (`FrameText.ts`, `FrameImage.ts`, `FrameShape.ts`).
+boilerplate, e o canvas desenha a página com texto (DEC-018), imagem (DEC-019) e forma (DEC-020). O objetivo
+imediato é a seleção (`SelectionManager.ts`) e os stores, rumo à UI mínima.
 
 **Problema de mercado resolvido:** Nenhuma ferramenta combina edição visual acessível +
 geração em massa + tipos editoriais especializados (dobras, catálogos) em um único
@@ -79,7 +79,8 @@ EditX/
 │   │   ├── ImageLayout.test.ts    # Testes Vitest do posicionamento
 │   │   ├── FrameImage.ts          # prepareImageDrawings: caminho → bytes (ProjectFiles) → imagem decodificada → desenho (DEC-019)
 │   │   ├── FrameImage.test.ts     # Testes Vitest — arquivos e decodificador falsos, sem DOM
-│   │   ├── FrameShape.ts          # Formas, bordas, ornamentos vetoriais
+│   │   ├── FrameShape.ts          # prepareShapeDrawings / shapePath: forma → contorno SVG com o traço por dentro (puro, DEC-020)
+│   │   ├── FrameShape.test.ts     # Testes Vitest das formas
 │   │   └── SelectionManager.ts   # Seleção, multi-select, alinhamento, distribuição
 │   │
 │   ├── template/
@@ -356,6 +357,14 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
   `setPositionByOrigin(pathOffset, CENTER, CENTER)`, fabric 6.9.1). Contorno gerado já em coordenadas da página
   fica onde foi calculado; passar `left`/`top` desloca o desenho da linha de base. Não passe `left`/`top` a um
   `Path` de texto (DEC-018).
+- **O traço do Fabric (e do SVG) é CENTRADO na borda — e neste projeto o traço da forma fica por DENTRO do frame**
+  (DEC-020). O `shapePath` (`FrameShape.ts`) recua o contorno meia espessura de cada lado antes de o Fabric pintar,
+  então a borda externa do traço coincide com o frame, como no PDF da F4 terá de coincidir. Não passe ao Fabric o
+  retângulo do frame com `strokeWidth` esperando que ele caiba: metade do traço sai do frame. Linha é exceção: o traço
+  fica centrado nela (linha não tem «dentro»).
+- **Polígono e SVG customizado ainda NÃO são desenhados** — saem como o retângulo vermelho de erro (DEC-020). Polígono
+  não tem pontos no formato (`ShapeFrame` só tem `shape: 'polygon'`); `customSvg` só pode ser desenhado DEPOIS da
+  sanitização (item do backlog; o JSDoc de `customSvg` promete). Não ligue um sem o outro.
 - **O retina do Fabric 6 trunca o buffer e ignora DPR abaixo de 1** — e por isso está DESLIGADO aqui (FIX-002).
   `setCanvasDimensions` grava `width × retina` como atributo (`toString()`), e o atributo de largura do `<canvas>`
   é inteiro: 1919,99995 vira 1919 numa tela de 1920 px; e `getDevicePixelRatio()` devolve `Math.max(dpr, 1)`, então

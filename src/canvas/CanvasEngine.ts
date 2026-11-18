@@ -12,6 +12,7 @@ import type { FabricObject } from 'fabric';
 import type { DocumentSettings } from '../template/TemplateSchema';
 import type { DrawRect, TextFrameDrawing } from '../text/TextDrawing';
 import type { ImageFrameDrawing } from './FrameImage';
+import type { ShapeFrameDrawing } from './FrameShape';
 import { centeredOffset, fitZoom, pageBox } from './PageGeometry';
 import type { CanvasSize, PageBox } from './PageGeometry';
 
@@ -65,6 +66,7 @@ export class CanvasEngine {
   private pageObjects: FabricObject[] = [];
   private textObjects: FabricObject[] = [];
   private imageObjects: FabricObject[] = [];
+  private shapeObjects: FabricObject[] = [];
   /** `zIndex` do frame de cada objeto de texto/imagem — a ordem de empilhamento (`relayer`). */
   private readonly frameZ = new WeakMap<FabricObject, number>();
   private box: PageBox | null = null;
@@ -90,9 +92,10 @@ export class CanvasEngine {
     this.assertAlive();
     for (const object of this.pageObjects) this.canvas.remove(object);
     this.pageObjects = [];
-    // Página nova = desenhos de texto e de imagem velhos não valem; quem chama manda os novos.
+    // Página nova = desenhos de texto, imagem e forma velhos não valem; quem chama manda os novos.
     this.clearText();
     this.clearImages();
+    this.clearShapes();
 
     const box = pageBox(document);
     this.box = box;
@@ -156,6 +159,39 @@ export class CanvasEngine {
         this.frameZ.set(rect, drawing.zIndex);
         this.textObjects.push(rect);
       }
+    }
+
+    this.relayer();
+  }
+
+  /**
+   * Substitui os desenhos de forma da página (DEC-020). Contornos prontos, já recuados para
+   * o traço ficar por dentro do frame; polígono e SVG, ainda não desenhados, chegam como
+   * erro e viram o retângulo vermelho tracejado.
+   */
+  setShapeDrawings(drawings: readonly ShapeFrameDrawing[]): void {
+    this.assertAlive();
+    this.clearShapes();
+
+    for (const drawing of drawings) {
+      let object: FabricObject;
+      if (drawing.kind === 'shape') {
+        const { stroke } = drawing;
+        // Sem left/top: o Path se posiciona pelas próprias coordenadas (Fabric 6, DEC-018).
+        object = new Path(drawing.path, {
+          fill: drawing.fill,
+          stroke: stroke === null ? null : stroke.color,
+          strokeWidth: stroke === null ? 0 : stroke.width,
+          strokeDashArray: stroke === null ? null : stroke.dash,
+          strokeLineCap: stroke === null ? 'butt' : stroke.cap,
+          selectable: false,
+          evented: false,
+        });
+      } else {
+        object = frameErrorRect(drawing.frame);
+      }
+      this.frameZ.set(object, drawing.zIndex);
+      this.shapeObjects.push(object);
     }
 
     this.relayer();
@@ -269,14 +305,20 @@ export class CanvasEngine {
     this.imageObjects = [];
   }
 
+  /** Remove só os objetos que `setShapeDrawings` criou. */
+  private clearShapes(): void {
+    for (const object of this.shapeObjects) this.canvas.remove(object);
+    this.shapeObjects = [];
+  }
+
   /**
-   * Empilha os objetos de frame (imagem e texto) pelo `zIndex`, acima da página. Empate:
-   * imagem embaixo do texto (foto sob a legenda); dentro de cada tipo, a ordem recebida.
-   * Texto e imagem chegam em momentos diferentes (promessas separadas), por isso a ordem é
-   * refeita a cada chegada.
+   * Empilha os objetos de frame (forma, imagem e texto) pelo `zIndex`, acima da página.
+   * Empate: forma embaixo da imagem, imagem embaixo do texto (fundo, foto, legenda); dentro
+   * de cada tipo, a ordem recebida. Os três chegam em momentos diferentes (texto e imagem
+   * por promessas separadas), por isso a ordem é refeita a cada chegada.
    */
   private relayer(): void {
-    const objects = [...this.imageObjects, ...this.textObjects];
+    const objects = [...this.shapeObjects, ...this.imageObjects, ...this.textObjects];
     this.canvas.remove(...objects);
     objects.sort((a, b) => (this.frameZ.get(a) ?? 0) - (this.frameZ.get(b) ?? 0));
     this.canvas.add(...objects);

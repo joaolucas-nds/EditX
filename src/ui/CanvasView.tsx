@@ -3,6 +3,7 @@ import type { JSX } from 'react';
 import { CanvasEngine } from '../canvas/CanvasEngine';
 import { canvasSize } from '../canvas/PageGeometry';
 import { decodeImageInBrowser, prepareImageDrawings } from '../canvas/FrameImage';
+import { prepareShapeDrawings } from '../canvas/FrameShape';
 import { prepareTextDrawings } from '../canvas/FrameText';
 import type { ProjectFiles } from '../project/ProjectFiles';
 import type { EditxTemplate } from '../template/TemplateSchema';
@@ -98,6 +99,12 @@ export function CanvasView({ template, pageId, files }: CanvasViewProps): JSX.El
     let cancelado = false;
 
     engine.showPage(template.document);
+    // Formas não leem arquivo nem fonte: o desenho sai na hora, sem promessa.
+    try {
+      engine.setShapeDrawings(prepareShapeDrawings(template, pageId));
+    } catch (error) {
+      console.error('Falha ao preparar as formas da página:', error);
+    }
     prepareTextDrawings(template, pageId, fonts).then(
       (drawings) => {
         if (!cancelado && !engine.disposed) engine.setTextDrawings(drawings);

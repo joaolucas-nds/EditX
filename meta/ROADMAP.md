@@ -36,7 +36,7 @@ CSV pequeno, mapear colunas e gerar N arquivos PNG sem travar a UI.
 - [x] `CanvasEngine.ts` — wrapper Fabric.js (ciclo de vida, página, zoom — DEC-016)
 - [x] `FrameText.ts` — overflow e desenho (motor de layout com os 4 modos + fontes: wo0006, DEC-017; contorno das letras no canvas: wo0007, DEC-018)
 - [x] `FrameImage.ts` — fit modes (leitura por `ProjectFiles`, caminhos do projeto: wo0012, DEC-019)
-- [ ] `FrameShape.ts` — retângulo, elipse, linha
+- [x] `FrameShape.ts` — retângulo, elipse, linha (traço por dentro do frame: wo0014, DEC-020; polígono e SVG ainda não)
 - [ ] `SelectionManager.ts` — seleção, mover, redimensionar
 - [ ] Stores: `documentStore`, `selectionStore`, `historyStore`
 - [ ] UI mínima: Toolbar + PropertiesPanel + LayersList
