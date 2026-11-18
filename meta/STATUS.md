@@ -3,8 +3,9 @@
 > Atualizado a cada turno que muda o estado do projeto.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
-**Mudanças nesta revisão (2026-11-18, wo0014):** formas no canvas (DEC-020) — `FrameShape.ts` feito, conferência de
-tela pelo chat em «Em Progresso». A nota anterior (wo0013) saiu — o que ela registrava está no log de 2026-11-17.
+**Mudanças nesta revisão (2026-11-18, wo0015):** `FrameShape.ts` conferido na tela pelo chat; o item sai de «Em
+Progresso» e o próximo do backlog é `SelectionManager.ts`. A nota anterior (wo0014) saiu — o que ela registrava está
+em DEC-020, no CHANGELOG e no log de 2026-11-18.
 
 ---
 
@@ -20,7 +21,7 @@ tela pelo chat em «Em Progresso». A nota anterior (wo0013) saiu — o que ela 
 - **Schema `.editx` desenhado e IMPLEMENTADO** — `TemplateSchema.ts` (documento raiz + CSV mapping) e `frame.types.ts` (frames/overflow/estilos) com tipos TypeScript completos, zero `any`, JSDoc em cada export público
 - **Boilerplate do projeto criado** — Vite 8 + React 19 + TypeScript 6, ESLint 9 (flat config) + Prettier configurados, todas as dependências de CONTEXT.md instaladas
 - **Schema validado por exemplo real** — `src/template/__examples__/catalogo-simples.example.ts` satisfaz `EditxTemplate` de ponta a ponta (2 páginas, 3 tipos de frame, herança de estilo via `basedOn`, `isDataPage`, `csvMapping` completo) — compila limpo, passa lint, `npm run build` funciona
-- **Forma aparece no canvas** *(wo0014, DEC-020; conferência de tela pendente — ver «Em Progresso»)* — os frames de forma da página viram contorno SVG calculado em `canvas/FrameShape.ts` (puro, testado) e pintado como `Path` (`CanvasEngine.setShapeDrawings`): `rect` com cantos arredondados, `ellipse` e `line` (horizontal, no meio do frame); preenchimento sólido ou nenhum; traço contínuo, tracejado ou pontilhado, por DENTRO do frame. Polígono (sem pontos no formato) e SVG customizado (sem sanitização) saem como retângulo vermelho. Forma, imagem e texto empilham pelo `zIndex` (empate: forma < imagem < texto). `?page=page-capa` na URL mostra a capa. Rotação ainda não é desenhada
+- **Forma aparece no canvas** *(wo0014, DEC-020; conferido pelo chat no navegador embutido em 2026-11-18)* — os frames de forma da página viram contorno SVG calculado em `canvas/FrameShape.ts` (puro, testado) e pintado como `Path` (`CanvasEngine.setShapeDrawings`): `rect` com cantos arredondados, `ellipse` e `line` (horizontal, no meio do frame); preenchimento sólido ou nenhum; traço contínuo, tracejado ou pontilhado, por DENTRO do frame. Polígono (sem pontos no formato) e SVG customizado (sem sanitização) saem como retângulo vermelho. Forma, imagem e texto empilham pelo `zIndex` (empate: forma < imagem < texto). `?page=page-capa` na URL mostra a capa. Rotação ainda não é desenhada
 - **Imagem aparece no canvas** *(wo0012, DEC-019; conferido pelo chat no navegador embutido em 2026-11-17)* — os frames de imagem da página são lidos por caminho relativo ao `.editx` pelo contrato `ProjectFiles` (`project/ProjectFiles.ts`; no `npm run dev`, `UrlProjectFiles` serve a pasta do exemplo em `public/exemplo/`), decodificados e posicionados pelos 4 `fit` e o `align` (`canvas/ImageLayout.ts`, puro), recortados pelo frame com o raio dos cantos (`CanvasEngine.setImageDrawings`); estático tenta `src` e depois `fallback`, dados usa o `fallback`; sem caminho → área reservada cinza; nada legível → retângulo vermelho. Caminhos passam por `normalizeProjectPath` (`project/ProjectPath.ts`) e o validador recusa `..` que sai da pasta. Rotação ainda não é desenhada
 - **Texto aparece no canvas** *(conferido pelo dono na tela em 2026-11-15; nítido em qualquer zoom desde o FIX-002)* — os frames de texto da página são desenhados como contorno das letras gerado pelo `opentype.js` com a mesma medida do motor (`text/TextDrawing.ts` puro + `canvas/FrameText.ts`, testados com a fonte real; `CanvasEngine.setTextDrawings`); frames de dados mostram `{coluna}`; frame com fonte/estilo inválido aparece como retângulo vermelho tracejado — wo0007, DEC-018. Rotação ainda não é desenhada
 - **Motor de layout de texto funcionando (puro)** — `src/text/TextLayout.ts`: quebra de linha e os 4 modos (`grow-vertical`, `grow-horizontal`, `fixed-shrink`, `fixed-clip`), medindo com a fonte real via `opentype.js`; `src/text/FontRegistry.ts` liga família+peso ao `.ttf` (Montserrat 400/600/700/800 em `public/fonts/`) — wo0006, DEC-017. Ainda não desenhado no canvas
@@ -36,7 +37,7 @@ tela pelo chat em «Em Progresso». A nota anterior (wo0013) saiu — o que ela 
 
 ## 🔧 Em Progresso
 
-- **Conferência de tela do `FrameShape.ts`** — o chat confere no navegador embutido com o `npm run dev` do dono rodando (`?page=page-capa`: fundo azul sob o título branco; e retângulo, elipse, linha e traços desenhados num template montado na página). Depois dela, o próximo item do backlog é `SelectionManager.ts`.
+*Nada em progresso — próximo item do backlog é `SelectionManager.ts`.*
 
 ---
 
@@ -68,7 +69,7 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 - [x] `FrameImage.ts` — frame de imagem com fit modes (wo0012, DEC-019; leitura por `ProjectFiles`, exemplo servido de `public/exemplo/`)
 - [x] `FrameShape.ts` — retângulo, elipse, linha básicos (wo0014, DEC-020; polígono e SVG customizado ainda não)
 - [ ] Sanitizar `customSvg` antes do primeiro render de SVG — prometido no JSDoc de `ShapeFrame.customSvg`; fora da wo0001 (o validador só exige presença)
-- [ ] `SelectionManager.ts` — seleção simples, mover, redimensionar
+- [ ] `SelectionManager.ts` — seleção simples, mover, redimensionar ← **próximo**
 - [ ] `documentStore.ts` + `selectionStore.ts` + `historyStore.ts`
 - [ ] UI mínima: Toolbar + PropertiesPanel + LayersList (sem estilização avançada)
 - [ ] Abrir projeto = pasta — `ProjectFiles` por `showDirectoryPicker` no Chrome/Edge (handle no IndexedDB, grava o `.editx`) e por `<input webkitdirectory>` no Firefox/Safari (só leitura); junto da UI mínima — DEC-019
@@ -94,8 +95,8 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 
 **2026-11-18** — `FrameShape.ts` (wo0014, DEC-020): retângulo, elipse e linha com o traço por dentro do frame. Detalhe
 em `logs/2026-11-18.md`. Antes, em 2026-11-17: FIX-002 fechado, DEC-019 e `FrameImage.ts` conferido (`logs/2026-11-17.md`).
-**Onde parou:** wo0014 aplicada; falta a conferência de tela do `FrameShape.ts` pelo chat.
+**Onde parou:** `FrameShape.ts` conferido na tela pelo chat (wo0015); o próximo item do backlog é `SelectionManager.ts`.
 
 ---
 
-*Próximo passo: conferência de tela do `FrameShape.ts` (chat, navegador embutido); depois, `SelectionManager.ts` — WO a escrever pelo chat.*
+*Próximo passo: `SelectionManager.ts` (seleção simples, mover, redimensionar) — muda o `.editx` a partir da tela, então provavelmente pede antes os stores (`documentStore`/`historyStore`) ou uma análise de ordem; pelo chat.*
