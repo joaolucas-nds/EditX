@@ -3,11 +3,10 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-18, wo0014):** formas no canvas (DEC-020): a árvore troca a linha prevista do
-`FrameShape.ts` pela real (+ teste), o «Objetivo atual» deixa de dizer que o canvas está vazio, e entram as
-armadilhas do traço por DENTRO do frame e das formas que ainda não são desenhadas (polígono, SVG). A nota anterior
-(wo0012: `src/project/`, `ImageLayout.ts`, `FrameImage.ts`, `public/exemplo/`) saiu — o conteúdo está no corpo deste
-arquivo e em DEC-019.
+**Mudanças nesta revisão (2026-11-18, wo0016):** stores do editor (DEC-021): a árvore troca as linhas previstas de
+`src/store/` pelas reais (+ teste), o «Objetivo atual» passa a apontar a seleção, e entram as armadilhas do Immer
+(ponto único de mudança, atribuição por campo, estado congelado). A nota anterior (wo0014: `FrameShape.ts` e as
+armadilhas do traço por dentro e das formas não desenhadas) saiu — o conteúdo está no corpo deste arquivo e em DEC-020.
 
 ---
 
@@ -26,7 +25,7 @@ catálogos de produto, cartazes de oferta, cardápios, stories digitais, menus d
 **Objetivo atual:** Fase 1 (MVP do editor). Existem o schema do `.editx`, o
 serializer/validador com testes, a herança de estilos (`StyleRegistry.ts`, DEC-014/DEC-015) e o
 boilerplate, e o canvas desenha a página com texto (DEC-018), imagem (DEC-019) e forma (DEC-020). O objetivo
-imediato é a seleção (`SelectionManager.ts`) e os stores, rumo à UI mínima.
+imediato é a seleção (`SelectionManager.ts`) sobre os stores (DEC-021), rumo à UI mínima.
 
 **Problema de mercado resolvido:** Nenhuma ferramenta combina edição visual acessível +
 geração em massa + tipos editoriais especializados (dobras, catálogos) em um único
@@ -122,9 +121,10 @@ EditX/
 │   │   └── ZipPacker.ts           # Empacota lote em ZIP nomeado
 │   │
 │   ├── store/
-│   │   ├── documentStore.ts       # Documento ativo, páginas, frames
-│   │   ├── selectionStore.ts      # Frame(s) selecionado(s) e propriedades
-│   │   ├── historyStore.ts        # Undo/redo com Immer patches
+│   │   ├── documentStore.ts       # createEditorStores: template aberto + página ativa; toda mudança passa por `edit` (patches do Immer) (DEC-021)
+│   │   ├── documentStore.test.ts  # Testes Vitest dos três stores juntos (Node, sem React)
+│   │   ├── historyStore.ts        # pilhas de desfazer/refazer com os patches de cada mudança, com limite (DEC-021)
+│   │   ├── selectionStore.ts      # ids dos frames selecionados (DEC-021)
 │   │   └── csvStore.ts            # Dados importados, mapeamentos, preview
 │   │
 │   ├── ui/
@@ -273,6 +273,7 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - Formato de template é JSON próprio com extensão `.editx` — ver DEC-001.
 - Imagens são referenciadas por caminho relativo, não embutidas por padrão — ver DEC-002.
 - Projeto = pasta (o `.editx` e as imagens); todo arquivo do projeto é lido por um `ProjectFiles` («bytes por caminho»), e quem desenha não sabe de onde os bytes vêm — ver DEC-019.
+- O documento aberto vive nos stores criados por `createEditorStores` (`zustand/vanilla` + Immer); toda mudança do template gera patches e entra no histórico; página e seleção não — ver DEC-021.
 - Fabric.js é o motor de canvas (não Konva.js) — ver DEC-003.
 - Zustand + Immer para todo o estado global (não Redux/Context) — ver DEC-004.
 - Tauri para desktop na Fase 2 (não Electron) — ver DEC-005.
@@ -365,6 +366,14 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - **Polígono e SVG customizado ainda NÃO são desenhados** — saem como o retângulo vermelho de erro (DEC-020). Polígono
   não tem pontos no formato (`ShapeFrame` só tem `shape: 'polygon'`); `customSvg` só pode ser desenhado DEPOIS da
   sanitização (item do backlog; o JSDoc de `customSvg` promete). Não ligue um sem o outro.
+- **Toda mudança do template passa pelo `edit` do `documentStore`** (DEC-021) — é ele que chama `produceWithPatches`
+  e grava o histórico. Ação nova que faz `set({ template })` direto fica fora do desfazer, sem erro nenhum. E dentro
+  da receita, **atribua campo por campo** (`Object.assign(frame.transform, novo)`), não um objeto novo
+  (`frame.transform = { ...novo }`): para o Immer, objeto novo é mudança mesmo com os mesmos valores, e um clique
+  sem movimento viraria uma entrada de desfazer vazia.
+- **O template dos stores é congelado pelo Immer depois da primeira mudança** — não mute objeto que veio do store
+  (nem em teste: `structuredClone` antes). `createEditorStores` guarda uma CÓPIA do template recebido, então o
+  exemplo importado não é congelado nem alterado.
 - **O retina do Fabric 6 trunca o buffer e ignora DPR abaixo de 1** — e por isso está DESLIGADO aqui (FIX-002).
   `setCanvasDimensions` grava `width × retina` como atributo (`toString()`), e o atributo de largura do `<canvas>`
   é inteiro: 1919,99995 vira 1919 numa tela de 1920 px; e `getDevicePixelRatio()` devolve `Math.max(dpr, 1)`, então

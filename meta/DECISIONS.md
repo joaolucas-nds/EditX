@@ -749,6 +749,45 @@ sanitização antes de desenhar (item aberto do backlog).
 
 ---
 
+## DEC-021 — Stores antes da seleção; toda mudança do documento passa por um ponto que grava o desfazer
+
+**Data:** 2026-11-18
+**Status:** aceita
+**Autor:** dono (ordem e comportamento do arraste) + chat (análise e desenho dos stores)
+
+### Contexto
+A seleção é o primeiro passo em que a tela muda o `.editx`, e não havia lugar para o documento mudar
+(`src/store/` não existia). O backlog listava a seleção antes dos stores. Análise:
+`meta/analises/261118-ANALISE-ordem-selecao-e-stores.md`.
+
+### Decisão
+- **Ordem:** stores primeiro (wo0016), seleção depois.
+- **Três stores em `zustand/vanilla`**, criados juntos por `createEditorStores(template)` — documento (cópia do
+  template + página ativa), histórico (pilhas de patches, limite 100) e seleção (ids). Factory, não singletons: um
+  editor por chamada, e os testes rodam em Node sem React.
+- **Desfazer desde já:** toda mudança do template passa por `edit`, que usa `produceWithPatches` e grava os patches
+  e os inversos; `undo`/`redo` aplicam com `applyPatches`. Mudança que não muda nada não entra. Página ativa e seleção
+  não entram no histórico.
+- **Para a seleção (próxima WO):** ao MOVER, o conteúdo acompanha a alça durante o arraste e o documento recebe o
+  `transform` ao soltar — uma entrada de desfazer por arraste; ao REDIMENSIONAR, só a caixa muda e o frame é
+  redesenhado ao soltar. Junto: `fromPx` com arredondamento, cache das imagens decodificadas, Ctrl+Z/Ctrl+Shift+Z.
+
+### Alternativas consideradas
+- **Seleção primeiro, com estado local** — retrabalho certo quando os stores chegassem, e mover sem desfazer.
+- **Tudo numa WO só** — três frentes novas no mesmo ciclo.
+- **Stores sem histórico** — o histórico muda a forma das ações; acrescentá-lo depois é reescrevê-las.
+- **Redesenhar o conteúdo continuamente ao redimensionar** — mais parecido com o Canva, mas redesenha o texto a cada
+  movimento do mouse; fica para quando a seleção básica existir.
+
+### Consequências
+- **Positivas:** qualquer ação futura ganha desfazer passando por `edit`; os stores são testados sem tela.
+- **Negativas:** a wo0016 não muda nada na tela; o redesenho ainda é da página inteira a cada mudança (texto ~1 ms,
+  imagem 30–50 ms sem cache — medido em 2026-11-18).
+- **Riscos:** ação que faz `set({ template })` sem passar por `edit` fica fora do desfazer, em silêncio; atribuir um
+  objeto novo dentro da receita gera entrada vazia de desfazer — armadilhas no CONTEXT.
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown

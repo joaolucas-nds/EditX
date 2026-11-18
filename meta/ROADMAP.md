@@ -37,8 +37,8 @@ CSV pequeno, mapear colunas e gerar N arquivos PNG sem travar a UI.
 - [x] `FrameText.ts` — overflow e desenho (motor de layout com os 4 modos + fontes: wo0006, DEC-017; contorno das letras no canvas: wo0007, DEC-018)
 - [x] `FrameImage.ts` — fit modes (leitura por `ProjectFiles`, caminhos do projeto: wo0012, DEC-019)
 - [x] `FrameShape.ts` — retângulo, elipse, linha (traço por dentro do frame: wo0014, DEC-020; polígono e SVG ainda não)
-- [ ] `SelectionManager.ts` — seleção, mover, redimensionar
-- [ ] Stores: `documentStore`, `selectionStore`, `historyStore`
+- [x] Stores: `documentStore`, `selectionStore`, `historyStore` (desfazer por patches do Immer: wo0016, DEC-021)
+- [ ] `SelectionManager.ts` — seleção, mover, redimensionar (sobre os stores — DEC-021)
 - [ ] UI mínima: Toolbar + PropertiesPanel + LayersList
 - [ ] Abrir projeto = pasta (Chrome/Edge com a pasta do projeto; Firefox/Safari só leitura — DEC-019)
 - [ ] `CsvParser.ts` + `ColumnMapper.ts` básico

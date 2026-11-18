@@ -1,4 +1,6 @@
+import { useStore } from 'zustand';
 import { UrlProjectFiles } from './project/ProjectFiles';
+import { createEditorStores } from './store/documentStore';
 import { catalogoSimplesExample } from './template/__examples__/catalogo-simples.example';
 import { CanvasView } from './ui/CanvasView';
 
@@ -9,15 +11,22 @@ import { CanvasView } from './ui/CanvasView';
 const exampleFiles = new UrlProjectFiles('/exemplo/');
 
 /**
- * Página mostrada: `?page=<id>` na URL (ex.: `?page=page-capa`), ou a de produto. Atalho de
- * desenvolvimento para conferir cada página do exemplo até existir a UI do editor.
+ * O editor aberto com o exemplo (DEC-021). Página inicial: `?page=<id>` na URL (ex.:
+ * `?page=page-capa`), ou a de produto — atalho de desenvolvimento até existir a UI.
  */
-const pageId = new URLSearchParams(window.location.search).get('page') ?? 'page-produto';
+const stores = createEditorStores(catalogoSimplesExample, {
+  pageId: new URLSearchParams(window.location.search).get('page') ?? 'page-produto',
+});
+
+// Só no `npm run dev`: o console alcança os stores (ex.: `__editx.document.getState().undo()`).
+if (import.meta.env.DEV) (window as unknown as { __editx?: typeof stores }).__editx = stores;
 
 /**
- * Host de desenvolvimento: mostra uma página do exemplo no canvas, ocupando a janela. Some
- * quando existir a UI do editor.
+ * Host de desenvolvimento: mostra a página ativa do documento no canvas, ocupando a janela.
+ * Some quando existir a UI do editor.
  */
 export default function App() {
-  return <CanvasView template={catalogoSimplesExample} pageId={pageId} files={exampleFiles} />;
+  const template = useStore(stores.document, (state) => state.template);
+  const pageId = useStore(stores.document, (state) => state.pageId);
+  return <CanvasView template={template} pageId={pageId} files={exampleFiles} />;
 }
