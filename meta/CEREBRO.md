@@ -87,6 +87,14 @@ Comece vazia e escreva quando doer duas vezes: técnica que você precisou expli
   pixels do buffer com `getImageData` em vez de confiar nela). Para simular zoom do navegador, `zoom` de CSS no
   `<html>` muda px CSS × px da tela pelo mesmo caminho do código, mas NÃO muda `devicePixelRatio`. Antes de sair:
   recarregar a página e fechar a aba.
+- **Simulação de WO pelo chat (VM Linux) e a corrida das ferramentas do dispositivo** — o chat simula toda WO a partir
+  do PRÓPRIO texto dela: copia o repositório para `$HOME/simNN` (fora da pasta vinculada; `node_modules` por link),
+  aplica as edições lendo âncora e texto novo da cerca de quatro crases por script, roda de novo para provar a
+  idempotência, e roda `tsc` (sem o `tsBuildInfoFile`), ESLint e Prettier; teste novo roda compilado para ESM com um
+  calço de `vitest` (o `vitest` do `node_modules` é binário do Windows). Prova de vida: editar o JS compilado (`perl
+  -0pi`, nunca `sed`, que parte linha). **Nunca dispare em paralelo uma gravação (`device_commit_files`, ou um comando
+  que escreve) e o comando que depende dela** — medido duas vezes (wo0012 e a análise do merge): o segundo leu a
+  versão velha. Grave sozinho, depois confira com `sha1sum`/`grep`.
 
 ## Princípios de trabalho
 

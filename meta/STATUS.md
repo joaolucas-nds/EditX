@@ -97,7 +97,7 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 **2026-11-18** — `FrameShape.ts` (wo0014, DEC-020): retângulo, elipse e linha com o traço por dentro do frame. Detalhe
 em `logs/2026-11-18.md`. Antes, em 2026-11-17: FIX-002 fechado, DEC-019 e `FrameImage.ts` conferido (`logs/2026-11-17.md`).
 Depois: análise da ordem entre seleção e stores, decidida pelo dono (DEC-021), e os stores (wo0016).
-**Onde parou:** merge do KCM v1.151.0 feito (wo0018, DEC-022).
+**Onde parou:** merge do KCM v1.151.0 fechado (wo0018, DEC-022; pacote movido para `notas-arquivadas/` em 2026-11-19) e Instruções novas coladas no painel do Projeto [relatado pelo dono, 2026-11-19]. Detalhe em `logs/2026-11-19.md`.
 
 ---
 

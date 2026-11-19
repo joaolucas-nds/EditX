@@ -205,6 +205,15 @@ Ver DEC-010 para o registro completo da decisão.
   ANTES de o CEREBRO novo ser lido** — quem está atrás de versão roda o comando sem a variável.
   Valeria pôr a variável no próprio prompt do merge.
 
+### 2026-11-18 — Merge do template-update v1.151.0
+- **Pacote gerado sem o SO marcado** — o CEREBRO e as Instruções do pacote vieram sem «Ambiente (sistema
+  operacional)» nem a linha do Windows/CMD, embora o projeto declare Windows; voltaram por transplante (DEC-022).
+  Valeria o gerador ler o SO do projeto vivo.
+- **A nota «CHANGELOG/ROADMAP de outros nichos» continua na tabela de gatilhos** — mesmo achado do v1.135.0; a nota
+  viva que os declara ativos foi transplantada de novo.
+- **O marcador de fim do IDEAS supõe que o arquivo termina em «Feedback»** — aqui termina no modelo de nova ideia;
+  o texto foi ajustado à ordem deste arquivo.
+
 ---
 
 ## 📌 Template para nova ideia
