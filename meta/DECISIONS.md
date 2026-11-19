@@ -4,12 +4,12 @@
 > Registra TODAS as decisões importantes com contexto e motivo.
 > Evita reabrir discussões já resolvidas e dá contexto ao Claude em novas conversas.
 > Duas naturezas: **DEC** (arquitetura/design) e **FIX** (bugs graves resolvidos, para não repetir).
-> Arquiva por EVENTO, não por tamanho: entrada resolvida ou substituída vai para `DECISIONS-archive.md`; ~700 linhas é só alarme. Toda entrada traz `**Status:**` com valor fechado.
+> Arquiva por EVENTO, não por tamanho: decisão substituída ou evento fechado vai para `DECISIONS-archive.md`, e **FIX fica enquanto a lição valer** — a lição é o conteúdo dele; ~700 linhas é só alarme. Toda entrada traz `**Status:**` com valor fechado.
 
-**Mudanças nesta revisão (2026-11-10):** adicionada a DEC-012 (merge do KCM v1.135.0 com modo
-Code). Critério de arquivamento passou de tamanho para evento, e o `Status` dos modelos DEC/FIX
-passou ao conjunto fechado do kit (aceita · substituída por X · resolvida · aberta). A nota de
-2026-07-11 saiu; o que ela registrava (modelo de FIX, DEC-010) continua no corpo do arquivo.
+**Mudanças nesta revisão (2026-11-18, wo0018):** adicionada a DEC-022 (merge do KCM v1.151.0). O conjunto fechado
+de `Status` ganha «aceita — emendada por DEC-X», e o critério de arquivamento diz que FIX fica enquanto a lição
+valer. Com 832 linhas o arquivo passou do alarme (~700); o dono decidiu não arquivar agora (DEC-022). A nota de
+2026-11-10 saiu; o que ela registrava está na DEC-012.
 
 ---
 
@@ -788,13 +788,57 @@ A seleção é o primeiro passo em que a tela muda o `.editx`, e não havia luga
 
 ---
 
+## DEC-022 — Merge do template-update do KCM v1.151.0
+
+**Data:** 2026-11-18
+**Status:** aceita
+**Autor:** ambos
+
+### Contexto
+Chegou à pasta-pai o pacote `261118-kcm-update-v1.151.0/` (template-update do kit, v1.135.0 → v1.151.0; 25
+arquivos). O pacote manda instalar as skills novas antes de aplicar qualquer WO de migração. Fase 1 (preliminares)
+na wo0017; fase 2 (comparação dos 23 arquivos e inventário) em `meta/analises/261118-ANALISE-merge-kcm-v1.151.0.md`,
+com 5 pontos de decisão.
+
+### Decisão
+- **Natureza por arquivo, como na análise.** Do kit, substituídos inteiros: as 3 skills, `meta/workorders/_TEMPLATE.md`
+  (cerca de QUATRO crases nos blocos de âncora e de texto novo) e o `meta/GUIA-DO-KIT.md` novo. Modelos (template):
+  só o que é novo entra no vivo — «Entregas» no `LOG-TEMPLATE.md`, o marcador de fim do `IDEAS.md`, a seção «Build e
+  validação» do `CONTEXT.md`, o `Status` «aceita — emendada» aqui, `.claude/settings.local.json` no `.gitignore`, 6
+  permissões de leitura no `.claude/settings.json` (`git show`, `git ls-files`, `git cat-file`, `wc`, `grep`,
+  `head`). `CLAUDE.md` fica o vivo (o do pacote é o genérico de que ele é a especialização).
+- **Fusão do CEREBRO e das Instruções com o PACOTE como base.** Transplantado do vivo: as duas «Técnicas específicas
+  deste projeto»; «Ambiente (sistema operacional)» e a nota do CMD em «Commit pronto» (o pacote foi gerado sem SO
+  marcado — ponto 1: o SO volta); a nota de que CHANGELOG e ROADMAP são arquivos ativos aqui; nas Instruções, o
+  título do projeto, a nota «FONTE das Instruções do painel» e a linha do Windows/CMD (5.740 caracteres).
+- **Pontos 2–5, decididos pelo dono em 2026-11-18:** `meta/SETUP.md` criado (este projeto tem conteúdo real de
+  ambiente); `README.md` do scaffold do Vite trocado por um curto do EditX; **sem LICENSE por enquanto** (repositório
+  privado); **DECISIONS não arquivado agora**, apesar das 832 linhas.
+- **Desvio declarado:** o chat gravou no disco, ANTES desta WO, todos os arquivos que são do kit ou do chat (skills,
+  modelo de WO, GUIA, settings, CEREBRO, Instruções, CONTEXT, SETUP, os dois README); a wo0018 os versiona por
+  `sha1sum` e posiciona só o que é do Code. Motivo: o pacote manda instalar as skills antes de aplicar a WO.
+
+### Alternativas consideradas
+- **Base = o CEREBRO vivo, somando as regras novas** — 15 revisões de kit para costurar à mão; o pacote é o texto
+  inteiro e o que é deste projeto cabe em 5 transplantes.
+- **SO de fora, como veio o pacote** — os comandos voltariam a sair na sintaxe de outro shell.
+- **Arquivar DEC-010 e DEC-012 (99 linhas)** — o dono preferiu manter o arquivo inteiro por ora.
+
+### Consequências
+- **Positivas:** carimbos dos 6 arquivos do kit em v1.151.0; o `/apply-wo` passa a delimitar por quatro crases e a
+  parada grava relatório em arquivo; a rede do projeto descrita num lugar só (CONTEXT, «Build e validação»).
+- **Negativas:** as Instruções mudaram no repositório — o dono cola o texto novo no painel do Projeto.
+- **Riscos:** o pacote continua na pasta-pai até o commit desta WO; depois o chat o MOVE para `notas-arquivadas/`.
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown
 ## DEC-[número] — [Título curto]
 
 **Data:** YYYY-MM-DD
-**Status:** aceita | substituída por DEC-[N] | resolvida | aberta
+**Status:** aceita | aceita — emendada por DEC-[N] | substituída por DEC-[N] | resolvida | aberta
 **Autor:** você | Claude | ambos
 
 ### Contexto

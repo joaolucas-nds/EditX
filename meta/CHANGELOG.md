@@ -8,9 +8,8 @@
 > - MINOR: nova funcionalidade (novo tipo de frame, novo modo de exportação, etc.)
 > - PATCH: correção de bug sem quebrar compatibilidade
 
-**Mudanças nesta revisão (2026-11-10):** nova seção «Modificado» em [Unreleased] com o merge do
-KCM v1.135.0 (modo Code). Nenhuma versão lançada. A nota de 2026-07-24 saiu (o que ela dizia
-está nas entradas «Adicionado» abaixo).
+**Mudanças nesta revisão (2026-11-18, wo0018):** nova linha em «Modificado» com o merge do KCM v1.151.0. Nenhuma
+versão lançada. A nota de 2026-11-10 saiu (o que ela dizia está na linha do v1.135.0 em «Modificado»).
 
 ---
 
@@ -32,6 +31,10 @@ está nas entradas «Adicionado» abaixo).
 - Canvas borrado com o zoom do navegador diferente de 100%: o buffer do `<canvas>` ficava de tamanho diferente da tela (retina do Fabric truncando e ignorando DPR < 1); agora o buffer recebe os px do dispositivo medidos pelo navegador. Ver FIX-002
 
 ### Modificado
+- Documentação e ferramentas alinhadas ao KCM v1.151.0: skills `apply-wo`/`wrap`/`sondar` e modelo de WO novos
+  (cerca de quatro crases; parada do `/apply-wo` grava relatório), `meta/GUIA-DO-KIT.md` e `meta/SETUP.md` novos,
+  CEREBRO e Instruções fundidos com o pacote como base, «Build e validação» no CONTEXT, «Entregas» no modelo de log,
+  6 permissões de leitura no `.claude/settings.json`; `README.md` do EditX no lugar do scaffold do Vite. Ver DEC-022.
 - Documentação e ferramentas alinhadas ao KCM v1.135.0 com modo Code: `CLAUDE.md`, `.claude/`
   (settings + skills `apply-wo`/`wrap`/`sondar`), `meta/workorders/_TEMPLATE.md`, `meta/SPEC.md`;
   CEREBRO fundido (seção ASU removida), INSTRUCOES reescritas (7.355 → 5.588 caracteres), cadência

@@ -61,6 +61,20 @@ e metadados de exportação.
 - **Deploy web:** Vercel / Netlify (SPA estática)
 - **Ferramentas:** Git, ESLint 9.39.x (flat config — NÃO 10.x, ver DEC-011), Prettier 3, Vitest 5.x (testes de lógica em ambiente Node; versão real no `package.json` — entra pela wo0001, DEC-013)
 
+
+## Build e validação (a rede deste projeto)
+- **Rede automática:** `npm test` (Vitest, lógica em Node — sem DOM), `npm run lint` (ESLint) e `npm run build`
+  (`tsc -b` + Vite). Os três rodam sem argumento e devolvem código de saída; a WO pede os três e o relatório do Code
+  traz a saída crua.
+- **Linha de base:** nenhuma ainda (sem snapshot nem golden set). Quando o desenho do canvas ganhar teste de pixel, a
+  linha de base e o comando que a regrava entram aqui.
+- **Na tela:** o dono deixa o `npm run dev` rodando (`http://localhost:5173/`) e o **chat confere no navegador
+  embutido** (preferência do dono, 2026-11-17); ao dono vai só o que o painel não cobre — zoom real do navegador e
+  DPR ≠ 1 —, sinalizado. Limites do painel: CEREBRO, «Técnicas específicas deste projeto».
+- **O que o ambiente do chat não roda:** o `vitest` (o `node_modules` é o instalado no Windows; o binário nativo não
+  roda na VM Linux). No lugar, o chat simula a WO numa cópia: `tsc`, ESLint e Prettier rodam; os testes novos rodam
+  compilados para ESM com um calço de `vitest`. A rede de verdade é a do Code (ver o CEREBRO, «A rede deste projeto»).
+
 ---
 
 ## Estrutura do Projeto
@@ -431,4 +445,4 @@ O fluxo de uso principal é:
 
 ---
 
-*Última atualização: 2026-11-11 — preparação da wo0001 (TemplateSerializer + Vitest, DEC-013). Anterior: 2026-11-10 (merge do KCM v1.135.0, DEC-012). Criação original: 2026-05-24.*
+*Última atualização: 2026-11-18 — merge do KCM v1.151.0 (wo0018, DEC-022): seção «Build e validação». Anterior: 2026-11-11 (preparação da wo0001, DEC-013). Criação original: 2026-05-24.*

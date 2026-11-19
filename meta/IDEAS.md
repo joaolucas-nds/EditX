@@ -219,3 +219,7 @@ Ver DEC-010 para o registro completo da decisão.
 **Complexidade:** alta | média | baixa
 **Status:** nova
 ```
+
+---
+
+> **Fim do IDEAS.** Acréscimo entra sob o título da seção certa, nunca aqui embaixo: o fim do arquivo é o modelo de nova ideia, e o que cai nele se perde do lugar dele (texto do kit, ajustado à ordem deste arquivo).

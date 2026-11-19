@@ -1,7 +1,10 @@
 # .gitignore — EditX. NAO ignore .claude/, meta/ nem logs/ (versionados de proposito).
 
+# o Claude Code cria e enche de caminhos desta maquina; e do usuario, nao do projeto (KCM v1.151.0, wo0018)
+.claude/settings.local.json
+
 # Logs
-# NAO ignorar a pasta logs/ inteira: os logs de sessao (logs/AAAA-MM-DD.md)
+# NAO ignorar a pasta logs/ inteira: os logs do dia (logs/AAAA-MM-DD.md)
 # sao versionados de proposito neste projeto (ver LOG-TEMPLATE.md). So
 # arquivos de log genericos de ferramentas (npm, yarn, pnpm) sao ignorados.
 *.log

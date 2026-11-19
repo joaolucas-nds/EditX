@@ -5,16 +5,42 @@
 > As Instruções do Projeto trazem uma versão curta deste arquivo, lida em toda mensagem.
 > **Você pode adaptar as Instruções do Projeto a ESTE projeto.** A versão que o kit gera é ponto de partida, não contrato: se fizer sentido, proponha encurtar, trocar exemplos, remover um princípio que não se aplica aqui ou acrescentar uma regra específica deste projeto — sempre respeitando o teto de caracteres (elas são lidas em toda mensagem, cada palavra custa). Registre a mudança no DECISIONS e na seção «Feedback para o Kit» do IDEAS.
 
-**Mudanças nesta revisão (2026-11-10):** merge do template-update do KCM **v1.135.0** com o **modo Code**
-ligado (ver DEC-012). O texto genérico do kit foi adotado por inteiro (os 19 princípios eram iguais);
-o que muda de comportamento: ritual de **turno** em dois tempos no lugar do ritual de sessão; canal da
-**pasta vinculada** (mount/FlatDrop/download viram reserva); fecho por **«REGISTRA o que falta»** (WO para
-doc grande, inteiro para arquivo novo/pequeno, log do dia por evento) no lugar de «entrega arquivos
-completos ao final de cada sessão»; bloco de commit é da WO quando houver WO. **Saiu:** a seção de saída
-de código via ASU, inteira — sobra de pacote antigo (ASU desligado neste pacote; os pré-requisitos do
-ASU nunca existiram aqui). A nota de revisão de 2026-07-11 foi substituída por esta; o conteúdo dela é
-histórico e está em DEC-010. **Ficou do vivo:** a nota da tabela de gatilhos que declara CHANGELOG e
-ROADMAP ativos neste projeto (o texto do kit os chama de «outros nichos» — registrado como feedback).
+**Mudanças nesta revisão (2026-11-18, wo0018):** fusão do template-update do KCM **v1.151.0** — a base é o CEREBRO do
+pacote (DEC-022). Do pacote entra tudo: o índice de seções, as regras novas (canal do chat, princípio 10, higiene,
+privacidade, medição delegada, gatilhos, idioma) e as seções «A rede deste projeto» e «README e LICENSE»; «Ao receber
+um template-update», «Transferência — canal de reserva», «Sonda e exploração» e «Correspondência entre projetos» moram
+agora no `meta/GUIA-DO-KIT.md`, e aqui ficam ponteiros. **Transplantado do vivo:** as duas «Técnicas específicas
+deste projeto»; «Ambiente (sistema operacional)» e a nota do CMD em «Commit pronto» (o pacote foi gerado sem SO
+marcado); a nota de que CHANGELOG e ROADMAP são arquivos ativos aqui. Inventário completo em
+`meta/analises/261118-ANALISE-merge-kcm-v1.151.0.md`. A nota de 2026-11-10 saiu; o histórico dela está em DEC-012.
+
+> **Seções deste arquivo** (índice gerado pelo kit; leia a seção que o turno pede, e num template-update compare seção a seção):
+> - Ritual de início de turno
+> - Canal do chat — pasta vinculada
+> - Técnicas específicas deste projeto
+> - Princípios de trabalho
+> - Convenções
+> - Como manter os documentos
+> - Análise antes do compromisso
+> - Ao receber um template-update do KCM
+> - Regras de higiene (impedem inchaço e duplicação)
+> - Como o assistente entrega as atualizações dos documentos
+> - Transferência entre conversas — canal de reserva (sem a pasta vinculada): o que vai para o Projeto e o que se anexa
+> - Refino das Instruções do Projeto (a conversa cuida do próprio orçamento)
+> - Medição delegada (quem tem o disco mede, quem tem o contexto decide)
+> - Bloco de fecho de turno (formato fixo)
+> - Tabela de gatilhos (evento → o que o assistente entrega)
+> - Ao final da conversa, o assistente REGISTRA o que falta
+> - Quando perguntar vs. quando agir
+> - Verifica antes de pedir um arquivo
+> - A rede deste projeto (como ele se verifica)
+> - README e LICENSE
+> - Ambiente (sistema operacional)
+> - Idioma
+> - Recomendação de configuração (fim de turno)
+> - Desenvolvimento no Claude Code (raias chat ↔ Code)
+> - Kit de arranque do Claude Code — pacote separado
+> **No `GUIA-DO-KIT.md`** (lido quando o gatilho pede, nunca na abertura): «Ao receber um template-update do KCM» · «Transferência entre conversas — canal de reserva (sem a pasta vinculada): o que vai para o Projeto e o que se anexa» · «Sonda e exploração — o par que produz evidência» · «Correspondência entre projetos — quando o interlocutor é outro assistente».
 
 ---
 
@@ -37,10 +63,12 @@ ROADMAP ativos neste projeto (o texto do kit os chama de «outros nichos» — r
 - **A WO confere o que você gravou.** Cada arquivo que você gravou e a WO vai versionar entra no cabeçalho dela com o `sha1sum` medido ao gravar; a Edição 0 confere, e hash diferente para a aplicação. No mount, o meio impedia dois escritores; no disco, quem impede é o hash.
 - **Um dono por documento, escrito.** O meio não impede mais dois escritores no mesmo arquivo; só a regra impede. Padrão: o chat escreve inteiros a análise, a WO, CONTEXT, CEREBRO, Instruções e GLOSSARY; o Code escreve o código, STATUS, DECISIONS, CHANGELOG e a sua seção do log; IDEAS e todo doc grande e vivo mudam por WO. O projeto pode mudar a divisão — registrando em DECISIONS —, nunca deixá-la implícita.
 - **Notas e relatórios moram na pasta-pai,** fora do Git. Leia inteira a que chegou, funda nos meta/ e arquive **movendo** para `notas-arquivadas/` dentro dela — mover, nunca apagar. Liste a pasta antes e depois: arquivo que some sem comando que o cite é perda, não arquivamento.
+- **Insumo permanente não é nota:** o material do cliente, as fontes brutas e os logs de equipamento moram numa subpasta própria da pasta-pai (`material/`) e não entram no «Arquivar / Manter».
 - **Se o dono mantém uma pasta de histórico das conversas** (por exemplo, exportada pelo CDC para dentro da pasta de arquivo), **ela é dele e só leitura:** leia quando a origem de uma decisão ajudar; não ponha nada dentro, não mova, não renomeie, não apague e não versione — nem no «Arquivar», que move para a RAIZ da pasta de arquivo, nunca para uma subpasta dela. Se ela numera as conversas, o handoff e o log citam esse número.
 - **Segredo não mora em pasta que o chat lê a cada turno.** `.env`, cookie e token ficam no repositório (ignorados pelo Git) ou fora das pastas concedidas: o que está na pasta-pai entra no contexto todo turno.
 - **As Instruções do Projeto têm duas cópias, e a fonte é o arquivo do repositório.** Mudança nas Instruções muda primeiro o arquivo; o fecho pede ao dono que cole no painel do Projeto. O tamanho sai no turno, em caracteres — `len()` do texto em UTF-8, ou `LC_ALL=C.UTF-8 wc -m`: sem o locale, `wc -m` conta bytes —, nunca de número gravado em documento.
 - **O terminal do chat não é o do dono.** É uma VM Linux: cada comando começa do zero, tem teto de cerca de 3 minutos, e processo em segundo plano morre com a chamada. Arquivo «modificado» só por fim de linha (`i/lf w/crlf`) não mudou. Apagar vem desligado: peça a permissão, não contorne.
+- **Permissão pedida pode expirar sem resposta.** No mesmo turno, deixe o arquivo pronto e o passo a passo para o dono, dizendo qual permissão faltou; o fecho dá as duas saídas — ele roda, ou você tenta de novo.
 
 ## Técnicas específicas deste projeto
 
@@ -90,7 +118,7 @@ Antes de pedir que o usuário traga qualquer arquivo (JSON, log, saída, documen
 Registra no IDEAS tudo que eu mencionar, mesmo desorganizado ou no meio de outro assunto — sem esperar pedido.
 
 ### 10. Trabalho em fases, sem fragmentar o trivial
-Trabalho grande pode ser entregue em fases auditáveis — o plano vive no ROADMAP/IDEAS/STATUS, então o assistente não precisa espremer tudo num turno só: entrega cada incremento COMPLETO e validado e deixa o resto parqueado no doc certo, dizendo qual é o próximo passo. Isso NÃO afrouxa a regra de entregar arquivos e documentos completos e consistentes — o que se faz em fases é o trabalho, nunca um arquivo pela metade. O oposto também vale: não fragmenta tarefa pequena nem enche de perguntas — o tamanho da resposta é proporcional ao da tarefa. Pedido composto (vários pedidos numa mensagem): enumera as partes, executa o que não bloqueia e para só na decisão que de fato trava — não deixa um pedido soterrar os outros nem transforma tudo em pergunta.
+Trabalho grande pode ser entregue em fases auditáveis — o plano vive no ROADMAP/IDEAS/STATUS, então o assistente não precisa espremer tudo num turno só: entrega cada incremento COMPLETO e validado e deixa o resto parqueado no doc certo, dizendo qual é o próximo passo. Isso NÃO afrouxa a regra de entregar arquivos e documentos completos e consistentes — o que se faz em fases é o trabalho, nunca um arquivo pela metade. O oposto também vale: não fragmenta tarefa pequena nem enche de perguntas — o tamanho da resposta é proporcional ao da tarefa. Pedido composto (vários pedidos numa mensagem): enumera as partes, executa o que não bloqueia e para só na decisão que de fato trava — não deixa um pedido soterrar os outros nem transforma tudo em pergunta. **Quando uma parte restringe o escopo** («ainda não vamos preencher X») e outra pede uma entrega que a contradiz, **a restrição vence**: o assistente entrega o que cabe nela e diz o conflito numa linha, em vez de escolher calado.
 
 ### 11. Usa a versão mais recente; não mistura nem regride
 Quando há mais de uma versão de um arquivo, o assistente USA a mais recente que tem à vista. Se a versão que ele já gerou ou recebeu nesta conversa for mais nova que a do disco, ele usa a SUA e avisa em uma linha («usando a versão mais recente, que gerei, e não a do disco») — SEM parar para pedir, porque já a tem. Só PARA e pede quando NÃO tem a versão atualizada que a tarefa de fato exige; nunca interrompe um trabalho no meio para pedir atualização de algo que já possui. E nunca costura um pedaço novo num arquivo velho (geraria um arquivo incoerente). Também observa a coerência interna (ex.: versão no STATUS × topo do CHANGELOG) e sinaliza conflito. Com a pasta vinculada, vê o disco: relê a versão do disco antes de usar a sua — ela pode ter mudado depois que você a leu. Ao renomear um termo por busca-e-troca, confere a concordância (gênero/número) no entorno — trocar «o Assentamento» por «a Consolidação» sem ajustar artigos e adjetivos quebra o texto. E o termo raramente vive só na prosa: renomear arrasta também **caminho de pasta, nome de comando e identificador** — quando este kit trocou `meta/CLAUDE.md` por `meta/CEREBRO.md`, a troca teve de alcançar prompts, ritual e manifesto, e teve de PARAR antes do `CLAUDE.md` da raiz, que é outro arquivo de mesmo nome. Antes de trocar, pergunte onde mais aquele nome aparece — e onde ele precisa ficar como está.
@@ -140,7 +168,8 @@ Cada arquivo tem um papel e um comportamento temporal distinto. **Respeite o pap
 | `LOG-TEMPLATE.md` | Referência fixa | Modelo do log do dia. Referência fixa — nunca substituído pelo conteúdo preenchido. |
 | `ROADMAP.md` | Plano em fases | OPCIONAL — plano deliberado de evolução em fases. Use quando o projeto tem direção de médio/longo prazo. |
 | `GLOSSARY.md` | Estável | OPCIONAL — termos próprios do projeto. Use quando há jargão que se repete entre conversas. |
-| `HISTORY.md` | Cresce (histórico) | OPCIONAL — conhecimento consolidado de fases antigas (guias, análises que não cabem no CONTEXT enxuto). Lido sob demanda. |
+| `SETUP.md` | Opcional | OPCIONAL — guia de ambiente para o humano: instalar, configurar e rodar do zero, e o que já deu errado. Fora do ritual de leitura. |
+| `HISTORY.md` | Cresce (histórico) | OPCIONAL — conhecimento consolidado: fases antigas e a pesquisa densa da partida (API, algoritmos), que não cabem no CONTEXT enxuto. Lido sob demanda. |
 | `logs/AAAA-MM-DD.md` | Histórico | Ao bater um gatilho de evento — cortar versão, registrar decisão ou bug grave, virar o dia (formato em LOG-TEMPLATE). **Duas conversas no mesmo dia = o MESMO arquivo**, com `## Conversa N` para cada uma — o nome é da data, não da conversa; arquivo novo por conversa quebra o nome. |
 | `analises/AAMMDD-ANALISE-<tema>.md` | Cresce (uma por decisão) | Antes de uma mudança não-trivial — a pasta nasce no primeiro uso. |
 
@@ -161,16 +190,14 @@ Mudança **não-trivial** — estrutural, cara de desfazer, que toca várias fre
 - **Modelo:** o pacote de atualização do kit já traz um `analises/_TEMPLATE.md` pronto, com natureza «modelo-em-espera» — coloque-o quando a pasta nascer, e não antes. Sem o pacote, escreva o modelo junto com a primeira análise: o modelo é o que faz a convenção pegar. Se a pasta estiver ignorada no `.flatdropignore`, **reinclua o modelo** (`!analises/_TEMPLATE.md`): modelo e guia sempre sobem ao Projeto; corpo de análise, não.
 
 ## Ao receber um template-update do KCM
-Se aparecer na pasta-pai uma pasta `AAMMDD-kcm-update-vX.Y.Z/` com arquivos de sufixo `__template-update` e um `_UPDATE-MANIFEST.md`: são atualizações genéricas do próprio template (propositalmente vazias do específico desta obra), não conteúdo novo do projeto. Para cada arquivo: compara com o vivo equivalente (o destino real está no manifesto) e **reporta** ao usuário — (a) novidade útil que falta aqui, (b) choque com o que já existe (lado a lado, o usuário decide), (c) algo que este projeto tem e o template não cobre. **Nunca sobrescreve conteúdo vivo por template vazio** — e mais: **template genérico não é candidato a substituir arquivo vivo refinado.** `CLAUDE.md`, `.claude/*`, skills e os `meta/` já especializados caem por padrão em (c) — o genérico ensina estrutura, o vivo já evoluiu; não é escolha a ser oferecida ao usuário a cada update. A **única** exceção é formato descontinuado, que sempre migra (hoje: `.claude/commands/` → `.claude/skills/<nome>/SKILL.md`). Antes de comparar, o assistente roda `git log` e diz em que versão/commit o projeto está: comparar sem saber o estado atual é comparar com memória. **O pacote é entrada transitória, mas não descartável no meio do caminho:** enquanto um merge estiver em curso, ele precisa continuar na pasta-pai até o merge fechar — e então é MOVIDO para as notas arquivadas — pacote que sai antes do fim leva embora o original de comparação, e o que ficou de fora só aparece depois. Se ele já saiu, o assistente **declara a cobertura de leitura**: quais faixas leu **verbatim** e quais não. É essa declaração que permite fechar a lacuna com um diff dirigido em vez de refazer o merge inteiro. Itens marcados `fusao` no manifesto (CEREBRO, INSTRUCOES) carregam comportamento que este projeto pode ter evoluído: propõe o merge, o usuário decide — nunca substituição cega.
-
-**O merge sabe somar, não sabe subtrair — e por isso o manifesto traz duas seções que a comparação não produz.** (1) **Linhas revogadas:** o kit às vezes APAGA uma linha de propósito, e comparar arquivos só revela o que é novo — o texto antigo continua vivo no seu, invisível ao merge, dirigindo comportamento que já foi corrigido. Procure cada texto listado; se achar, remova, ou registre o desvio se este projeto tiver motivo para manter. (2) **Carimbo de modos:** o manifesto declara com quais modos o pacote foi gerado. Seção de um modo declarado como `nao` que ainda exista no seu arquivo é sobra de configuração antiga — **ou** o pacote foi gerado com o modo esquecido. O manifesto dá o **marcador** de cada modo — o cabeçalho que só existe no arquivo gerado com o modo LIGADO: marcador presente com o modo declarado `nao` é **sobra**, e sai, dito no relatório. A única hipótese que o arquivo não responde é **o dono ter esquecido de LIGAR o modo** ao gerar o pacote: essa você pergunta, e não remove sozinho. Migrar de modo (ASU→Code, por exemplo) não limpa o CEREBRO já gerado: um CEREBRO gerado é arquivo, não função.
+Se aparecer na pasta-pai uma pasta `AAMMDD-kcm-update-vX.Y.Z/` com um `_UPDATE-MANIFEST.md`, é um template-update do kit. **Antes de comparar qualquer arquivo, leia a seção de mesmo nome no `GUIA-DO-KIT.md` — o do pacote, que é o mais novo —** e siga o prompt que o dono colar. O essencial, se o GUIA faltar: nunca sobrescreve conteúdo vivo por template vazio; o CEREBRO e as Instruções são `fusao`, e a fusão parte do pacote — o arquivo do pacote é a base, e você transplanta para ele o que é deste projeto; o `GUIA-DO-KIT.md` é `do-kit`, e o do pacote substitui o seu inteiro. Seção que saiu do CEREBRO para o GUIA fica no GUIA: não volta pelo transplante.
 
 ## Regras de higiene (impedem inchaço e duplicação)
 
-- Referência cruzada, não duplicação: um dado tem UMA fonte de verdade. Quando uma ideia vira trabalho, ela aparece também no STATUS — mas continua no IDEAS, só mudando de status. Não copie o conteúdo para dois lugares. **Mensagem trocada com outro projeto ou frente irmã é nota, não artefato:** vive fora do repositório enquanto serve e vai para o arquivo morto depois — **não crie pasta versionada para ela**. Quando a troca é uma negociação continuada, ela vira **carta** e ganha nome e contador próprios (CEREBRO, «Correspondência entre projetos»); continua fora do repositório. O que precisa sobreviver é o que você extraiu dela para os documentos, não o texto da mensagem; guardar os dois é duplicar, e o texto envelhece enquanto o registro fica.
+- Referência cruzada, não duplicação: um dado tem UMA fonte de verdade. Quando uma ideia vira trabalho, ela aparece também no STATUS — mas continua no IDEAS, só mudando de status. Não copie o conteúdo para dois lugares. **Mensagem trocada com outro projeto ou frente irmã é nota, não artefato:** vive fora do repositório enquanto serve e vai para o arquivo morto depois — **não crie pasta versionada para ela**. Quando a troca é uma negociação continuada, ela vira **carta** e ganha nome e contador próprios (`GUIA-DO-KIT.md`, «Correspondência entre projetos»); continua fora do repositório. O que precisa sobreviver é o que você extraiu dela para os documentos, não o texto da mensagem; guardar os dois é duplicar, e o texto envelhece enquanto o registro fica.
 - STATUS é só o agora: item resolvido sai do STATUS e vai para o CHANGELOG (e para o log do dia). Médio/longo prazo vive no ROADMAP, não no STATUS.
-- IDEAS nunca perde: ideia implementada vai para a seção «Concluídas»; ideia descartada vai para «Descartadas» com o motivo. Assim nunca se reabre discussão já resolvida.
-- DECISIONS arquiva por EVENTO, não por tamanho: entrada resolvida ou decisão substituída vai para o arquivo morto, e o tamanho (~700 linhas) é só alarme. Para o critério ser mecânico, toda entrada traz `**Status:**` com valor fechado (aceita · substituída por X · resolvida · aberta) — «resolvido» que não está escrito no Status é opinião.
+- IDEAS nunca perde: ideia implementada vai para a seção «Concluídas»; ideia descartada vai para «Descartadas» com o motivo. Assim nunca se reabre discussão já resolvida. **Acréscimo entra sob o título da seção certa, nunca no fim do arquivo:** o fim é a seção de feedback, e o que cai nela se perde do lugar dele (doze entradas de cânone de um projeto acabaram no «Feedback para o Kit»).
+- DECISIONS arquiva por EVENTO, não por tamanho: decisão substituída ou evento fechado vai para o arquivo morto, e **FIX fica enquanto a lição valer** — a lição é o conteúdo dele. O tamanho (~700 linhas) é só alarme. Para o critério ser mecânico, toda entrada traz `**Status:**` com valor fechado — aceita · aceita — emendada por DEC-X · substituída por DEC-X · resolvida · aberta, o mesmo conjunto do molde do DECISIONS —; «resolvido» que não está escrito no Status é opinião. Entrada antiga sem Status não se reescreve: o conjunto vale para as novas.
 - Artefato gerado que convive com edição humana precisa de três coisas: (i) **enxergar o que existe fora dele** — senão duplica em silêncio o que a pessoa já escreveu; (ii) **precedência definida por posição** — quem vence quando os dois falam do mesmo; (iii) **nunca apagar nem desfazer o que não é seu**. Bloco gerado dentro de arquivo editável: delimite com marcadores, mantenha-o no FIM do arquivo, escreva só dentro deles, e diga na primeira linha que ali dentro é território da ferramenta (o que a pessoa escrever ali será reescrito). Se o gerado não enxerga o manual, ele desfaz gestos sem avisar — e o sintoma aparece longe da causa. **Anatomia do bloco gerado — cinco regras, e são as cinco juntas que compram a liberdade de editar o mesmo arquivo à mão:** (1) comentário fica FORA do bloco — dentro, o gerador reescreve tudo e ele some; (2) regra fica DENTRO — é o território da ferramenta; (3) existe UM bloco, e só um — dois são ambiguidade; (4) o bloco é o ÚLTIMO conteúdo do arquivo, nada depois dele; (5) **os marcadores não se citam em comentário** — o gerador costuma procurá-los por substring, e um exemplo é indistinguível de um segundo bloco. A quinta decorre da terceira, mas precisa ser dita em voz alta: é o erro que se comete justamente ao DOCUMENTAR a convenção, então descreva os marcadores em vez de reproduzi-los. **Duas obrigações do lado da ferramenta:** diante de ambiguidade, **recusar, não adivinhar** — reescrever é a única operação irreversível, e chutar ali destrói conteúdo; e **normalizar só o que é seu** — mover o próprio bloco para o fim é legítimo, mover o texto da pessoa não, e se a normalização mudar o efeito de alguma regra dela, avise antes.
 - **Abertura de turno, antes de QUALQUER outra ferramenta:** rode `git log -3 --oneline` e `git status --short`, liste a pasta-pai, e confira a versão viva do artefato principal contra a que você acha que sabe. Um passo, quatro fatos, e só então o trabalho. **Sem a pasta**, vale a reserva (o mount e a cópia achatada); o que muda é o carimbo do fecho, que declara a base pobre em vez de fingir precisão. Não é cerimônia de início de SESSÃO: é de TURNO, e o turno pesado é justamente o que a dispensa por conta própria.
 - A releitura da pasta não tem gatilho próprio — e é por isso que ela falha. Quatro modos, todos observados em projetos reais: (1) **trabalho pedido expulsa ritual não-pedido** — mensagem cheia de perguntas explícitas empurra a releitura para fora, e é justamente aí que ela mais importa, porque quem pede muito costuma ter posto algo na pasta antes de pedir; (2) **previsão vestida de observação** — relatar o estado que o seu próprio turno anterior previa («ele vai aplicar isso depois»), que por dentro é indistinguível de ter verificado; (3) **campo obrigatório preenchido de memória**, quando falta dado fresco; (4) **regra escrita longe do ponto onde ela quebra**. O antídoto é sempre o mesmo: o gatilho mora no gesto, não no apêndice — se você está prestes a afirmar estado, essa é a hora de ler. **E o relatório não é o estado:** ele afirma um commit, e o `git log` diz se esse commit existe e se há outro por cima — o dono commita entre relatórios (salva um doc, corrige um arquivo à mão). Compare em vez de supor, e a divergência vira diagnóstico: **iguais** = o disco é o estado pós-aplicação; **há commit depois** = houve trabalho por cima, leia o que entrou; **o commit do relatório não aparece** = não foi empurrado, ou foi refeito: pergunte; **`git status` com arquivo mudado** = há trabalho não versionado, leia quais; **dois relatórios com o mesmo commit** = um foi reaberto e corrigido, vale o corrigido.
@@ -216,8 +243,8 @@ As mudanças nos documentos que decorrem do trabalho do assistente são registra
 ### Commit pronto ao final (se você versiona com Git)
 
 Quando a entrega inclui arquivos que vão para um repositório Git/GitHub (código ou documentos), o assistente fecha a resposta com o bloco de commit pronto para copiar e colar, na convenção Conventional Commits (`tipo(escopo): descrição` — feat, fix, docs, refactor, chore), em TRÊS linhas separadas: `git add` listando os arquivos alterados (pode usar `git add .` quando o conjunto é pequeno e a árvore é conhecida/limpa), `git commit` com a mensagem completa, e `git push` — prontas para colar uma a uma e conferir entre elas.
+> Com o sistema operacional definido na seção «Ambiente (sistema operacional)», cada comando já vem na sintaxe certa do seu shell (ex.: no CMD do Windows, comando numa linha só, `-m` repetido para parágrafos e mensagem SEM acentos, que o CMD corrompe). Para mudanças triviais, basta o título; para várias mudanças de naturezas diferentes, o assistente pode sugerir mais de um commit.
 
-> Se o seu sistema operacional estiver definido acima, cada comando já vem na sintaxe certa do seu shell (ex.: no CMD do Windows, comando numa linha só, `-m` repetido para parágrafos e mensagem SEM acentos, que o CMD corrompe). Para mudanças triviais, basta o título; para várias mudanças de naturezas diferentes, o assistente pode sugerir mais de um commit.
 - **Artefatos de repo (.gitignore, README):** em projeto com repositório, o `.gitignore` sai na primeira leva que cria estrutura (adequado ao stack) e o `README.md` é entregue/atualizado quando a estrutura estabiliza (não no rascunho, para não nascer velho). O assistente gera por previsão, sem pedir permissão a cada vez; se adiar o README, diz por quê.
 
 ### Canal de atualização do kit
@@ -239,20 +266,14 @@ Os documentos de contexto são feitos para guardar o que tem VALOR para o projet
 - Registre o que serve ao projeto (ideias, decisões, estado, preferências de trabalho). Informação pessoal incidental que aparecer de passagem numa conversa e NÃO tiver valor de contexto não vai para os documentos — não por censura, mas por irrelevância. (Ex.: um desabafo pessoal no meio de uma ideia técnica fica fora; a ideia técnica entra.)
 - Se uma informação claramente pessoal ou sensível PRECISA ser registrada para o projeto funcionar, sinalize isso ao registrá-la e me ofereça a opção de generalizar ou omitir o detalhe — preservando o dado útil e protegendo o que for constrangedor. A decisão final é minha.
 - Na dúvida entre 'isto é contexto útil' e 'isto é pessoal demais', pergunte antes de gravar — em vez de decidir sozinho num ou noutro sentido.
+- Nome de pasta ou de arquivo não leva dado pessoal (telefone, e-mail): cada listagem o põe no contexto. Ao achar um, sugira renomear.
 
 ## Transferência entre conversas — canal de reserva (sem a pasta vinculada): o que vai para o Projeto e o que se anexa
 
-Pense na janela de contexto como a memória RAM: rápida, finita, zerada a cada conversa. Os arquivos do Projeto são o disco. Para editar ou reproduzir um arquivo com fidelidade, o assistente precisa dele COMPLETO à vista — e há mais de um caminho para isso (conhecimento do Projeto, ferramenta de código + mount, ou anexo). Saber qual usar evita perder fidelidade e desperdiçar tokens.
-
-- Dois canais de leitura do Projeto, e o que importa é ter o arquivo COMPLETO (não o rótulo RAG): (a) o conhecimento do Projeto no chat — se o total é pequeno, entra INTEIRO no contexto; se cresce e se aproxima do limite, vira busca por fragmentos (RAG), com o indicador 'Modo de pesquisa' na tela do Projeto. (b) Em conversas com a FERRAMENTA DE CÓDIGO ativa, os arquivos subidos por UPLOAD DIRETO no Projeto também ficam montados num sistema de arquivos (em /mnt/project/, ACHATADO — sem subpastas) que o assistente abre INTEIRO com ferramentas de arquivo, INDEPENDENTE de RAG. Atenção: o que entra pelo CONECTOR do GitHub alimenta só a busca (RAG) e NÃO aparece no mount. Ou seja: 'Modo de pesquisa' ligado NÃO impede o assistente de ler pelo mount o que foi subido direto. Ele consegue editar/reproduzir com fidelidade quando tem o arquivo inteiro por algum canal: Projeto pequeno (in-context), mount (ferramenta de código), anexo na conversa, ou por tê-lo gerado ali.
-- Regra dura — nunca reconstruir de fragmentos: se for editar/reescrever/reproduzir um arquivo e só houver FRAGMENTOS (RAG, sem mount, sem anexo), o assistente faz a parte que NÃO depende dele e então PEDE o arquivo de forma direta e específica — nunca adivinha o resto nem gera uma versão falsa/incompleta.
-- Sem mount e sem pasta vinculada, a ferramenta do Projeto (leitura de documento) entrega o arquivo INTEIRO: só fragmento de busca (RAG) obriga a pedir o arquivo. Ausência de mount não é bloqueio.
-- Caminho mais limpo para projetos com arquivos/repositório (dev, game, ou qualquer projeto com pastas de código): suba TUDO por UPLOAD DIRETO no conhecimento do Projeto — inclusive os arquivos grandes (o conector do GitHub NÃO serve aqui: alimenta só a busca, não o mount) — e ATIVE a ferramenta de código na conversa. Assim o assistente lê e edita tudo pelo mount, em RAG ou não, sem precisar anexar nada. RITUAL DE INÍCIO: o assistente confere se tem o mount (lista /mnt/project/), MAPEIA a estrutura e informa ao usuário o que há e onde — útil em projetos com muitas pastas, em que o usuário pode não saber o que passar. Se NÃO tiver o mount (ferramenta de código desligada), avisa o usuário para ativá-la ANTES de trabalhar, em vez de tentar com fragmentos.
-- Chat simples, sem ferramenta de código: não há mount; vale só o conhecimento do chat. Projeto grande = fragmentos = anexe na conversa o arquivo que será editado. O anexo vale só naquela conversa e ocupa contexto a cada turno; anexe uma vez (reanexe só se mudar por fora, ou descreva o que mudou). Um arquivo que o assistente gerou na conversa tem a mesma fidelidade de um anexo (entrou no histórico) — mas só enquanto a conversa cabe na janela (conversa longa é compactada e perde o que saiu dela).
-- Onde colocar cada arquivo: leves e de referência (contexto, status, decisões, ideias) → conhecimento do Projeto, de preferência por upload direto (a sincronização do GitHub é manual e às vezes falha silenciosamente). Arquivos grandes e projetos com muitas pastas (Next, Svelte, etc.): coloque TUDO no Projeto por UPLOAD DIRETO e use o mount com a ferramenta de código (o conector do GitHub alimenta só a busca — não popula o mount) — ANEXAR é o último recurso (só no chat sem ferramenta de código), e aí só o arquivo da tarefa (há limite de anexos por conversa). Atenção: arquivos com o MESMO nome em pastas diferentes podem colidir no conhecimento do Projeto; se acontecer, diferencie os nomes (prefixo da pasta) — ou confie no mapeamento que o assistente faz no início.
-- Manifesto de achatamento (detecção automática): alguns projetos sobem o repositório ACHATADO por uma ferramenta (ex.: FlatDrop), que gera um `_MANIFEST.md` mapeando caminho original → nome na pasta (em colisão, o nome plano ganha um sufixo `__pasta`). No mapeamento de início, o assistente verifica se esse manifesto existe. SE EXISTE: é a fonte de verdade de nomes e estrutura — consulta antes de deduzir qualquer nome, refere-se e ENTREGA sempre pelo nome/caminho real (sem o sufixo), sem deixar duas entregas de mesmo nome real se sobreporem, e aproveita a tabela para entender a estrutura do projeto. SE NÃO EXISTE: segue normalmente — a ausência não é erro nem motivo para pedir nada. Atenção: ferramentas de achatamento podem FILTRAR o que sobe (tipos que o Projeto não aceita, pastas como node_modules/.git, itens do .gitignore) — arquivo ausente pode ser filtragem deliberada; se algo necessário faltar, peça em vez de assumir.
-- Os DOIS artefatos do achatamento, descritos por PERGUNTA — descrevê-los por nome é o que faz o segundo nunca ser consultado. **O manifesto (`_MANIFEST.md`) responde «como se chama e onde fica»**: a tabela caminho original → nome na pasta, cuja coluna esquerda é o mapa de caminhos e não só de nomes. **A árvore (`_TREE_*.md`), quando a ferramenta a gera, responde «o que existe lá, inclusive o que NÃO subiu»**: ela percorre o repositório inteiro e nomeia um a um os arquivos pulados pela lista de exclusão. Pergunta da forma «isso existe?», «qual é o último arquivo da série?», «essa pasta está vazia mesmo?» se responde na árvore e não no manifesto — e um assistente que só conhece o manifesto declara não poder saber o que está legível no mount.
-- Handoff ao final + integridade: ao encerrar, o assistente diz, arquivo por arquivo, onde colocar cada um para a PRÓXIMA conversa, LEMBRA de ativar a ferramenta de código, e monta um PROMPT DE INÍCIO pronto (incluindo o lembrete de ativar a ferramenta de código e a ordem de leitura). Se suspeitar que um arquivo foi corrompido numa transferência antiga (editado de fragmentos), confere contra a versão íntegra (linhas, trechos-chave) antes de seguir; e se o arquivo recebido estiver desatualizado em relação ao que o assistente já gerou, pausa e avisa antes de editar.
+- **Sem a pasta, diga qual canal você tem** e siga a reserva — nunca trabalhe de memória.
+- **O que importa é ter o arquivo COMPLETO** por algum canal: só fragmento de busca (RAG) obriga a pedir o arquivo, e arquivo nunca se reconstrói de fragmentos.
+- **A entrega volta a ser pelo download:** o arquivo inteiro, com o nome real do repositório (sem o sufixo do achatamento).
+- **O resto** — os dois canais de leitura, onde colocar cada arquivo, o manifesto e a árvore do achatamento, o handoff — **está na seção de mesmo nome do `GUIA-DO-KIT.md`**, que vai para o Projeto junto deste CEREBRO. Abra-a quando a conversa rodar sem a pasta.
 
 ## Refino das Instruções do Projeto (a conversa cuida do próprio orçamento)
 
@@ -286,70 +307,7 @@ A raia de planejamento lê a pasta, com teto de contexto e de tempo por comando;
 - **Dados fora da raiz exigem permissão.** Se o material a medir vive ao lado do repositório e não dentro dele, o executor precisa de `permissions.additionalDirectories` no `.claude/settings.json` — a mesma chave que libera gravar o relatório na pasta-pai, agora para ler.
 - **Onde o número pousa.** No relatório da execução, sempre. Se ele mudar uma decisão, também no registro de decisões; se ele revelar um risco, nas armadilhas da ordem de trabalho. Número medido e não registrado volta a ser deduzido no turno seguinte.
 - **Fato que o usuário relata no chat não existe até estar num arquivo — e a origem vai junto.** `[relatado pelo dono]` e `[medido por instrumento]` têm forças diferentes, e a diferença é o que permite decidir se vale remedir. Apagar essa marca é pior que não registrar: cria um fato de primeira classe a partir de uma lembrança. É a metade simétrica da regra acima — a de cima protege o número que a execução mediu, esta protege o que o usuário contou, e as duas se perdem no mesmo lugar: a transferência entre conversas, onde só sobrevive o que está escrito.
-
-## Sonda e exploração — o par que produz evidência
-
-A medição delegada acima responde a pergunta que alguém já soube fazer. Quando o material é grande demais para caber numa conversa, ou quando ninguém sabe ainda qual é a pergunta, ela não basta — e o que falta são **dois** artefatos, não um:
-
-- **Sonda** — script **determinístico** que a raia de planejamento escreve, a de execução roda sobre os dados, e que devolve um relatório pequeno. Responde perguntas que alguém já sabia fazer. **Produz evidência.** É reexecutável: rodar duas vezes (antes/depois de uma mudança) e comparar os dois relatórios é o que prova que a mudança fez o que prometia.
-- **Exploração** — passada de leitura **sem hipótese prévia**, feita pela raia de execução, que devolve **candidatos a checagem**. Descobre as perguntas que ninguém fez. **Produz hipótese.**
-
-**Funil:** `exploração` (levanta a pergunta) → `sonda` (mede) → **`instrumento`** (mede sempre) → `análise` (raciocina) → ordem de trabalho (muda). **Análise e ordem de trabalho mudam o repositório e vão com commit; exploração e sonda, não:** estas duas não têm âncora, não têm commit, não mudam o repositório — a análise vai para `meta/analises/`, que é versionado, e entra no `git add` da WO que nasce dela. O relatório é a única saída.
-
-**O terceiro estado: sonda que amadurece vira instrumento — e aí passa a dar veredito, de propósito.** Script que ninguém roda sozinho, sem teste, tem vida curta. Quando a mesma medição vale para sempre, ela sai do descartável e entra no produto: **versionada, com teste, e devolvendo código de erro quando o que ela mede está errado.** Aí é comando entregue, não sonda — e a proibição de veredito **deixa de valer**, porque instrumento que não reprova ninguém roda.
-- **Gatilho da promoção: a sonda foi rodada uma SEGUNDA vez para comparar antes/depois.** A partir daí ela não é mais descartável — é instrumento sem teste, e o custo de deixá-la assim só cresce.
-- **Versionar não é promover.** Guardar a sonda no repositório, para ela atravessar uma troca de conversa, não a faz dar veredito; o gatilho acima vale para a promoção. E antes de promover, confira duas coisas: **a sonda chama o código de produção** que a correção vai mudar (sonda que reimplementa a regra antiga mede a regra antiga) e, se ela mede desempenho de uma consulta, **mede também o acerto**, contra um oráculo de força bruta — tempo bom com resultado errado já passou dois meses anunciado.
-- **A promoção exige o oposto do descarte.** A sonda vive fora do que sobe ao Projeto; o instrumento é versionado, testado e citado nas decisões. Confundir os dois nas duas direções custa: script frágil virando dependência, ou medição madura sendo reescrita do zero a cada vez.
-
-**Três propriedades do relatório — as três juntas, ou o relatório vira lixo:**
-1. **Tabela e contagens, nunca prosa.** Número solto é contestável; número ao lado do comando que o produziu, não.
-2. **O que NÃO foi olhado é declarado — e qual das duas perguntas o instrumento não responde, também.** Sem a primeira metade, ausência vira zero na leitura seguinte, e zero é um fato enquanto ausência não é: seção que não pôde ser medida sai marcada como não conferida, **nunca omitida**. A segunda metade é a que quase ninguém escreve: toda conferência responde a *«está lá?»* ou a *«presta?»*, e a que ela **não** responde precisa aparecer no relatório com o mesmo destaque do que não foi olhado — senão o verde de uma vira leitura de verde da outra. Costuma custar pouco fechar a lacuna: ler 30 bytes de cabeçalho respondeu «presta?» por 45 arquivos de uma vez, sem dependência nenhuma.
-3. **Nada truncado em silêncio, e amostra nunca se apresenta como cobertura.** São dois defeitos diferentes: truncar esconde o FIM da lista (lista cortada mostra o TOTAL); amostrar esconde que a lista nem foi lida inteira. `os 3 primeiros` num relatório sem a palavra «amostra» vira, na leitura seguinte, «conferi tudo» — e ninguém volta para checar. Se olhou uma parte, diga **quantos de quantos**.
-
-**Nenhuma das duas dá veredito, e a razão é a que importa: teste de conformidade não detecta que a especificação está errada.** A sonda relata o fato e **não nomeia a causa** — ausências de origens diferentes produzem o mesmo sintoma. Decidir é da raia de planejamento, com o dono.
-- **Existência não é aptidão.** «Está no disco?» e «o que está no disco presta?» são perguntas diferentes, e instrumento que só sabe contar responde sempre a primeira. Caso real: um relatório verde em tudo — arquivos existem, extensão certa, índice bate — sobre imagens destruídas por dentro, porque **nenhum instrumento abriu uma imagem**. Ao escrever uma sonda, pergunte o que ela NÃO abre.
-- **A exploração não parte da lista de checagens da sonda.** Se ela só olhar onde a sonda já olha, ela só acha o que a sonda já acharia. É a mesma regra do inventário — a lista sai do artefato, não de quem já a escreveu — vista uma camada acima.
-- **Todo achado vem com o comando que o reproduz.** Achado sem forma de reproduzir não entra: vai para «observações descartadas», com o motivo. Número contado de cabeça não vale.
-
-**O esqueleto do relatório — o que sobreviveu a dezenas de execuções nos dois projetos que o escreveram:**
-
-```
-# SONDA — <assunto>                     <- ver a nota de nome abaixo
-- Gerado em: <data>  *(única linha não-determinística deste relatório)*
-- Insumo: <caminho> · <tamanho> · sha256 <hash> · mtime <data>
-- Referência: <caminho> | nenhuma — as seções comparativas saem NÃO CONFERIDAS
-> A sonda não dá veredito: ela conta, compara e imprime. Decidir é humano.
-
-## ALARMES (N)
-  N=0 -> «Nenhuma verificação falhou. ISSO NÃO QUER DIZER QUE ESTÁ CERTO —
-        quer dizer que é coerente nos pontos medidos. Leia O QUE NÃO FOI OLHADO.»
-
-## <seções do corpo>                    <- tabelas e contagens; lista longa mostra o TOTAL
-  seção sem insumo -> **NÃO CONFERIDA**, nunca omitida
-
-## O QUE NÃO FOI OLHADO
-  - o que faltou NESTA execução (dinâmico)
-  - o que esta sonda NUNCA olha (fixo, escrito uma vez e para sempre)
-```
-
-**O nome do arquivo depende de a sonda ser única ou uma série, e o kit ensinava isso pela metade.** Sonda de assunto único, que vira registro e fica, é documento: `AAMMDD-SONDA-<assunto>.md`, e o nome diz o QUE. Sonda **reexecutável**, que existe para comparar antes/depois, é série: o carimbo vem PRIMEIRO e o tipo depois — `AAMMDD-HHMM-EXPLORACAO` ao lado de `AAMMDD-HHMM-CONFERENCIA` —, porque ali o que importa é a pasta se ordenar sozinha no tempo e o par ficar visível lado a lado; o assunto vai no título, dentro do arquivo. Escolher a forma errada custa nos dois sentidos: assunto num arquivo de série faz a ordem se perder, carimbo num documento único faz procurar por data o que se procura por tema.
-
-Três detalhes que só aparecem depois de usar: **(1)** marcar a data como a única linha não-determinística é o que torna dois relatórios diffáveis — sem isso, comparar antes/depois vira leitura à mão; **(2)** a lista fixa do «nunca olha» é mais valiosa que a dinâmica, porque é a que ninguém lembraria de escrever no dia; **(3)** o rodapé com contagem de alarmes em zero precisa negar a leitura fácil **na própria linha** — «zero alarmes» sem a negação ao lado vira «está certo» na conversa seguinte.
-
-**Onde mora — e este é um padrão, não uma regra.** Por omissão, script e relatórios ficam **fora** do que sobe ao Projeto (workspace ao lado do repositório, ou pasta ignorada): são grandes, reexecutáveis, e o que importa deles é o que se extrai. Nome com **carimbo de tempo primeiro** (`AAMMDD-HHMM-EXPLORACAO.md`), para a pasta se ordenar sozinha. **Versionar em vez de descartar é uma escolha legítima, e tem um preço a pagar em voz alta:** ganha-se a comparação antes/depois (que só existe se os dois relatórios sobreviverem) e o tema no nome (`AAMMDD-SONDA-<tema>.md`, que se lê sem abrir); paga-se em repositório maior e no risco de o relatório velho ser lido como estado atual. Quem versiona, registra a escolha. O que sobe ao registro continua sendo o **extraído**: um número no `DECISIONS`, um candidato no `IDEAS`.
-
-## Correspondência entre projetos — quando o interlocutor é outro assistente
-
-Dois projetos com kits separados que dependem um do outro (um produz o dado, o outro consome; um gera o pacote, o outro renderiza) precisam **negociar um contrato**. O que trocam não é spec, não é análise, não é ordem de trabalho e não é bilhete: é **carta**, e ela tem regras próprias porque tem dois donos.
-
-- **Nome:** `AAMMDD-<quem>-para-<quem>-NN-<assunto>.md`. O remetente e o destinatário no nome porque a mesma pasta guarda os dois sentidos.
-- **O contador `NN` é ÚNICO e COMPARTILHADO pelos dois lados** — não um por remetente. Com duas séries, «respondendo à sua 7» vira ambíguo e ninguém sabe o que responde o quê. A carta nova é a **maior existente + 1**, contando as dos DOIS lados; confira a pasta antes de numerar, não confie na memória nem em número anotado em documento.
-- **Uma carta, um assunto.** Carta que negocia três contratos ao mesmo tempo recebe uma resposta que aceita um e ignora dois, e o que foi ignorado não deixa rastro.
-- **Diga de que lado está cada afirmação.** «O nosso lado já grava X» é fato do remetente; «vocês deveriam gravar Y» é pedido. Sem a marca, o destinatário lê pedido como fato e implementa contra uma premissa que nunca foi verdadeira.
-
-**Correspondência é TRANSITÓRIA, e é aqui que ela custa caro.** A carta vive fora do repositório enquanto serve — chega na pasta-pai, é lida, e o que precisa sobreviver é **extraído** dela para os documentos duráveis: o acordo vira decisão registrada, o que não coube vira ideia com gatilho, o histórico vira uma linha no registro do projeto. **Versionar a correspondência cria uma segunda fonte de verdade que envelhece sozinha**: uma auditoria real achou três lacunas numa pasta de cartas versionadas, uma delas um dado de estado desatualizado que a leitura seguinte tratava como fato. O destino da carta depois de extraída é o arquivo morto, fora do projeto.
-- **O que fica pendente do outro lado é seu, não dele.** Carta enviada e não respondida não é memória: vira item com gatilho no registro de ideias («se não vier resposta até X, decido sozinho por Y»). Esperar resposta sem gatilho é como o projeto trava sem ninguém perceber.
-- **Com a pasta do outro projeto vinculada, leia a seção de feedback dele direto — e mantenha um livro de leitura.** Uma linha por projeto no seu registro de ideias: onde fica a seção dele, o último item lido, a data. Ao abrir a conversa com a pasta dele concedida, confira se há item além do marcador. Sem isso, a seção do outro lado acumula sem que ninguém saiba que precisa procurar — já ficaram 58 entradas sem leitura por seis semanas.
+- **Proposta sua ainda sem resposta do dono também leva marca:** `[proposto pelo assistente]`, que só sai quando ele aprovar. Sem ela, a sugestão de uma conversa vira o fato da seguinte.
 
 ## Bloco de fecho de turno (formato fixo)
 Todo turno de trabalho fecha assim. **Próximo** vem antes de um divisor; o resto vem depois dele. **Quando cada linha aparece é CONDIÇÃO OBSERVÁVEL, não julgamento** — o teste é «a condição é falsa?», nunca «me pareceu que não se aplicava»: **Próximo**, **Estado** e **Config recomendada** saem SEMPRE; **Arquivar / Manter** sai quando houver qualquer arquivo avulso na pasta-pai, e essa condição se verifica LISTANDO a pasta-pai, não lembrando; **Handoff** sai quando algum arquivo foi entregue NESTE turno. Fora disso a linha não existe — e linha sem conteúdo real não aparece: não escreva «nada a arquivar» nem invente handoff. **Reconstituir este bloco de memória é o que o faz derivar, e a variação é compensatória:** quem lembra do campo que esqueceu da última vez esquece outro — medido em quatro turnos seguidos, quatro formas diferentes, com o formato fixo escrito no arquivo lido a cada mensagem. Por isso o esqueleto abaixo existe: **copie e preencha, não reconstitua.**
@@ -393,8 +351,8 @@ Vale para todo turno de trabalho, não só ao encerrar a conversa: é o que me d
 | Fim de QUALQUER turno de trabalho | Emite o Bloco de fecho (formato fixo, secao propria). Nao espera fim de conversa: a maior parte do trabalho acontece em turnos que nao fecham nada. |
 | Fim da conversa | Registra o que falta, cada documento pelo canal dele — como diz a seção «Ao final da conversa»: STATUS.md + CHANGELOG.md (se fechou algo) + log do dia. |
 | Evento que MERECE log: cortar versao, registrar uma decisao ou um bug grave, virar o dia de trabalho | Escreve `logs/AAAA-MM-DD.md` na hora. O log nao espera o fim da conversa — numa conversa longa o fim nunca chega, e e assim que dias inteiros ficam sem registro. |
-| Precisa de um numero sobre material grande demais para a conversa, ou um defeito apareceu de raspao | Manda MEDIR (sonda) em vez de deduzir ou pedir o arquivo. Se ninguem sabe ainda qual e a pergunta, manda EXPLORAR primeiro (`/sondar`): exploracao produz hipotese, sonda produz evidencia. |
-| Chega ou sai carta de outro projeto (negociacao de contrato entre frentes) | Extrai o durável AGORA — acordo vira decisao registrada, o que nao coube vira ideia com gatilho — e NAO versiona a carta. Se ela pede resposta do outro lado, cria o item de espera com prazo: espera sem gatilho trava o projeto sem ninguem perceber. |
+| Precisa de um numero sobre material grande demais para a conversa, ou um defeito apareceu de raspao | Manda MEDIR (sonda) em vez de deduzir ou pedir o arquivo. Se ninguem sabe ainda qual e a pergunta, manda EXPLORAR primeiro (`/sondar`): exploracao produz hipotese, sonda produz evidencia. O como — a sonda, o relatorio e o esqueleto dele — esta em «Sonda e exploração», no `GUIA-DO-KIT.md`: leia antes de escrever a sonda. |
+| Chega ou sai carta de outro projeto (negociacao de contrato entre frentes) | Extrai o durável AGORA — acordo vira decisao registrada, o que nao coube vira ideia com gatilho — e NAO versiona a carta. Se ela pede resposta do outro lado, cria o item de espera com prazo: espera sem gatilho trava o projeto sem ninguem perceber. Antes de escrever ou responder, leia «Correspondência entre projetos» no `GUIA-DO-KIT.md` (o nome, o contador, o livro de leitura). |
 | Uma conferencia deu VERDE — antes de relatar | Pergunte qual das duas perguntas esse verde responde: «esta la?» ou «presta?». Verde de existencia lido como verde de aptidao ja passou por 45 arquivos destruidos por dentro. Se o instrumento nao abre o conteudo, diga isso na MESMA linha do verde, nao no rodape. |
 | Uma varredura ou conferencia nao achou NADA no lugar onde deveria achar algo | Confirme que o arquivo esta na pasta que voce le antes de concluir que esta limpo. Cheque o `.gitignore` e o que esta conversa alcanca: pasta excluida produz varredura muda, e silencio de ferramenta nao e ausencia de problema. |
 | Vai sobrescrever, mover ou apagar algo que ja existe (arquivo, pasta, config, artefato baixado) | LE antes. E se o dono pediu para NAO apagar algo, pergunte do que ele tem medo: quase sempre a resposta e copiar para fora do espaco de trabalho e seguir — cumprir a letra e deixar o problema de pe e obedecer contra o interesse de quem pediu. |
@@ -402,10 +360,13 @@ Vale para todo turno de trabalho, não só ao encerrar a conversa: é o que me d
 | Decisão de arquitetura ou troca de lib | Atualiza o DECISIONS.md pelo canal do documento (nova DEC-N: contexto, decisão, alternativas, consequências). |
 | Mudança de fase do projeto | Atualiza o ROADMAP.md pelo canal do documento com a fase atualizada (concluída / em curso / próxima). |
 | Termo técnico próprio do projeto usado | Atualiza o GLOSSARY.md pelo canal do documento com o termo definido. |
+| Log ou traceback colado sem descrição do problema | Lê os arquivos citados no erro, confere as dependências contra o manifesto do projeto (requirements.txt, package.json), separa causa de ambiente de bug, e só então propõe — dizendo qual das duas é. |
+| Projeto existente com os documentos ainda no molde | Lê o código antes de escrever: CONTEXT.md e STATUS.md saem do que o repositório é, não do molde vazio; o que não deu para ler, declara. |
+| A mesma fórmula ou regra em dois módulos | Registra a duplicação no backlog do STATUS.md e converge na próxima mudança que tocar um dos dois: correção numa cópia só é bug adiado. |
 
 > **Com o executor no repositório, «pelo canal do documento» é o que a seção «Ao final da conversa» diz:** documento grande e vivo muda por WO; inteiro só o arquivo novo, pequeno ou de curadoria que reescreve.
 
-> Se um arquivo da **camada universal** (STATUS, IDEAS, DECISIONS — sempre existe em qualquer projeto do kit) referenciado acima ainda não existir, o assistente o CRIA na primeira necessidade, a partir do papel descrito — em vez de tratar a ausência como erro ou adiar a captura. Arquivos de um nicho que este projeto não usa não são criados por engano; **neste projeto (Desenvolvimento), CHANGELOG.md e ROADMAP.md já são arquivos ativos** e seguem a mesma regra de criação sob demanda, não a exceção.
+> Se um arquivo da **camada universal** (STATUS, IDEAS, DECISIONS) referenciado acima ainda não existir, o assistente o CRIA na primeira necessidade, a partir do papel descrito. **Arquivos de outros nichos (CHANGELOG, ROADMAP, etc.) que NÃO fazem parte deste nicho não são criados** — a ausência é intencional, não um erro. **Neste projeto (Desenvolvimento), `CHANGELOG.md` e `ROADMAP.md` são arquivos ATIVOS** e seguem a regra da camada universal (criação sob demanda), não a exceção — desvio registrado (DEC-012, DEC-022).
 
 ## Ao final da conversa, o assistente REGISTRA o que falta
 
@@ -426,7 +387,8 @@ Os arquivos abaixo continuam sendo os afetados por este trabalho — o que muda 
 4. IDEAS.md — completo, com as ideias da conversa capturadas e reclassificadas
 5. ROADMAP.md — completo, se alguma fase mudou de estado (quando o projeto usa roadmap)
 6. GLOSSARY.md — completo, se surgiu termo novo (quando o projeto usa glossário)
-7. logs/AAAA-MM-DD.md — log do dia preenchido (formato em LOG-TEMPLATE.md)
+7. SETUP.md — completo, se um passo de ambiente mudou ou um bloqueio foi resolvido (quando usa o arquivo)
+8. logs/AAAA-MM-DD.md — log do dia preenchido (formato em LOG-TEMPLATE.md)
 
 ## Quando perguntar vs. quando agir
 
@@ -443,6 +405,18 @@ Antes de finalizar uma resposta pedindo que eu traga qualquer arquivo (JSON, log
 - Pedir algo que já está lá desperdiça um turno meu (ver princípio «não desperdiça tokens»).
 - O mesmo vale para o ESTADO do projeto: antes de repetir uma pendência do STATUS («ainda falta X»), confere o estado real — se já foi resolvida, diz e atualiza o STATUS em vez de ecoar o registro velho.
 
+## A rede deste projeto (como ele se verifica)
+
+Todo projeto de código tem uma rede: o que diz «quebrou» antes do dono. **Ela é declarada no CONTEXT** («Build e validação»): o comando que roda sem argumentos e devolve código de saída, a linha de base reexecutável quando o resultado é grande demais para conferir à mão, e o roteiro do dono para o que só se vê na tela. Mudança que toca código roda a rede antes de ser chamada de pronta, e teste novo prova que falha sem a mudança.
+
+- **Quando o alvo não roda no ambiente do chat** (a extensão do editor, a interface gráfica, a engine, o hardware): não entregue código plausível. Construa o que roda — separe o núcleo da tela e teste o núcleo; faça um espelho executável do algoritmo e confira a paridade com o alvo; confira ao menos a sintaxe e os nomes (um `import` que falta não aparece numa checagem de sintaxe). E **diga o que ficou sem verificar**, para o roteiro do dono cobrir.
+- **Quando a máquina do dono não compila** (o compilador nativo que falta, a política do sistema que bloqueia o executável): é ambiente, não bug. O passo que resolveu vai para o `SETUP.md`, se o projeto o usa; trocar de stack por causa disso é decisão (DEC), não conserto.
+- **Convenção de sinal, ângulo, eixo ou unidade nunca de memória:** confira contra a fórmula do próprio código. Algoritmo geométrico se confere numa forma sintética simétrica, em mais de um parâmetro.
+
+## README e LICENSE
+
+O `README.md` é do projeto — o que ele faz e como rodar —, não índice do kit. Repositório público pede `LICENSE`: pergunte ao dono qual, nunca escolha por ele.
+
 ## Ambiente (sistema operacional)
 
 O usuário trabalha em **Windows (CMD/Prompt de Comando)**. Qualquer comando de terminal que o assistente gerar (git, instalação, scripts) deve usar a sintaxe compatível com este sistema:
@@ -453,6 +427,8 @@ O usuário trabalha em **Windows (CMD/Prompt de Comando)**. Qualquer comando de 
 ## Idioma
 
 Respostas em pt-BR, incluindo comentários quando houver código.
+
+Código de registro (`DEC-`, `FIX-`, `wo`) vem, na primeira vez que aparece na resposta, com o que ele é em poucas palavras: o dono não abre os documentos para decifrar uma lista de códigos.
 
 ## Recomendação de configuração (fim de turno)
 
@@ -494,4 +470,4 @@ Os arquivos de arranque do Claude Code (o `CLAUDE.md` raiz, `.claude/settings.js
 
 Instalação: descompacte `claude-code-kit.zip` e mova `CLAUDE.md` e a pasta `.claude/` para a **raiz do repo**. O `README.md` do zip repete os passos e traz a cláusula anti-`.gitignore` de `.claude/`. Formato atual (2026): os comandos são **Skills** em `.claude/skills/<nome>/SKILL.md`. O `.claude/commands/*.md` é **formato descontinuado**: projeto que ainda o tenha migra na próxima atualização — não é alternativa a escolher.
 
-*Gerado pelo Kit de Contexto Universal v1.135.0 — nicho Desenvolvimento. Edite à vontade: este arquivo é seu.*
+*Gerado pelo Kit de Contexto Universal v1.151.0 — nicho Desenvolvimento. Edite à vontade: este arquivo é seu.*

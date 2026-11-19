@@ -3,9 +3,9 @@
 > Atualizado a cada turno que muda o estado do projeto.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
-**Mudanças nesta revisão (2026-11-18, wo0017):** stores conferidos na tela pelo chat; «Em Progresso» passa a ser o
-merge do KCM v1.151.0 (antes do `SelectionManager.ts`). A nota anterior (wo0016) saiu — o que ela registrava está em
-DEC-021, no CHANGELOG e no log de 2026-11-18.
+**Mudanças nesta revisão (2026-11-18, wo0018):** merge do KCM v1.151.0 feito (DEC-022); «Em Progresso» vazio e o
+próximo item é o `SelectionManager.ts`. A nota anterior (wo0017) saiu — o que ela registrava está no log de
+2026-11-18.
 
 ---
 
@@ -29,7 +29,7 @@ DEC-021, no CHANGELOG e no log de 2026-11-18.
 - **Herança de estilos de texto funcionando** — `TextStyle` é raiz (completo, `basedOn: null`) ou derivado (só as diferenças), DEC-014; o validador cobra as duas formas; `StyleRegistry.ts` resolve o estilo final (`resolveStyle`) e edita o mapa sem quebrar a herança (`setStyle`/`removeStyle`), funções puras — DEC-015. A propagação NA TELA vem com o `documentStore`
 - **Mapeamento CSV especificado e tipado** — colunas tipadas, formatadores (currency, date, uppercase), filtro de linhas, padrão de nomenclatura de saída (`outputNaming`)
 - **Decisões técnicas registradas** — ADRs DEC-NNN e FIX-NNN no DECISIONS.md (conte lá; o número não se repete aqui)
-- **Sistema de documentação operacional** — CONTEXT/STATUS/CHANGELOG/DECISIONS/IDEAS/ROADMAP/GLOSSARY/HISTORY, alinhado ao KCM v1.135.0
+- **Sistema de documentação operacional** — CONTEXT/STATUS/CHANGELOG/DECISIONS/IDEAS/ROADMAP/GLOSSARY/HISTORY/SETUP, alinhado ao KCM v1.151.0 (DEC-022); o que é do kit e não do projeto mora em `meta/GUIA-DO-KIT.md`
 - **Modo Code instalado** — `CLAUDE.md` na raiz, `.claude/settings.json`, skills `/apply-wo`, `/wrap` e `/sondar`, modelo de WO em `meta/workorders/`
 - **Salvar/abrir `.editx`** — `TemplateSerializer.ts` (`serializeTemplate`, `parseTemplate`) + `TemplateValidator.ts` (`validateTemplate`, estrito, erros com caminho `$.…`); suíte Vitest verde (`npm test`) — wo0001, DEC-013
 - **Canvas mostra a página** *(corrigido na wo0005, FIX-001; conferido pelo dono na tela em 2026-11-12)* — `npm run dev` abre a página do exemplo (área de corte branca + guia de sangria tracejada) centralizada e com zoom para caber, reenquadrando ao redimensionar a janela; `CanvasEngine.ts` (Fabric) + `PageGeometry.ts` (puro, testado) + `ui/CanvasView.tsx` — wo0004, DEC-016. Ainda sem frames. **Nítido em qualquer zoom do navegador**, inclusive trocando o zoom com a página aberta: buffer em px do dispositivo, estilo `100%`, dois `ResizeObserver` (FIX-002, wo0009 + wo0010; conferido pelo chat no navegador embutido em 2026-11-17, em DPR 1 com zoom de CSS — DPR ≠ 1 real não conferido)
@@ -38,7 +38,7 @@ DEC-021, no CHANGELOG e no log de 2026-11-18.
 
 ## 🔧 Em Progresso
 
-- **Merge do template-update do KCM v1.151.0** (pacote `261118-kcm-update-v1.151.0/` na pasta-pai; o projeto está em v1.135.0) — fase 1 (preliminares) feita pelo chat em 2026-11-18: superfícies presentes, linhas revogadas sem ocorrência a corrigir, modos coerentes, correções obrigatórias do `settings.json` já satisfeitas (detalhe no log). Falta: comparar os 23 arquivos do pacote, o dono decidir, a fusão do CEREBRO e das Instruções, a instalação das skills e o `GUIA-DO-KIT.md` novo. Vem ANTES do `SelectionManager.ts` — o pacote manda instalar as skills novas antes de aplicar qualquer WO.
+*Nada em progresso — o próximo item do backlog é o `SelectionManager.ts`.*
 
 ---
 
@@ -97,8 +97,8 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 **2026-11-18** — `FrameShape.ts` (wo0014, DEC-020): retângulo, elipse e linha com o traço por dentro do frame. Detalhe
 em `logs/2026-11-18.md`. Antes, em 2026-11-17: FIX-002 fechado, DEC-019 e `FrameImage.ts` conferido (`logs/2026-11-17.md`).
 Depois: análise da ordem entre seleção e stores, decidida pelo dono (DEC-021), e os stores (wo0016).
-**Onde parou:** stores conferidos na tela (wo0017); chegou o pacote do KCM v1.151.0 e o merge está na fase 1.
+**Onde parou:** merge do KCM v1.151.0 feito (wo0018, DEC-022).
 
 ---
 
-*Próximo passo: fase 2 do merge do KCM v1.151.0 (o chat compara os 23 arquivos do pacote e apresenta o que adotar); depois, `SelectionManager.ts` — WO a escrever pelo chat.*
+*Próximo passo: `SelectionManager.ts` — WO a escrever pelo chat (DEC-021).*

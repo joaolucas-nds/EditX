@@ -4,11 +4,9 @@
 > O log entra ao bater um gatilho de evento — cortar versão, registrar decisão ou erro grave, virar o dia —, e não «no fim», que numa conversa longa nunca chega. Quem registra escreve `logs/AAAA-MM-DD.md` neste formato. **Duas conversas no mesmo dia = o MESMO arquivo**, com `## Conversa N` para cada uma (o nome é da data, não da conversa).
 > Os logs vivem em `logs/` no Git (NÃO no Projeto) e são lidos só sob demanda — quando você precisar recuperar o detalhe de um dia antigo.
 
-**Mudanças nesta revisão (2026-11-10):** cadência do KCM v1.135.0 — o log nasce por EVENTO, não
-«ao final de cada sessão»; título «Log do Dia»; termos sessão → dia/conversa/turno; bug grave
-ligado a FIX-N na tabela de problemas (o template novo tem uma seção «Bugs» própria — aqui a
-tabela já cumpre o papel). As tabelas e seções extras deste projeto ficam: o template enxuto não
-as tem. A nota de 2026-07-11 saiu; o histórico daquele merge está em DEC-010.
+**Mudanças nesta revisão (2026-11-18, wo0018):** KCM v1.151.0 — nova seção «📦 Entregas» (as WOs aplicadas com o
+commit, as specs e análises do dia: o que outro turno procura pelo nome). As tabelas e seções extras deste projeto
+ficam: o modelo enxuto do kit não as tem. A nota de 2026-11-10 saiu; o histórico daquele merge está em DEC-012.
 
 ---
 
@@ -21,6 +19,9 @@ as tem. A nota de 2026-07-11 saiu; o histórico daquele merge está em DEC-010.
 
 ## ✅ Feito
 - [Mudanças concretas: arquivos tocados, funções criadas, bugs resolvidos.]
+
+## 📦 Entregas
+- [WOs aplicadas (com o commit), specs e análises escritas no dia — o que outro turno vai procurar pelo nome.]
 
 ## 🐛 Problemas encontrados
 | Problema | Causa identificada | Solução aplicada |
