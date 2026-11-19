@@ -752,7 +752,7 @@ sanitização antes de desenhar (item aberto do backlog).
 ## DEC-021 — Stores antes da seleção; toda mudança do documento passa por um ponto que grava o desfazer
 
 **Data:** 2026-11-18
-**Status:** aceita
+**Status:** aceita — emendada por DEC-023
 **Autor:** dono (ordem e comportamento do arraste) + chat (análise e desenho dos stores)
 
 ### Contexto
@@ -829,6 +829,52 @@ com 5 pontos de decisão.
   parada grava relatório em arquivo; a rede do projeto descrita num lugar só (CONTEXT, «Build e validação»).
 - **Negativas:** as Instruções mudaram no repositório — o dono cola o texto novo no painel do Projeto.
 - **Riscos:** o pacote continua na pasta-pai até o commit desta WO; depois o chat o MOVE para `notas-arquivadas/`.
+
+---
+
+## DEC-023 — Seleção: uma alça por frame, seleção simples, canto proporcional, texto que cresce só no eixo livre
+
+**Data:** 2026-11-19
+**Status:** aceita
+**Autor:** dono (as três escolhas de comportamento) + chat (análise e desenho)
+
+### Contexto
+A DEC-021 fixou o comportamento do arraste (mover com o conteúdo, redimensionar só a caixa até soltar, uma entrada de
+desfazer por arraste, `fromPx`, cache das imagens, atalhos). Faltavam o COMO e três escolhas de produto. Análise:
+`meta/analises/261119-ANALISE-selection-manager.md` — leitura do código e do fonte do Fabric 6.9.1 (`index.mjs`).
+
+### Decisão
+- **Escopo (dono):** só seleção simples — clicar, Esc, clicar no vazio —, mover, redimensionar e desfazer pelo
+  teclado. Multi-seleção (Shift+clique), alinhamento, distribuição e setas na WO seguinte; encaixe e guias depois.
+- **Cantos (dono):** mantêm a proporção e o Shift solta; alças do meio livres — o padrão do Fabric
+  (`uniformScaling: true`) e o comportamento do Canva.
+- **Texto que cresce (dono):** só as alças do eixo que não cresce — `grow-vertical`, as laterais; `grow-horizontal`,
+  as de cima e de baixo; sem cantos.
+- **Como (chat):** uma alça (`Rect` transparente) por frame visível e não travado, ATUALIZADA no lugar por `frameId`
+  — remover a alça ativa faria o Fabric limpar a seleção. A seleção mora no `selectionStore` e quem a decide é o
+  clique (`mouse:down`); os eventos `selection:*` do Fabric não são usados, porque também disparam quando o código
+  troca o objeto ativo. Ao mover, o conteúdo e os recortes andam com a alça. Ao soltar, `transform` novo = `transform`
+  atual + a diferença da caixa (o texto que cresce tem caixa diferente do `transform`), arredondado a 0,01 da unidade
+  (`fromPx`), mínimo 1 mm. Sem alça de girar (nada desenha rotação). `preserveObjectStacking` ligado. Controles ×
+  `pixelRatio`. Cache das imagens decodificadas por caminho, um por pasta de projeto. Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y e
+  Esc no host.
+
+### Alternativas consideradas
+- **Multi-seleção já** — o `ActiveSelection` do Fabric passa os objetos para coordenadas relativas ao grupo; é outra
+  frente, com outros testes.
+- **Canto livre, Shift mantém a proporção** (Figma) — o produto mira o público do Canva.
+- **Arrastar no eixo que cresce troca o frame para fixo** (Figma) — muda o `overflow.mode` no mesmo arraste e pede
+  uma regra (fixo com redução ou com corte?); fica no IDEAS.
+- **Todas as alças no texto que cresce** — a altura gravada seria ignorada e a caixa «voltaria» ao soltar.
+- **Sincronizar pela `selection:*` do Fabric** — dispara também com `setActiveObject` e ao remover a alça ativa.
+
+### Consequências
+- **Positivas:** a primeira interação do editor; a seleção sobrevive ao redesenho; a imagem não é relida a cada
+  mudança; a parte que decide (`SelectionGeometry.ts`) é testada em Node.
+- **Negativas:** o `CanvasEngine.ts` passa das ~300 linhas da regra do CONTEXT (extração no IDEAS); a página ainda é
+  redesenhada inteira a cada arraste solto.
+- **Riscos:** piscar ao soltar — a hipótese de que não pisca (fonte e imagem em cache resolvem antes do próximo
+  quadro) não foi medida; vai para a conferência de tela. Controles em DPR ≠ 1 real nunca conferidos (FIX-002).
 
 ---
 

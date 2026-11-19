@@ -35,6 +35,17 @@ export function toPx(value: number, unit: DocumentUnit): number {
 }
 
 /**
+ * Converte `px` (px CSS do mundo) de volta para `unit`, arredondado a 0,01 da unidade — o valor
+ * que vai para o `.editx` (DEC-021). 0,01 mm = 0,038 px CSS: abaixo do que a tela mostra, e sem
+ * `10.000000003` no arquivo. Inverso de `toPx` até o arredondamento; nunca devolve `-0`.
+ */
+export function fromPx(px: number, unit: DocumentUnit): number {
+  const value = px / toPx(1, unit);
+  // `+ 0` troca -0 por 0: o arredondamento de -0,001 daria -0.
+  return Math.round(value * 100) / 100 + 0;
+}
+
+/**
  * Caixa da página do documento. `width`/`height` do documento mandam;
  * `orientation` é metadado e NÃO troca nada aqui (DEC-016).
  */

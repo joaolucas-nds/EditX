@@ -2,10 +2,9 @@
 
 > Use quando o projeto tem vocabulário próprio que o assistente reexplicaria a cada conversa sem isto.
 
-**Mudanças nesta revisão (2026-11-10):** em «Comandos / artefatos», saíram ASU e `demo.yaml`
-(ASU removido em DEC-012; `demo.yaml` e `examples/demo_project/` nunca existiram neste repo) e
-entraram WO, as skills do Claude Code e spec de feature. Nota anterior (2026-07-11): arquivo
-populado a partir do que já se usava em CONTEXT, DECISIONS e no schema.
+**Mudanças nesta revisão (2026-11-19, wo0020):** em «Conceitos do projeto», entra **Alça (de seleção)** (DEC-023).
+A nota anterior (2026-11-10: saíram ASU e `demo.yaml`, entraram WO, as skills e spec de feature) saiu — o histórico
+está em DEC-012.
 
 ---
 
@@ -66,6 +65,9 @@ populado a partir do que já se usava em CONTEXT, DECISIONS e no schema.
   `meta/workorders/_TEMPLATE.md`. Substitui o papel que o ASU tinha (DEC-012).
 - **`/apply-wo`, `/wrap`, `/sondar`** — skills do Claude Code em `.claude/skills/`: aplicar uma WO,
   fechar a tarefa (STATUS/DECISIONS/log + commit), exploração sem hipótese prévia.
+- **Alça (de seleção)** — o `Rect` transparente que o `SelectionManager.ts` põe sobre cada frame visível e não
+  travado: é ela que o Fabric deixa clicar, arrastar e redimensionar; o conteúdo do frame não é interativo e só
+  acompanha. Ver DEC-023.
 - **Spec de feature** — `specs/AAMMDD-<nome>.md` a partir de `meta/SPEC.md`: o QUÊ construir; a WO é o COMO aplicar.
 - *ASU (Atualizador Automático de Scripts) — usado até 2026-11 para patch via YAML; removido em DEC-012.*
 

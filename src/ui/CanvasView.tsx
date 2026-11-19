@@ -3,11 +3,19 @@ import type { JSX } from 'react';
 import { CanvasEngine } from '../canvas/CanvasEngine';
 import { canvasSize } from '../canvas/PageGeometry';
 import { decodeImageInBrowser, prepareImageDrawings } from '../canvas/FrameImage';
+import type { ImageCache } from '../canvas/FrameImage';
 import { prepareShapeDrawings } from '../canvas/FrameShape';
 import { prepareTextDrawings } from '../canvas/FrameText';
+import {
+  findFrame,
+  sameTransform,
+  selectableFrames,
+  transformFromHandle,
+} from '../canvas/SelectionGeometry';
 import type { ProjectFiles } from '../project/ProjectFiles';
 import type { EditxTemplate } from '../template/TemplateSchema';
 import { FontRegistry } from '../text/FontRegistry';
+import type { Transform } from '../types/frame.types';
 
 export interface CanvasViewProps {
   /** Template cujo documento e página serão mostrados. */
@@ -16,22 +24,52 @@ export interface CanvasViewProps {
   pageId: string;
   /** Arquivos do projeto (imagens), lidos por caminho relativo ao `.editx` (DEC-019). */
   files: ProjectFiles;
+  /** Ids dos frames selecionados (`selectionStore`); o canvas mostra o primeiro. */
+  selectedIds: readonly string[];
+  /** O usuário clicou num frame (`[id]`) ou fora deles (`[]`). */
+  onSelect: (ids: string[]) => void;
+  /** O usuário soltou um arraste que muda o frame: o `transform` novo, já na unidade do documento. */
+  onFrameChange: (frameId: string, transform: Transform) => void;
 }
 
 /** No escopo do módulo: o cache das fontes dura entre montagens (StrictMode, troca de página). */
 const fonts = new FontRegistry();
 
 /**
+ * Imagens já decodificadas, por pasta de projeto (DEC-023): sem isto cada mudança do documento
+ * lê e decodifica de novo (30–50 ms por imagem, medido em 2026-11-18) e a imagem pisca a cada
+ * arraste. Outra pasta de projeto = outro cache.
+ */
+const imageCaches = new WeakMap<ProjectFiles, ImageCache<HTMLImageElement>>();
+
+function imageCacheFor(files: ProjectFiles): ImageCache<HTMLImageElement> {
+  let cache = imageCaches.get(files);
+  if (cache === undefined) {
+    cache = new Map();
+    imageCaches.set(files, cache);
+  }
+  return cache;
+}
+
+/**
  * Contêiner do canvas: ocupa 100% do pai e reenquadra a página ao redimensionar.
  * O `<canvas>` é criado a cada montagem (não vem do JSX): o Fabric 6 recusa
  * reaproveitar elemento com `data-fabric`, e o StrictMode monta duas vezes (DEC-016).
  */
-export function CanvasView({ template, pageId, files }: CanvasViewProps): JSX.Element {
+export function CanvasView({
+  template,
+  pageId,
+  files,
+  selectedIds,
+  onSelect,
+  onFrameChange,
+}: CanvasViewProps): JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<CanvasEngine | null>(null);
-  // Sempre o template mais recente, para o efeito de montagem desenhar já na criação.
-  const templateRef = useRef(template);
-  templateRef.current = template;
+  // Sempre as props mais recentes: o efeito de montagem desenha já na criação, e os eventos do
+  // canvas (criados uma vez) leem o template e as funções de agora.
+  const latest = useRef({ template, onSelect, onFrameChange });
+  latest.current = { template, onSelect, onFrameChange };
 
   useEffect(() => {
     const host = hostRef.current;
@@ -40,13 +78,27 @@ export function CanvasView({ template, pageId, files }: CanvasViewProps): JSX.El
     const element = document.createElement('canvas');
     host.appendChild(element);
 
-    const engine = new CanvasEngine(element);
+    const engine = new CanvasEngine(element, {
+      selection: {
+        onSelect: (frameId) => latest.current.onSelect(frameId === null ? [] : [frameId]),
+        onFrameChange: (frameId, base, next) => {
+          const { template: current, onFrameChange: change } = latest.current;
+          const frame = findFrame(current, frameId);
+          if (frame === undefined) return;
+          const transform = transformFromHandle(frame.transform, base, next, current.document.unit);
+          // Arraste que, arredondado, não muda nada: o documento não muda e a página não vai ser
+          // redesenhada — então a alça e o conteúdo voltam ao lugar aqui.
+          if (sameTransform(transform, frame.transform)) engine.resetFrame(frameId);
+          else change(frameId, transform);
+        },
+      },
+    });
     engineRef.current = engine;
     // Primeiro enquadramento com a melhor estimativa; o ResizeObserver dispara logo em
     // seguida com a medida exata em px do dispositivo e corrige (FIX-002).
     const rect = host.getBoundingClientRect();
     engine.resize(canvasSize(rect.width, rect.height, window.devicePixelRatio));
-    engine.showPage(templateRef.current.document);
+    engine.showPage(latest.current.template.document);
 
     // Um callback para os dois observadores: a entrada traz as medidas CSS e em px do
     // dispositivo qualquer que seja a caixa observada.
@@ -105,13 +157,19 @@ export function CanvasView({ template, pageId, files }: CanvasViewProps): JSX.El
     } catch (error) {
       console.error('Falha ao preparar as formas da página:', error);
     }
+    // Alças na hora, pelo `transform`; a do texto que cresce se corrige quando o texto chega.
+    try {
+      engine.setFrames(selectableFrames(template, pageId));
+    } catch (error) {
+      console.error('Falha ao preparar as alças de seleção:', error);
+    }
     prepareTextDrawings(template, pageId, fonts).then(
       (drawings) => {
         if (!cancelado && !engine.disposed) engine.setTextDrawings(drawings);
       },
       (error: unknown) => console.error('Falha ao preparar o texto da página:', error),
     );
-    prepareImageDrawings(template, pageId, files, decodeImageInBrowser).then(
+    prepareImageDrawings(template, pageId, files, decodeImageInBrowser, imageCacheFor(files)).then(
       (drawings) => {
         if (!cancelado && !engine.disposed) engine.setImageDrawings(drawings);
       },
@@ -122,6 +180,12 @@ export function CanvasView({ template, pageId, files }: CanvasViewProps): JSX.El
       cancelado = true;
     };
   }, [template, pageId, files]);
+
+  // Depois do efeito de desenho (mesma renderização, ordem de declaração): as alças já existem.
+  const selectedId = selectedIds[0] ?? null;
+  useEffect(() => {
+    engineRef.current?.setSelected(selectedId);
+  }, [selectedId, template, pageId]);
 
   return <div ref={hostRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }} />;
 }

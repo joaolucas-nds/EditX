@@ -142,4 +142,15 @@ describe('createEditorStores', () => {
     doc.setFrameTransform(FOTO, { ...transformOf(stores, FOTO) });
     expect(calls).toBe(2);
   });
+
+  it('H14: redimensionar e mover entram no histórico com rótulos diferentes', () => {
+    const stores = open();
+    const doc = stores.document.getState();
+    doc.setFrameTransform(FOTO, { ...transformOf(stores, FOTO), width: 150 });
+    doc.setFrameTransform(FOTO, { ...transformOf(stores, FOTO), x: 30 });
+    expect(stores.history.getState().past.map((entry) => entry.label)).toEqual([
+      `redimensionar ${FOTO}`,
+      `mover ${FOTO}`,
+    ]);
+  });
 });

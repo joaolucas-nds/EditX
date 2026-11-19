@@ -105,7 +105,14 @@ export function createEditorStores(
         if (!hasFrame(get().template, frameId)) {
           throw new Error(`O frame "${frameId}" não existe no template.`);
         }
-        edit(`mover ${frameId}`, (draft) => {
+        // Rótulo do histórico: o tamanho mudou = redimensionar; só a posição = mover (DEC-023).
+        const before = get()
+          .template.pages.flatMap((page) => page.frames)
+          .find((frame) => frame.id === frameId)?.transform;
+        const resized =
+          before !== undefined &&
+          (before.width !== transform.width || before.height !== transform.height);
+        edit(`${resized ? 'redimensionar' : 'mover'} ${frameId}`, (draft) => {
           for (const page of draft.pages) {
             const frame = page.frames.find((candidate) => candidate.id === frameId);
             // Campo por campo: valor igual não é mudança para o Immer; objeto novo seria.

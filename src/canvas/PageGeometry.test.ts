@@ -5,6 +5,7 @@ import {
   canvasSize,
   centeredOffset,
   fitZoom,
+  fromPx,
   MAX_ZOOM,
   MIN_ZOOM,
   pageBox,
@@ -104,5 +105,24 @@ describe('PageGeometry', () => {
       pixelHeight: 0,
       pixelRatio: 1.25,
     });
+  });
+
+  it('G16: fromPx desfaz o toPx — 96 px = 25,4 mm = 2,54 cm', () => {
+    expect(fromPx(96, 'mm')).toBe(25.4);
+    expect(fromPx(96, 'cm')).toBe(2.54);
+    expect(fromPx(96, 'px')).toBe(96);
+  });
+
+  it('G17: ida e volta exata para valores com duas casas', () => {
+    for (const unit of ['mm', 'cm', 'px'] as const) {
+      for (const value of [0, 0.01, 10, 12.34, 297]) {
+        expect(fromPx(toPx(value, unit), unit)).toBe(value);
+      }
+    }
+  });
+
+  it('G18: arredonda a 0,01 da unidade e nunca devolve -0', () => {
+    expect(fromPx(toPx(10, 'mm') + 1, 'mm')).toBe(10.26);
+    expect(Object.is(fromPx(-0.001, 'mm'), 0)).toBe(true);
   });
 });

@@ -8,6 +8,7 @@
  */
 
 import type { ProjectFiles } from '../project/ProjectFiles';
+import { normalizeProjectPath } from '../project/ProjectPath';
 import type { EditxTemplate } from '../template/TemplateSchema';
 import { frameRect } from '../text/TextDrawing';
 import type { DrawRect } from '../text/TextDrawing';
@@ -59,12 +60,42 @@ export interface ImageDrawingError {
 export type ImageFrameDrawing<T> = ImageDrawing<T> | ImagePlaceholder | ImageDrawingError;
 
 /**
+ * Imagens já decodificadas, pelo caminho normalizado (DEC-023). Guarda a PROMESSA: dois frames
+ * com o mesmo caminho leem o arquivo uma vez só. `null` = arquivo não encontrado. Falha e
+ * arquivo não encontrado não ficam guardados — o arquivo consertado é tentado de novo.
+ */
+export type ImageCache<T> = Map<string, Promise<DecodedImage<T> | null>>;
+
+/** Lê e decodifica `path`, passando pelo cache quando há um; `null` se o arquivo não existe. */
+async function loadImage<T>(
+  path: string,
+  files: ProjectFiles,
+  decode: ImageDecoder<T>,
+  cache: ImageCache<T> | undefined,
+): Promise<DecodedImage<T> | null> {
+  const key = normalizeProjectPath(path) ?? path;
+  const cached = cache?.get(key);
+  if (cached !== undefined) return cached;
+  const loading = files.read(path).then((blob) => (blob === null ? null : decode(blob)));
+  cache?.set(key, loading);
+  try {
+    const image = await loading;
+    if (image === null) cache?.delete(key);
+    return image;
+  } catch (error) {
+    cache?.delete(key);
+    throw error;
+  }
+}
+
+/**
  * Desenhos de todos os frames de imagem visíveis da página `pageId`, por `zIndex`
  * crescente (empate mantém a ordem dos frames). Frame estático tenta o `src` e depois o
  * `fallback`; frame de dados ainda não tem valor de CSV e tenta só o `fallback`. Sem
  * caminho a tentar → `placeholder`; caminho(s) tentado(s) e nenhum legível → `error`.
  * Um frame que falha não derruba os outros.
  *
+ * @param cache - imagens já decodificadas (DEC-023); sem ele, toda chamada lê e decodifica
  * @throws Error (promessa rejeitada) se a página não existe.
  */
 export async function prepareImageDrawings<T>(
@@ -72,6 +103,7 @@ export async function prepareImageDrawings<T>(
   pageId: string,
   files: ProjectFiles,
   decode: ImageDecoder<T>,
+  cache?: ImageCache<T>,
 ): Promise<ImageFrameDrawing<T>[]> {
   const page = template.pages.find((candidate) => candidate.id === pageId);
   if (page === undefined) {
@@ -108,12 +140,11 @@ export async function prepareImageDrawings<T>(
       const failures: string[] = [];
       for (const path of candidates) {
         try {
-          const blob = await files.read(path);
-          if (blob === null) {
+          const image = await loadImage(path, files, decode, cache);
+          if (image === null) {
             failures.push(`${path}: não encontrado`);
             continue;
           }
-          const image = await decode(blob);
           const place = placeImage(rect, image.width, image.height, frame.fit, frame.align);
           return {
             kind: 'image',

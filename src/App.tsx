@@ -2,7 +2,9 @@ import { useStore } from 'zustand';
 import { UrlProjectFiles } from './project/ProjectFiles';
 import { createEditorStores } from './store/documentStore';
 import { catalogoSimplesExample } from './template/__examples__/catalogo-simples.example';
+import type { Transform } from './types/frame.types';
 import { CanvasView } from './ui/CanvasView';
+import { useEditorShortcuts } from './ui/EditorShortcuts';
 
 /**
  * Pasta de projeto do exemplo, servida pelo Vite a partir de `public/exemplo/` (DEC-019).
@@ -21,12 +23,30 @@ const stores = createEditorStores(catalogoSimplesExample, {
 // Só no `npm run dev`: o console alcança os stores (ex.: `__editx.document.getState().undo()`).
 if (import.meta.env.DEV) (window as unknown as { __editx?: typeof stores }).__editx = stores;
 
+/** O clique no canvas troca a seleção (DEC-023). No escopo do módulo: a mesma função sempre. */
+const selectFrames = (ids: string[]): void => stores.selection.getState().select(ids);
+
+/** O arraste solto grava o `transform` novo — uma entrada de desfazer por arraste (DEC-021). */
+const changeFrame = (frameId: string, transform: Transform): void =>
+  stores.document.getState().setFrameTransform(frameId, transform);
+
 /**
- * Host de desenvolvimento: mostra a página ativa do documento no canvas, ocupando a janela.
- * Some quando existir a UI do editor.
+ * Host de desenvolvimento: mostra a página ativa do documento no canvas, ocupando a janela,
+ * com seleção, mover, redimensionar e os atalhos de desfazer. Some quando existir a UI do editor.
  */
 export default function App() {
   const template = useStore(stores.document, (state) => state.template);
   const pageId = useStore(stores.document, (state) => state.pageId);
-  return <CanvasView template={template} pageId={pageId} files={exampleFiles} />;
+  const selectedIds = useStore(stores.selection, (state) => state.selectedIds);
+  useEditorShortcuts(stores);
+  return (
+    <CanvasView
+      template={template}
+      pageId={pageId}
+      files={exampleFiles}
+      selectedIds={selectedIds}
+      onSelect={selectFrames}
+      onFrameChange={changeFrame}
+    />
+  );
 }

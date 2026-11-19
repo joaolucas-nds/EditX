@@ -3,8 +3,9 @@
 > Atualizado a cada turno que muda o estado do projeto.
 > Este é o "estado da arte" — o que está funcionando, o que não está, o que vem a seguir.
 
-**Mudanças nesta revisão (2026-11-18, wo0018):** merge do KCM v1.151.0 feito (DEC-022); «Em Progresso» vazio e o
-próximo item é o `SelectionManager.ts`. A nota anterior (wo0017) saiu — o que ela registrava está no log de
+**Mudanças nesta revisão (2026-11-19, wo0020):** seleção no canvas (DEC-023): entra «Seleção, mover e
+redimensionar» em Funcionando, o `SelectionManager.ts` sai do backlog como feito e o próximo item é a multi-seleção
+com alinhamento, distribuição e setas. A nota anterior (wo0018) saiu — o merge do KCM está na DEC-022 e no log de
 2026-11-18.
 
 ---
@@ -21,6 +22,7 @@ próximo item é o `SelectionManager.ts`. A nota anterior (wo0017) saiu — o qu
 - **Schema `.editx` desenhado e IMPLEMENTADO** — `TemplateSchema.ts` (documento raiz + CSV mapping) e `frame.types.ts` (frames/overflow/estilos) com tipos TypeScript completos, zero `any`, JSDoc em cada export público
 - **Boilerplate do projeto criado** — Vite 8 + React 19 + TypeScript 6, ESLint 9 (flat config) + Prettier configurados, todas as dependências de CONTEXT.md instaladas
 - **Schema validado por exemplo real** — `src/template/__examples__/catalogo-simples.example.ts` satisfaz `EditxTemplate` de ponta a ponta (2 páginas, 3 tipos de frame, herança de estilo via `basedOn`, `isDataPage`, `csvMapping` completo) — compila limpo, passa lint, `npm run build` funciona
+- **Seleção, mover e redimensionar no canvas** *(wo0020, DEC-023; conferência de tela pelo chat a fazer)* — clicar num frame não travado o seleciona (`selectionStore`); clicar fora ou Esc limpa; arrastar move o frame com o conteúdo acompanhando; as alças redimensionam só a caixa até soltar (canto mantém a proporção, Shift solta; texto que cresce só mostra as alças do eixo que não cresce); ao soltar, UMA entrada de desfazer com o `transform` novo arredondado a 0,01 da unidade (`fromPx`, mínimo 1 mm); Ctrl+Z desfaz, Ctrl+Shift+Z e Ctrl+Y refazem. Uma alça transparente por frame (`canvas/SelectionManager.ts`, dentro do `CanvasEngine`), a parte pura em `canvas/SelectionGeometry.ts`, atalhos em `ui/EditorShortcuts.ts`; imagens decodificadas em cache por caminho (`ImageCache`). Sem alça de girar. Testado em Node (A1–A14, G16–G18, M10–M12, H14, K1–K5)
 - **Documento nos stores, com desfazer e refazer** *(wo0016, DEC-021; conferido pelo chat no navegador embutido em 2026-11-18)* — `createEditorStores(template)` (`store/documentStore.ts`) guarda uma cópia do template e a página ativa; toda mudança passa por `edit` (`produceWithPatches` do Immer) e entra no `historyStore` (limite 100; mudança vazia não entra); `undo`/`redo` aplicam os patches; `selectionStore` guarda os ids selecionados. Página e seleção não entram no histórico. Primeira ação: `setFrameTransform`. O `App` lê o documento com `useStore`; no `npm run dev` os stores ficam em `window.__editx`. Testado em Node (H1–H13)
 - **Forma aparece no canvas** *(wo0014, DEC-020; conferido pelo chat no navegador embutido em 2026-11-18)* — os frames de forma da página viram contorno SVG calculado em `canvas/FrameShape.ts` (puro, testado) e pintado como `Path` (`CanvasEngine.setShapeDrawings`): `rect` com cantos arredondados, `ellipse` e `line` (horizontal, no meio do frame); preenchimento sólido ou nenhum; traço contínuo, tracejado ou pontilhado, por DENTRO do frame. Polígono (sem pontos no formato) e SVG customizado (sem sanitização) saem como retângulo vermelho. Forma, imagem e texto empilham pelo `zIndex` (empate: forma < imagem < texto). `?page=page-capa` na URL mostra a capa. Rotação ainda não é desenhada
 - **Imagem aparece no canvas** *(wo0012, DEC-019; conferido pelo chat no navegador embutido em 2026-11-17)* — os frames de imagem da página são lidos por caminho relativo ao `.editx` pelo contrato `ProjectFiles` (`project/ProjectFiles.ts`; no `npm run dev`, `UrlProjectFiles` serve a pasta do exemplo em `public/exemplo/`), decodificados e posicionados pelos 4 `fit` e o `align` (`canvas/ImageLayout.ts`, puro), recortados pelo frame com o raio dos cantos (`CanvasEngine.setImageDrawings`); estático tenta `src` e depois `fallback`, dados usa o `fallback`; sem caminho → área reservada cinza; nada legível → retângulo vermelho. Caminhos passam por `normalizeProjectPath` (`project/ProjectPath.ts`) e o validador recusa `..` que sai da pasta. Rotação ainda não é desenhada
@@ -38,7 +40,7 @@ próximo item é o `SelectionManager.ts`. A nota anterior (wo0017) saiu — o qu
 
 ## 🔧 Em Progresso
 
-*Nada em progresso — o próximo item do backlog é o `SelectionManager.ts`.*
+*Nada em progresso — o próximo item do backlog é a multi-seleção com alinhamento, distribuição e setas (DEC-023).*
 
 ---
 
@@ -65,13 +67,14 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 - [x] `TemplateSchema.ts` — tipos completos do `.editx`
 - [x] `TemplateSerializer.ts` — serialização/deserialização + validação de schema (+ `TemplateValidator.ts`, Vitest — wo0001)
 - [x] `StyleRegistry.ts` — estilos globais com herança (funções puras sobre o mapa do documento — wo0003, DEC-015)
-- [x] `CanvasEngine.ts` — wrapper Fabric.js: ciclo de vida, página e zoom (wo0004, DEC-016; eventos de objeto entram com `SelectionManager.ts`)
+- [x] `CanvasEngine.ts` — wrapper Fabric.js: ciclo de vida, página e zoom (wo0004, DEC-016; as alças de seleção do `SelectionManager.ts` vivem nele desde a wo0020)
 - [x] `FrameText.ts` — frame de texto desenhado no canvas como contorno das letras (wo0006 + wo0007, DEC-017/DEC-018; conferido pelo dono na tela em 2026-11-15)
 - [x] `FrameImage.ts` — frame de imagem com fit modes (wo0012, DEC-019; leitura por `ProjectFiles`, exemplo servido de `public/exemplo/`)
 - [x] `FrameShape.ts` — retângulo, elipse, linha básicos (wo0014, DEC-020; polígono e SVG customizado ainda não)
 - [ ] Sanitizar `customSvg` antes do primeiro render de SVG — prometido no JSDoc de `ShapeFrame.customSvg`; fora da wo0001 (o validador só exige presença)
 - [x] `documentStore.ts` + `selectionStore.ts` + `historyStore.ts` (wo0016, DEC-021 — antes da seleção, por decisão do dono)
-- [ ] `SelectionManager.ts` — seleção simples, mover (o conteúdo acompanha), redimensionar (só a caixa até soltar), Ctrl+Z/Ctrl+Shift+Z, cache das imagens decodificadas — DEC-021 ← **próximo**
+- [x] `SelectionManager.ts` — seleção simples, mover (o conteúdo acompanha), redimensionar (só a caixa até soltar), Ctrl+Z/Ctrl+Shift+Z/Ctrl+Y, cache das imagens decodificadas (wo0020, DEC-021/DEC-023)
+- [ ] Multi-seleção (Shift+clique), alinhamento, distribuição e setas para empurrar — DEC-023 ← **próximo**
 - [ ] UI mínima: Toolbar + PropertiesPanel + LayersList (sem estilização avançada)
 - [ ] Abrir projeto = pasta — `ProjectFiles` por `showDirectoryPicker` no Chrome/Edge (handle no IndexedDB, grava o `.editx`) e por `<input webkitdirectory>` no Firefox/Safari (só leitura); junto da UI mínima — DEC-019
 - [ ] `CsvParser.ts` + `ColumnMapper.ts` básico
@@ -94,11 +97,14 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 
 ## 💬 Última conversa
 
-**2026-11-18** — `FrameShape.ts` (wo0014, DEC-020): retângulo, elipse e linha com o traço por dentro do frame. Detalhe
-em `logs/2026-11-18.md`. Antes, em 2026-11-17: FIX-002 fechado, DEC-019 e `FrameImage.ts` conferido (`logs/2026-11-17.md`).
-Depois: análise da ordem entre seleção e stores, decidida pelo dono (DEC-021), e os stores (wo0016).
-**Onde parou:** merge do KCM v1.151.0 fechado (wo0018, DEC-022; pacote movido para `notas-arquivadas/` em 2026-11-19) e Instruções novas coladas no painel do Projeto [relatado pelo dono, 2026-11-19]. Detalhe em `logs/2026-11-19.md`.
+**2026-11-19** — fecho do merge do KCM v1.151.0 (wo0019) e, numa conversa nova, a análise do `SelectionManager.ts`
+(`meta/analises/261119-ANALISE-selection-manager.md`, decidida pelo dono: DEC-023) e a wo0020. Detalhe em
+`logs/2026-11-19.md`. Antes, em 2026-11-18: `FrameShape.ts` (wo0014), stores (wo0016, DEC-021) e o merge do kit
+(wo0018) — `logs/2026-11-18.md`.
+**Onde parou:** wo0020 aplicada (seleção, mover, redimensionar, desfazer pelo teclado); falta a conferência de tela
+pelo chat no navegador embutido.
 
 ---
 
-*Próximo passo: `SelectionManager.ts` — WO a escrever pelo chat (DEC-021).*
+*Próximo passo: conferência de tela da wo0020 pelo chat; depois, multi-seleção com alinhamento, distribuição e setas
+(DEC-023).*

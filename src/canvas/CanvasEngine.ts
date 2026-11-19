@@ -4,7 +4,8 @@
  * Adaptador FINO do Fabric 6 (DEC-016): monta o canvas num elemento, desenha a
  * página (área de corte + guia de sangria), enquadra com zoom para caber e
  * libera tudo ao descartar. Toda conta mora em `PageGeometry.ts`; aqui só se
- * repassam valores ao Fabric. Eventos de objeto entram com `SelectionManager.ts`.
+ * repassam valores ao Fabric. As alças de seleção são do `SelectionManager.ts`,
+ * que vive aqui dentro (DEC-023).
  */
 
 import { Canvas, FabricImage, Path, Rect } from 'fabric';
@@ -15,13 +16,21 @@ import type { ImageFrameDrawing } from './FrameImage';
 import type { ShapeFrameDrawing } from './FrameShape';
 import { centeredOffset, fitZoom, pageBox } from './PageGeometry';
 import type { CanvasSize, PageBox } from './PageGeometry';
+import type { SelectableFrame } from './SelectionGeometry';
+import { SelectionManager } from './SelectionManager';
+import type { SelectionCallbacks } from './SelectionManager';
 
 export interface CanvasEngineOptions {
   /** Margem em px CSS ao redor da página no enquadramento. Padrão: 32. */
   fitMargin?: number;
+  /** Para onde vão o clique num frame e o fim de um arraste (DEC-023). */
+  selection?: SelectionCallbacks;
 }
 
-/** Opções comuns aos objetos de frame: canto superior esquerdo como origem; nada interativo ainda. */
+/**
+ * Opções comuns aos objetos de frame: canto superior esquerdo como origem; o conteúdo nunca é
+ * interativo — quem recebe o clique é a alça do `SelectionManager`.
+ */
 const FRAME_OBJECT = {
   originX: 'left',
   originY: 'top',
@@ -63,12 +72,15 @@ function frameErrorRect(rect: DrawRect): Rect {
 export class CanvasEngine {
   private readonly canvas: Canvas;
   private readonly fitMargin: number;
+  private readonly selection: SelectionManager;
   private pageObjects: FabricObject[] = [];
   private textObjects: FabricObject[] = [];
   private imageObjects: FabricObject[] = [];
   private shapeObjects: FabricObject[] = [];
   /** `zIndex` do frame de cada objeto de texto/imagem — a ordem de empilhamento (`relayer`). */
   private readonly frameZ = new WeakMap<FabricObject, number>();
+  /** Id do frame de cada objeto de conteúdo — o que a alça desloca ao mover. */
+  private readonly frameOf = new WeakMap<FabricObject, string>();
   private box: PageBox | null = null;
   private disposal: Promise<void> | null = null;
   /** px do dispositivo por px CSS do último `resize` (FIX-002); 1 até o primeiro. */
@@ -84,7 +96,15 @@ export class CanvasEngine {
       // DPR < 1, e o buffer fica de tamanho diferente da tela. Quem dá os px do dispositivo
       // é o `resize`, já medidos pelo navegador.
       enableRetinaScaling: false,
+      // O clique acerta o frame de cima pela ordem das alças, mesmo com outro selecionado
+      // (sem isto o Fabric dá preferência ao objeto ativo — DEC-023).
+      preserveObjectStacking: true,
     });
+    this.selection = new SelectionManager(
+      this.canvas,
+      (frameId) => this.contentOf(frameId),
+      options.selection ?? {},
+    );
   }
 
   /** Desenha a página destas configurações (substitui a anterior) e reenquadra. */
@@ -152,13 +172,17 @@ export class CanvasEngine {
           const path = new Path(data, { fill: drawing.fill, selectable: false, evented: false });
           if (drawing.clip !== null) path.clipPath = clipRect(drawing.clip, 0);
           this.frameZ.set(path, drawing.zIndex);
+          this.frameOf.set(path, drawing.frameId);
           this.textObjects.push(path);
         }
       } else {
         const rect = frameErrorRect(drawing.frame);
         this.frameZ.set(rect, drawing.zIndex);
+        this.frameOf.set(rect, drawing.frameId);
         this.textObjects.push(rect);
       }
+      // A caixa do texto que cresce só se conhece agora (depois do grow e da âncora).
+      this.selection.updateBase(drawing.frameId, drawing.frame);
     }
 
     this.relayer();
@@ -191,6 +215,7 @@ export class CanvasEngine {
         object = frameErrorRect(drawing.frame);
       }
       this.frameZ.set(object, drawing.zIndex);
+      this.frameOf.set(object, drawing.frameId);
       this.shapeObjects.push(object);
     }
 
@@ -237,10 +262,32 @@ export class CanvasEngine {
         object = frameErrorRect(drawing.frame);
       }
       this.frameZ.set(object, drawing.zIndex);
+      this.frameOf.set(object, drawing.frameId);
       this.imageObjects.push(object);
     }
 
     this.relayer();
+  }
+
+  /**
+   * Troca as alças de seleção pelas destes frames (`selectableFrames`, na ordem do desenho).
+   * Alça de frame que continua é atualizada, não recriada — a seleção sobrevive ao redesenho.
+   */
+  setFrames(frames: readonly SelectableFrame[]): void {
+    this.assertAlive();
+    this.selection.setFrames(frames);
+  }
+
+  /** Mostra este frame como selecionado, ou nenhum (`null`). */
+  setSelected(frameId: string | null): void {
+    this.assertAlive();
+    this.selection.setSelected(frameId);
+  }
+
+  /** Devolve a alça e o conteúdo do frame ao lugar do documento (arraste que não mudou nada). */
+  resetFrame(frameId: string): void {
+    this.assertAlive();
+    this.selection.resetFrame(frameId);
   }
 
   /**
@@ -262,6 +309,8 @@ export class CanvasEngine {
     // 100%, não px: px fixos ficam velhos quando o zoom do navegador muda sem evento, e o
     // CSSOM ainda arredonda a 6 algarismos (1163.625 → "1163.62px", medido).
     this.canvas.setDimensions({ width: '100%', height: '100%' }, { cssOnly: true });
+    // Controles de seleção são desenhados em px do canvas, que aqui são px do dispositivo.
+    this.selection.setPixelRatio(size.pixelRatio);
     this.reframe();
     this.canvas.requestRenderAll();
   }
@@ -293,6 +342,13 @@ export class CanvasEngine {
     this.canvas.setViewportTransform([zoom, 0, 0, zoom, x, y]);
   }
 
+  /** Os objetos de conteúdo (forma, imagem, texto) do frame `frameId`, agora. */
+  private contentOf(frameId: string): FabricObject[] {
+    return [...this.shapeObjects, ...this.imageObjects, ...this.textObjects].filter(
+      (object) => this.frameOf.get(object) === frameId,
+    );
+  }
+
   /** Remove só os objetos que `setTextDrawings` criou. */
   private clearText(): void {
     for (const object of this.textObjects) this.canvas.remove(object);
@@ -315,7 +371,8 @@ export class CanvasEngine {
    * Empilha os objetos de frame (forma, imagem e texto) pelo `zIndex`, acima da página.
    * Empate: forma embaixo da imagem, imagem embaixo do texto (fundo, foto, legenda); dentro
    * de cada tipo, a ordem recebida. Os três chegam em momentos diferentes (texto e imagem
-   * por promessas separadas), por isso a ordem é refeita a cada chegada.
+   * por promessas separadas), por isso a ordem é refeita a cada chegada. As alças não entram
+   * aqui: remover a alça ativa limparia a seleção (`SelectionManager.setFrames`).
    */
   private relayer(): void {
     const objects = [...this.shapeObjects, ...this.imageObjects, ...this.textObjects];

@@ -94,7 +94,10 @@ Comece vazia e escreva quando doer duas vezes: técnica que você precisou expli
   calço de `vitest` (o `vitest` do `node_modules` é binário do Windows). Prova de vida: editar o JS compilado (`perl
   -0pi`, nunca `sed`, que parte linha). **Nunca dispare em paralelo uma gravação (`device_commit_files`, ou um comando
   que escreve) e o comando que depende dela** — medido duas vezes (wo0012 e a análise do merge): o segundo leu a
-  versão velha. Grave sozinho, depois confira com `sha1sum`/`grep`.
+  versão velha. Grave sozinho, depois confira com `sha1sum`/`grep`. **E regravar a partir do MESMO arquivo de
+  saída não sobe o conteúdo novo** — medido na wo0020: a segunda `device_commit_files` com o mesmo `stagedPath` respondeu
+  «written» e o disco ficou com a versão anterior (o tamanho entregou). Regrave a partir de um arquivo de nome novo e
+  confira o hash no disco antes de simular.
 
 ## Princípios de trabalho
 

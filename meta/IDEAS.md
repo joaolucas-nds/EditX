@@ -129,6 +129,16 @@ quebra ou fica vazio. **Prioridade:** alta — já está no schema (`FrameImage.
 - **Polígono com pontos** — `shape: 'polygon'` existe no formato, mas sem os pontos (DEC-020); na F1 sai como
   retângulo vermelho de erro. **Volta quando** um template real precisar de selo ou estrela — aí acrescentar
   `points` (relativos ao frame, de 0 a 1) ao `ShapeFrame` e ao validador, com o exemplo usando o campo.
+- **Texto que cresce vira fixo ao arrastar no eixo que cresce** (como o Figma) — adiada na DEC-023: hoje esse frame
+  só mostra as alças do eixo livre. Trocar muda o `overflow.mode` no mesmo arraste e pede uma regra (fixo com
+  redução ou com corte?). **Volta quando** alguém precisar fixar a altura de um texto que cresce pela tela.
+- **Encaixe e guias ao mover** — adiada na DEC-023. **Volta depois** da multi-seleção com alinhamento: as guias
+  reaproveitam as contas de alinhar.
+- **Contorno ao passar o mouse sobre um frame** — sugestão do chat (2026-11-19). **Volta quando** a conferência ou o
+  uso mostrarem que se clica no frame errado (frames sobrepostos, frame de texto sem fundo).
+- **`CanvasEngine.ts` acima das ~300 linhas** do CONTEXT (passou com a wo0020). Candidato a sair: a conversão de
+  desenho em objeto do Fabric (`setTextDrawings`, `setImageDrawings`, `setShapeDrawings`). **Volta quando** o
+  engine ganhar a próxima responsabilidade (a multi-seleção).
 
 ---
 

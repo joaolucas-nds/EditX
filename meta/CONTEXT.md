@@ -3,10 +3,12 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-18, wo0016):** stores do editor (DEC-021): a árvore troca as linhas previstas de
-`src/store/` pelas reais (+ teste), o «Objetivo atual» passa a apontar a seleção, e entram as armadilhas do Immer
-(ponto único de mudança, atribuição por campo, estado congelado). A nota anterior (wo0014: `FrameShape.ts` e as
-armadilhas do traço por dentro e das formas não desenhadas) saiu — o conteúdo está no corpo deste arquivo e em DEC-020.
+**Mudanças nesta revisão (2026-11-19, wo0020):** seleção no canvas (DEC-023): a árvore troca a linha prevista do
+`SelectionManager.ts` pela real e ganha `SelectionGeometry.ts` e `ui/EditorShortcuts.ts` (+ testes); o «Objetivo
+atual» passa a apontar a multi-seleção; entra uma linha em «Arquitetura»; a armadilha dos controles × `pixelRatio`
+deixa de ser instrução para o futuro e entram três armadilhas da seleção (alça ativa nunca removida, seleção decidida
+pelo clique, caixa do texto que cresce). A nota anterior (wo0016: stores e armadilhas do Immer) saiu — o conteúdo está
+no corpo deste arquivo e em DEC-021.
 
 ---
 
@@ -24,8 +26,9 @@ catálogos de produto, cartazes de oferta, cardápios, stories digitais, menus d
 
 **Objetivo atual:** Fase 1 (MVP do editor). Existem o schema do `.editx`, o
 serializer/validador com testes, a herança de estilos (`StyleRegistry.ts`, DEC-014/DEC-015) e o
-boilerplate, e o canvas desenha a página com texto (DEC-018), imagem (DEC-019) e forma (DEC-020). O objetivo
-imediato é a seleção (`SelectionManager.ts`) sobre os stores (DEC-021), rumo à UI mínima.
+boilerplate, e o canvas desenha a página com texto (DEC-018), imagem (DEC-019) e forma (DEC-020), com seleção,
+mover e redimensionar sobre os stores (DEC-021, DEC-023). O objetivo imediato é a multi-seleção com alinhamento,
+distribuição e setas, rumo à UI mínima.
 
 **Problema de mercado resolvido:** Nenhuma ferramenta combina edição visual acessível +
 geração em massa + tipos editoriais especializados (dobras, catálogos) em um único
@@ -94,7 +97,9 @@ EditX/
 │   │   ├── FrameImage.test.ts     # Testes Vitest — arquivos e decodificador falsos, sem DOM
 │   │   ├── FrameShape.ts          # prepareShapeDrawings / shapePath: forma → contorno SVG com o traço por dentro (puro, DEC-020)
 │   │   ├── FrameShape.test.ts     # Testes Vitest das formas
-│   │   └── SelectionManager.ts   # Seleção, multi-select, alinhamento, distribuição
+│   │   ├── SelectionGeometry.ts   # quais frames ganham alça, quais alças cada um mostra, caixa arrastada → transform (puro, DEC-023)
+│   │   ├── SelectionGeometry.test.ts # Testes Vitest da seleção
+│   │   └── SelectionManager.ts    # alça por frame no Fabric: clique, mover com o conteúdo, redimensionar (DEC-023); multi-seleção a fazer
 │   │
 │   ├── template/
 │   │   ├── TemplateSchema.ts      # Documento raiz + CSV mapping (fonte da verdade, DEC-009)
@@ -142,7 +147,9 @@ EditX/
 │   │   └── csvStore.ts            # Dados importados, mapeamentos, preview
 │   │
 │   ├── ui/
-│   │   ├── CanvasView.tsx         # Hospeda o CanvasEngine num <div>: cria o <canvas>, ResizeObserver, dispose
+│   │   ├── CanvasView.tsx         # Hospeda o CanvasEngine num <div>: cria o <canvas>, ResizeObserver, dispose; liga a seleção aos stores
+│   │   ├── EditorShortcuts.ts     # Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y, Esc (shortcutFor puro + gancho na janela, DEC-023)
+│   │   ├── EditorShortcuts.test.ts # Testes Vitest dos atalhos
 │   │   ├── Toolbar.tsx            # Barra de ferramentas superior
 │   │   ├── PropertiesPanel.tsx    # Painel direito: propriedades do frame selecionado
 │   │   ├── LayersList.tsx         # Painel esquerdo: árvore de camadas/frames
@@ -288,6 +295,7 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - Imagens são referenciadas por caminho relativo, não embutidas por padrão — ver DEC-002.
 - Projeto = pasta (o `.editx` e as imagens); todo arquivo do projeto é lido por um `ProjectFiles` («bytes por caminho»), e quem desenha não sabe de onde os bytes vêm — ver DEC-019.
 - O documento aberto vive nos stores criados por `createEditorStores` (`zustand/vanilla` + Immer); toda mudança do template gera patches e entra no histórico; página e seleção não — ver DEC-021.
+- Seleção = uma alça transparente por frame selecionável, dentro do `CanvasEngine`; o conteúdo nunca é interativo; o clique decide a seleção, que mora no `selectionStore`; o arraste solto vira UM `setFrameTransform` — ver DEC-023.
 - Fabric.js é o motor de canvas (não Konva.js) — ver DEC-003.
 - Zustand + Immer para todo o estado global (não Redux/Context) — ver DEC-004.
 - Tauri para desktop na Fase 2 (não Electron) — ver DEC-005.
@@ -388,6 +396,16 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - **O template dos stores é congelado pelo Immer depois da primeira mudança** — não mute objeto que veio do store
   (nem em teste: `structuredClone` antes). `createEditorStores` guarda uma CÓPIA do template recebido, então o
   exemplo importado não é congelado nem alterado.
+- **Remover o objeto ATIVO do Fabric limpa a seleção** (`selection:cleared`, fabric 6.9.1, `Canvas._onObjectRemoved`)
+  — e o `relayer` e o `showPage` removem e readicionam o conteúdo a cada redesenho. Por isso as alças ficam FORA do
+  `relayer` e o `SelectionManager.setFrames` as atualiza no lugar por `frameId`; para reordenar, `bringObjectToFront`
+  (não dispara o evento). Não ponha a alça numa lista que é removida e readicionada (DEC-023).
+- **Quem decide a seleção é o clique (`mouse:down`), não os eventos `selection:*` do Fabric** — eles também disparam
+  com `setActiveObject`/`discardActiveObject` e ao remover a alça ativa; repassá-los ao `selectionStore` faria o
+  redesenho apagar a seleção do documento. O caminho é um só: clique → `selectionStore` → `setSelected` (DEC-023).
+- **No texto que cresce, a caixa desenhada NÃO é a do `transform`** (`TextDrawing.frame` vem depois do grow e da
+  âncora). O arraste converte a DIFERENÇA da caixa e soma ao `transform` (`transformFromHandle`); converter a posição
+  da alça faria o título com âncora no meio saltar ao soltar (DEC-023).
 - **O retina do Fabric 6 trunca o buffer e ignora DPR abaixo de 1** — e por isso está DESLIGADO aqui (FIX-002).
   `setCanvasDimensions` grava `width × retina` como atributo (`toString()`), e o atributo de largura do `<canvas>`
   é inteiro: 1919,99995 vira 1919 numa tela de 1920 px; e `getDevicePixelRatio()` devolve `Math.max(dpr, 1)`, então
@@ -406,9 +424,9 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - **Com o buffer em px do dispositivo, tamanho que não escala com o zoom do viewport é em px da TELA.** Traço e
   tracejado de objeto escalam com o viewport (o `strokeUniform` só compensa a escala do OBJETO — fabric 6.9.1,
   `_renderStroke`), então a guia de sangria fica igual. Mas controles de seleção (`cornerSize`, `padding`,
-  `borderScaleFactor`) são desenhados em unidades do canvas: no `SelectionManager.ts`, multiplique-os pelo
-  `pixelRatio` do engine, senão encolhem em telas HiDPI. O ponteiro já sai certo (o Fabric divide o tamanho do
-  buffer pelo tamanho na tela).
+  `borderScaleFactor`) são desenhados em unidades do canvas: o `SelectionManager.setPixelRatio` os multiplica pelo
+  `pixelRatio` (o `resize` do engine chama) — controle novo segue a mesma regra, senão encolhe em telas HiDPI. O
+  ponteiro já sai certo (o Fabric divide o tamanho do buffer pelo tamanho na tela).
 - **O `opentype.js` 1.3.4 não lê WOFF2 e não trata fonte variável.** O README declara WOFF/OTF/TTF; `grep -i woff2`
   no `dist/` = 0 (medido em 2026-11-12). Fonte nova entra como `.ttf`/`.otf` ESTÁTICO, um arquivo por peso — nada de
   `[wght].ttf` nem do CSS do Google Fonts (que serve WOFF2). Ver DEC-017.
@@ -445,4 +463,4 @@ O fluxo de uso principal é:
 
 ---
 
-*Última atualização: 2026-11-18 — merge do KCM v1.151.0 (wo0018, DEC-022): seção «Build e validação». Anterior: 2026-11-11 (preparação da wo0001, DEC-013). Criação original: 2026-05-24.*
+*Última atualização: 2026-11-19 — seleção no canvas (wo0020, DEC-023). Anterior: 2026-11-18 — merge do KCM v1.151.0 (wo0018, DEC-022): seção «Build e validação». Criação original: 2026-05-24.*

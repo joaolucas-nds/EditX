@@ -6,7 +6,7 @@ import type { EditxTemplate } from '../template/TemplateSchema';
 import { frameRect } from '../text/TextDrawing';
 import type { ImageFrame } from '../types/frame.types';
 import { prepareImageDrawings } from './FrameImage';
-import type { DecodedImage } from './FrameImage';
+import type { DecodedImage, ImageCache } from './FrameImage';
 import { toPx } from './PageGeometry';
 
 const template = (): EditxTemplate => structuredClone(catalogoSimplesExample);
@@ -134,5 +134,52 @@ describe('prepareImageDrawings', () => {
     t.pages[1].frames.unshift({ ...front, id: 'foto-fundo', zIndex: 1 });
     const drawings = await prepareImageDrawings(t, 'page-produto', fakeFiles(sample), fakeDecode);
     expect(drawings.map((d) => d.frameId)).toEqual(['foto-fundo', 'frame-foto-produto']);
+  });
+
+  it('M10: com cache, a segunda chamada não lê o arquivo de novo', async () => {
+    const t = template();
+    let reads = 0;
+    const files = fakeFiles(sample);
+    const counting: ProjectFiles = {
+      read: (path) => {
+        reads += 1;
+        return files.read(path);
+      },
+    };
+    const cache: ImageCache<string> = new Map();
+    await prepareImageDrawings(t, 'page-produto', counting, fakeDecode, cache);
+    const [drawing] = await prepareImageDrawings(t, 'page-produto', counting, fakeDecode, cache);
+    expect(reads).toBe(1);
+    expect(drawing.kind).toBe('image');
+  });
+
+  it('M11: falha não fica no cache — o arquivo consertado é lido de novo', async () => {
+    const t = template();
+    makeStatic(t, './imagens/foto.png');
+    const entries: Record<string, string> = { 'imagens/foto.png': 'lixo' };
+    const files = fakeFiles(entries); // lê `entries` na hora da leitura
+    const cache: ImageCache<string> = new Map();
+    const [broken] = await prepareImageDrawings(t, 'page-produto', files, fakeDecode, cache);
+    expect(broken.kind).toBe('error');
+    entries['imagens/foto.png'] = '800x800';
+    const [fixed] = await prepareImageDrawings(t, 'page-produto', files, fakeDecode, cache);
+    expect(fixed.kind).toBe('image');
+    expect(cache.size).toBe(1);
+  });
+
+  it('M12: dois frames com o mesmo caminho leem o arquivo uma vez só', async () => {
+    const t = template();
+    t.pages[1].frames.unshift({ ...photo(t), id: 'foto-copia', zIndex: 1 });
+    let reads = 0;
+    const files = fakeFiles(sample);
+    const counting: ProjectFiles = {
+      read: (path) => {
+        reads += 1;
+        return files.read(path);
+      },
+    };
+    const drawings = await prepareImageDrawings(t, 'page-produto', counting, fakeDecode, new Map());
+    expect(drawings.map((d) => d.kind)).toEqual(['image', 'image']);
+    expect(reads).toBe(1);
   });
 });
