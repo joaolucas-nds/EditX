@@ -87,6 +87,12 @@ Comece vazia e escreva quando doer duas vezes: técnica que você precisou expli
   pixels do buffer com `getImageData` em vez de confiar nela). Para simular zoom do navegador, `zoom` de CSS no
   `<html>` muda px CSS × px da tela pelo mesmo caminho do código, mas NÃO muda `devicePixelRatio`. Antes de sair:
   recarregar a página e fechar a aba.
+  **Medido na conferência da wo0020:** página recarregada com o painel oculto abre com o canvas de tamanho 0 (nada a
+  clicar nem a medir), e script que espera `requestAnimationFrame` trava até o painel voltar — ou até uma captura forçar
+  um quadro, que o RETOMA no meio (a captura seguinte já mostra o depois); peça ao dono o painel visível antes de medir
+  quadros. O Fabric arrasta por `MouseEvent` (`mousedown` no `upper-canvas`, `mousemove`/`mouseup` no `document`), não
+  por `PointerEvent`; a captura vem reduzida (800×450 de uma página 1280×720) — coordenada para evento sai de
+  `innerWidth`, não da captura. Piscar se mede lendo um pixel por quadro, com a prova de vida de um ponto que TEM de mudar.
 - **Simulação de WO pelo chat (VM Linux) e a corrida das ferramentas do dispositivo** — o chat simula toda WO a partir
   do PRÓPRIO texto dela: copia o repositório para `$HOME/simNN` (fora da pasta vinculada; `node_modules` por link),
   aplica as edições lendo âncora e texto novo da cerca de quatro crases por script, roda de novo para provar a

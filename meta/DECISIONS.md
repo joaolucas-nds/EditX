@@ -873,8 +873,9 @@ desfazer por arraste, `fromPx`, cache das imagens, atalhos). Faltavam o COMO e t
   mudança; a parte que decide (`SelectionGeometry.ts`) é testada em Node.
 - **Negativas:** o `CanvasEngine.ts` passa das ~300 linhas da regra do CONTEXT (extração no IDEAS); a página ainda é
   redesenhada inteira a cada arraste solto.
-- **Riscos:** piscar ao soltar — a hipótese de que não pisca (fonte e imagem em cache resolvem antes do próximo
-  quadro) não foi medida; vai para a conferência de tela. Controles em DPR ≠ 1 real nunca conferidos (FIX-002).
+- **Riscos:** piscar ao soltar — **medido em 2026-11-19 (wo0021): não pisca.** Um pixel da foto e um do texto lidos
+  a cada quadro, por 12–20 quadros depois de soltar, ficaram iguais; a prova de vida (um ponto da borda que a foto
+  deixa) mudou de cor no meio do arraste. Controles em DPR ≠ 1 real nunca conferidos (FIX-002).
 
 ---
 
