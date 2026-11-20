@@ -101,11 +101,10 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 (`meta/analises/261119-ANALISE-selection-manager.md`, decidida pelo dono: DEC-023) e a wo0020. Detalhe em
 `logs/2026-11-19.md`. Antes, em 2026-11-18: `FrameShape.ts` (wo0014), stores (wo0016, DEC-021) e o merge do kit
 (wo0018) — `logs/2026-11-18.md`.
-**Onde parou:** wo0020 aplicada e conferida pelo chat no navegador embutido (wo0021): seleção, mover com o conteúdo,
-redimensionar só a caixa até soltar, texto que cresce só no eixo livre, fundo travado sem alça, atalhos de desfazer, e
-nenhum quadro sem a foto ou o texto depois de soltar. Fica para o dono, opcional: os controles com zoom real do
-navegador (DPR ≠ 1).
+**Onde parou:** wo0020 aplicada e conferida pelo chat (wo0021). Em 2026-11-20 o dono decidiu a multi-seleção
+(DEC-024) e a wo0022 extraiu o `FrameObjects.ts` do `CanvasEngine.ts` (sem mudança de comportamento). Detalhe em
+`logs/2026-11-20.md`.
 
 ---
 
-*Próximo passo: multi-seleção com alinhamento, distribuição e setas (DEC-023) — análise ou WO a escrever pelo chat.*
+*Próximo passo: conferência de tela rápida da wo0022 pelo chat; depois, a WO da multi-seleção (DEC-024).*

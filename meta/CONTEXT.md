@@ -3,12 +3,9 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-19, wo0020):** seleção no canvas (DEC-023): a árvore troca a linha prevista do
-`SelectionManager.ts` pela real e ganha `SelectionGeometry.ts` e `ui/EditorShortcuts.ts` (+ testes); o «Objetivo
-atual» passa a apontar a multi-seleção; entra uma linha em «Arquitetura»; a armadilha dos controles × `pixelRatio`
-deixa de ser instrução para o futuro e entram três armadilhas da seleção (alça ativa nunca removida, seleção decidida
-pelo clique, caixa do texto que cresce). A nota anterior (wo0016: stores e armadilhas do Immer) saiu — o conteúdo está
-no corpo deste arquivo e em DEC-021.
+**Mudanças nesta revisão (2026-11-20, wo0022):** a árvore ganha `canvas/FrameObjects.ts` (desenho → objeto do
+Fabric, extraído do `CanvasEngine.ts`, que volta a ficar abaixo das ~300 linhas). A nota anterior (wo0020: seleção no
+canvas, DEC-023) saiu — o conteúdo está no corpo deste arquivo e em DEC-023.
 
 ---
 
@@ -97,6 +94,7 @@ EditX/
 │   │   ├── FrameImage.test.ts     # Testes Vitest — arquivos e decodificador falsos, sem DOM
 │   │   ├── FrameShape.ts          # prepareShapeDrawings / shapePath: forma → contorno SVG com o traço por dentro (puro, DEC-020)
 │   │   ├── FrameShape.test.ts     # Testes Vitest das formas
+│   │   ├── FrameObjects.ts        # desenho pronto → objeto do Fabric (texto, imagem, forma, erro); o engine só adiciona e empilha (wo0022)
 │   │   ├── SelectionGeometry.ts   # quais frames ganham alça, quais alças cada um mostra, caixa arrastada → transform (puro, DEC-023)
 │   │   ├── SelectionGeometry.test.ts # Testes Vitest da seleção
 │   │   └── SelectionManager.ts    # alça por frame no Fabric: clique, mover com o conteúdo, redimensionar (DEC-023); multi-seleção a fazer
@@ -463,4 +461,4 @@ O fluxo de uso principal é:
 
 ---
 
-*Última atualização: 2026-11-19 — seleção no canvas (wo0020, DEC-023). Anterior: 2026-11-18 — merge do KCM v1.151.0 (wo0018, DEC-022): seção «Build e validação». Criação original: 2026-05-24.*
+*Última atualização: 2026-11-20 — `FrameObjects.ts` extraído do engine (wo0022). Anterior: 2026-11-19 — seleção no canvas (wo0020, DEC-023). Criação original: 2026-05-24.*

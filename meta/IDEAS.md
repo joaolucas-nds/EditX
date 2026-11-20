@@ -136,17 +136,17 @@ quebra ou fica vazio. **Prioridade:** alta — já está no schema (`FrameImage.
   reaproveitam as contas de alinhar.
 - **Contorno ao passar o mouse sobre um frame** — sugestão do chat (2026-11-19). **Volta quando** a conferência ou o
   uso mostrarem que se clica no frame errado (frames sobrepostos, frame de texto sem fundo).
-- **`CanvasEngine.ts` acima das ~300 linhas** do CONTEXT (passou com a wo0020). Candidato a sair: a conversão de
-  desenho em objeto do Fabric (`setTextDrawings`, `setImageDrawings`, `setShapeDrawings`). **Volta quando** o
-  engine ganhar a próxima responsabilidade (a multi-seleção).
 
 ---
 
 ## ✅ Concluídas
 
-*Nenhuma ainda — o boilerplate e o schema existem, mas nenhuma funcionalidade de runtime. Uma ideia só migra para
-cá quando o código correspondente estiver de fato funcionando, não quando apenas
+*Uma ideia só migra para cá quando o código correspondente estiver de fato funcionando, não quando apenas
 especificado no schema ou decidido em DECISIONS.md.*
+
+- **`CanvasEngine.ts` acima das ~300 linhas** (adiada na wo0020) — **feita na wo0022:** a conversão de desenho em
+  objeto do Fabric foi para `canvas/FrameObjects.ts`; o engine foi de 388 para 294 linhas, sem mudança de
+  comportamento.
 
 ---
 

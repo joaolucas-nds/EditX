@@ -32,6 +32,7 @@ versão lançada. A nota de 2026-11-10 saiu (o que ela dizia está na linha do v
 - Canvas borrado com o zoom do navegador diferente de 100%: o buffer do `<canvas>` ficava de tamanho diferente da tela (retina do Fabric truncando e ignorando DPR < 1); agora o buffer recebe os px do dispositivo medidos pelo navegador. Ver FIX-002
 
 ### Modificado
+- `canvas/FrameObjects.ts` — a conversão de desenho em objeto do Fabric (texto, imagem, forma, erro) saiu do `CanvasEngine.ts`, que volta a ficar abaixo das ~300 linhas; sem mudança de comportamento (wo0022).
 - Documentação e ferramentas alinhadas ao KCM v1.151.0: skills `apply-wo`/`wrap`/`sondar` e modelo de WO novos
   (cerca de quatro crases; parada do `/apply-wo` grava relatório), `meta/GUIA-DO-KIT.md` e `meta/SETUP.md` novos,
   CEREBRO e Instruções fundidos com o pacote como base, «Build e validação» no CONTEXT, «Entregas» no modelo de log,

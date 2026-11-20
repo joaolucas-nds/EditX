@@ -879,6 +879,52 @@ desfazer por arraste, `fromPx`, cache das imagens, atalhos). Faltavam o COMO e t
 
 ---
 
+## DEC-024 — Multi-seleção: Shift+clique e retângulo, grupo que só move, alinhar e distribuir sem atalho, setas em mm
+
+**Data:** 2026-11-20
+**Status:** aceita
+**Autor:** dono (as quatro escolhas de comportamento) + chat (análise e desenho)
+
+### Contexto
+A DEC-023 adiou a multi-seleção, o alinhamento, a distribuição e as setas para a WO seguinte. Análise:
+`meta/analises/261119-ANALISE-multi-selecao-alinhamento.md` — leitura do fonte do Fabric 6.9.1 e das ferramentas de
+referência (Figma, Canva, Adobe Express).
+
+### Decisão
+- **Gesto (dono):** Shift+clique soma e tira da seleção; arrastar no vazio seleciona por retângulo (basta tocar o
+  frame); Ctrl+A seleciona os frames destravados da página. O grupo só MOVE — sem alças de redimensionar.
+- **Referência (dono):** com dois ou mais frames, alinhar à caixa da seleção; com um frame sozinho, à área de corte da
+  página (sem a sangria). Distribuir pede três ou mais e iguala os ESPAÇOS, com os frames das pontas parados.
+- **Acionar (dono):** alinhar e distribuir entram como ações do documento, testadas, SEM atalho; os botões vêm com a
+  Toolbar (UI mínima). Até lá a conferência de tela é pelo console (`__editx`).
+- **Setas (dono):** 1 mm, e 10 mm com Shift (em documento em px: 1 px e 10 px), para um frame ou o grupo; toques
+  seguidos na mesma seleção viram UMA entrada de desfazer até a seleção mudar ou passar 1 s sem tecla.
+- **Como (chat):** `ActiveSelection` do Fabric com `selection: true`; o store segue sendo a fonte — os ids saem de
+  `getActiveObjects()` no `mouse:down` e no `mouse:up` (o fim do gesto), nunca dos eventos `selection:*`; antes de
+  reposicionar as alças no redesenho, o grupo é desfeito e remontado pelos ids do store (dentro do grupo a posição é
+  relativa a ele); ao mover o grupo, o conteúdo de todos anda junto e a caixa de cada um sai de `getCoords()`; uma ação
+  `setFrameTransforms` grava o gesto inteiro numa entrada; as contas de alinhar, distribuir e empurrar ficam num módulo
+  puro testado em Node. Antes, a extração do `FrameObjects.ts` (wo0022), só de mover código.
+
+### Alternativas consideradas
+- **Só Shift+clique** — o Fabric liga o retângulo junto (`selection: true`); desligá-lo é trabalho a mais.
+- **Redimensionar em grupo** — escala texto que cresce e imagem com `fit`; outra frente.
+- **Sempre à caixa da seleção** — perde o «centralizar na página» de um frame sozinho.
+- **Distribuir pelos centros** — com tamanhos diferentes, os espaços ficam desiguais.
+- **Atalhos do Figma já** (Alt+A/D/W/S/H/V) — conflitos não medidos: Alt+D vai à barra de endereço no Chrome e no
+  Edge; Alt+Shift troca o idioma do teclado no Windows; Ctrl+Alt é o AltGr no ABNT.
+- **Setas em px de tela** (Canva, Figma) — 1 px CSS = 0,26 mm e muda com o zoom; o documento é em mm.
+- **Uma entrada de desfazer por toque** — segurar a seta 1 s gera ~30 toques; o histórico guarda 100.
+
+### Consequências
+- **Positivas:** juntar frames sem código próprio de gesto; alinhar e distribuir testados sem tela.
+- **Negativas:** até a Toolbar, alinhar e distribuir só existem pelo console.
+- **Riscos:** alça no lugar errado depois de soltar um grupo (coordenada relativa ao grupo); store e Fabric divergirem
+  num Shift+clique que tira um frame; toques de seta juntados de mais — os três vão para a conferência de tela e os
+  testes da WO da multi-seleção.
+
+---
+
 ## Template para novo ADR (copie e preencha)
 
 ```markdown
