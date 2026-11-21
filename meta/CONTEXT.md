@@ -3,9 +3,11 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-20, wo0022):** a árvore ganha `canvas/FrameObjects.ts` (desenho → objeto do
-Fabric, extraído do `CanvasEngine.ts`, que volta a ficar abaixo das ~300 linhas). A nota anterior (wo0020: seleção no
-canvas, DEC-023) saiu — o conteúdo está no corpo deste arquivo e em DEC-023.
+**Mudanças nesta revisão (2026-11-21, wo0023):** multi-seleção (DEC-024): a árvore ganha `canvas/SelectionLayout.ts` e
+`ui/EditorActions.ts` (+ testes) e a linha do `SelectionManager.ts` perde o «a fazer»; o «Objetivo atual» passa a
+apontar a UI mínima; a linha da seleção em «Arquitetura» fala do grupo; entram duas armadilhas (alça dentro do grupo
+tem posição relativa a ele; alinhar e empurrar usam a caixa desenhada). A nota anterior (wo0022: `FrameObjects.ts`)
+saiu — a linha dele está na árvore.
 
 ---
 
@@ -24,8 +26,8 @@ catálogos de produto, cartazes de oferta, cardápios, stories digitais, menus d
 **Objetivo atual:** Fase 1 (MVP do editor). Existem o schema do `.editx`, o
 serializer/validador com testes, a herança de estilos (`StyleRegistry.ts`, DEC-014/DEC-015) e o
 boilerplate, e o canvas desenha a página com texto (DEC-018), imagem (DEC-019) e forma (DEC-020), com seleção,
-mover e redimensionar sobre os stores (DEC-021, DEC-023). O objetivo imediato é a multi-seleção com alinhamento,
-distribuição e setas, rumo à UI mínima.
+mover e redimensionar sobre os stores (DEC-021, DEC-023), e multi-seleção com alinhamento, distribuição e setas
+(DEC-024). O objetivo imediato é a UI mínima (Toolbar, PropertiesPanel, LayersList).
 
 **Problema de mercado resolvido:** Nenhuma ferramenta combina edição visual acessível +
 geração em massa + tipos editoriais especializados (dobras, catálogos) em um único
@@ -97,7 +99,9 @@ EditX/
 │   │   ├── FrameObjects.ts        # desenho pronto → objeto do Fabric (texto, imagem, forma, erro); o engine só adiciona e empilha (wo0022)
 │   │   ├── SelectionGeometry.ts   # quais frames ganham alça, quais alças cada um mostra, caixa arrastada → transform (puro, DEC-023)
 │   │   ├── SelectionGeometry.test.ts # Testes Vitest da seleção
-│   │   └── SelectionManager.ts    # alça por frame no Fabric: clique, mover com o conteúdo, redimensionar (DEC-023); multi-seleção a fazer
+│   │   ├── SelectionLayout.ts     # alinhar, distribuir e o passo da seta sobre as caixas desenhadas (puro, DEC-024)
+│   │   ├── SelectionLayout.test.ts # Testes Vitest do alinhar/distribuir
+│   │   └── SelectionManager.ts    # alça por frame no Fabric: clique, Shift+clique, retângulo, grupo que só move, mover com o conteúdo, redimensionar (DEC-023, DEC-024)
 │   │
 │   ├── template/
 │   │   ├── TemplateSchema.ts      # Documento raiz + CSV mapping (fonte da verdade, DEC-009)
@@ -148,6 +152,8 @@ EditX/
 │   │   ├── CanvasView.tsx         # Hospeda o CanvasEngine num <div>: cria o <canvas>, ResizeObserver, dispose; liga a seleção aos stores
 │   │   ├── EditorShortcuts.ts     # Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y, Esc (shortcutFor puro + gancho na janela, DEC-023)
 │   │   ├── EditorShortcuts.test.ts # Testes Vitest dos atalhos
+│   │   ├── EditorActions.ts       # selecionar tudo, alinhar, distribuir, empurrar → uma entrada de desfazer (DEC-024; sem atalho de alinhar até a Toolbar)
+│   │   ├── EditorActions.test.ts  # Testes Vitest das ações (stores em Node, relógio falso)
 │   │   ├── Toolbar.tsx            # Barra de ferramentas superior
 │   │   ├── PropertiesPanel.tsx    # Painel direito: propriedades do frame selecionado
 │   │   ├── LayersList.tsx         # Painel esquerdo: árvore de camadas/frames
@@ -293,7 +299,7 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - Imagens são referenciadas por caminho relativo, não embutidas por padrão — ver DEC-002.
 - Projeto = pasta (o `.editx` e as imagens); todo arquivo do projeto é lido por um `ProjectFiles` («bytes por caminho»), e quem desenha não sabe de onde os bytes vêm — ver DEC-019.
 - O documento aberto vive nos stores criados por `createEditorStores` (`zustand/vanilla` + Immer); toda mudança do template gera patches e entra no histórico; página e seleção não — ver DEC-021.
-- Seleção = uma alça transparente por frame selecionável, dentro do `CanvasEngine`; o conteúdo nunca é interativo; o clique decide a seleção, que mora no `selectionStore`; o arraste solto vira UM `setFrameTransform` — ver DEC-023.
+- Seleção = uma alça transparente por frame selecionável, dentro do `CanvasEngine`; o conteúdo nunca é interativo; o gesto (clique, Shift+clique, retângulo) decide a seleção, que mora no `selectionStore`; vários frames viram uma `ActiveSelection` que só move; cada gesto ou ação (alinhar, distribuir, empurrar) vira UM `setFrameTransforms` — ver DEC-023 e DEC-024.
 - Fabric.js é o motor de canvas (não Konva.js) — ver DEC-003.
 - Zustand + Immer para todo o estado global (não Redux/Context) — ver DEC-004.
 - Tauri para desktop na Fase 2 (não Electron) — ver DEC-005.
@@ -404,6 +410,13 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - **No texto que cresce, a caixa desenhada NÃO é a do `transform`** (`TextDrawing.frame` vem depois do grow e da
   âncora). O arraste converte a DIFERENÇA da caixa e soma ao `transform` (`transformFromHandle`); converter a posição
   da alça faria o título com âncora no meio saltar ao soltar (DEC-023).
+- **Dentro de uma `ActiveSelection`, `left`/`top` da alça são RELATIVOS ao grupo** (`_enterGroup` aplica a inversa da
+  matriz do grupo, fabric 6.9.1). Tudo o que põe uma alça no mundo (`setFrames`, `updateBases`, `resetFrames`) passa
+  por `withGroupReleased`, que desfaz o grupo, reposiciona e o remonta pelos mesmos ids; o canto de um membro no mundo
+  é `getCoords()[0]`. Não chame `place` com o grupo ativo (DEC-024).
+- **Alinhar, distribuir e empurrar usam a caixa DESENHADA** (a das alças, `CanvasEngine.frameBoxes`), não a do
+  `transform`, e convertem pela diferença (`transformFromHandle`) — a mesma regra do arraste para o texto que cresce.
+  Sem canvas (teste em Node), as ações caem na caixa do `transform` (DEC-024).
 - **O retina do Fabric 6 trunca o buffer e ignora DPR abaixo de 1** — e por isso está DESLIGADO aqui (FIX-002).
   `setCanvasDimensions` grava `width × retina` como atributo (`toString()`), e o atributo de largura do `<canvas>`
   é inteiro: 1919,99995 vira 1919 numa tela de 1920 px; e `getDevicePixelRatio()` devolve `Math.max(dpr, 1)`, então
@@ -461,4 +474,4 @@ O fluxo de uso principal é:
 
 ---
 
-*Última atualização: 2026-11-20 — `FrameObjects.ts` extraído do engine (wo0022). Anterior: 2026-11-19 — seleção no canvas (wo0020, DEC-023). Criação original: 2026-05-24.*
+*Última atualização: 2026-11-21 — multi-seleção, alinhar, distribuir e setas (wo0023, DEC-024). Anterior: 2026-11-20 — `FrameObjects.ts` extraído do engine (wo0022). Criação original: 2026-05-24.*

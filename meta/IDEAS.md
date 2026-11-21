@@ -136,6 +136,15 @@ quebra ou fica vazio. **Prioridade:** alta — já está no schema (`FrameImage.
   reaproveitam as contas de alinhar.
 - **Contorno ao passar o mouse sobre um frame** — sugestão do chat (2026-11-19). **Volta quando** a conferência ou o
   uso mostrarem que se clica no frame errado (frames sobrepostos, frame de texto sem fundo).
+- **Atalhos de alinhar e distribuir** (os do Figma: Alt+A/D/W/S/H/V) — adiados na DEC-024: Alt+D vai à barra de
+  endereço no Chrome/Edge, Alt+Shift troca o idioma do teclado no Windows, Ctrl+Alt é o AltGr no ABNT — nada disso
+  medido. **Volta quando** a Toolbar existir e alguém pedir atalho, ou no app desktop (Tauri, Fase 2), onde os
+  conflitos do navegador somem.
+- **Redimensionar em grupo** — adiado na DEC-024: o grupo só move. **Volta quando** um template pedir aumentar vários
+  frames juntos — aí decidir o que acontece com o texto que cresce e com a imagem `fit` dentro do grupo.
+- **`SelectionManager.ts` acima das ~300 linhas** do CONTEXT (357 com a wo0023). Candidato a sair: o grupo
+  (`withGroupReleased`, `styleGroup`, `movedBy`, `sameMembers`). **Volta quando** a seleção ganhar a próxima
+  responsabilidade (encaixe e guias, ou girar).
 
 ---
 

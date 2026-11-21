@@ -11,7 +11,7 @@
 import { Canvas, Rect } from 'fabric';
 import type { FabricObject } from 'fabric';
 import type { DocumentSettings } from '../template/TemplateSchema';
-import type { TextFrameDrawing } from '../text/TextDrawing';
+import type { DrawRect, TextFrameDrawing } from '../text/TextDrawing';
 import type { ImageFrameDrawing } from './FrameImage';
 import type { ShapeFrameDrawing } from './FrameShape';
 import { imageFrameObject, shapeFrameObject, textFrameObjects } from './FrameObjects';
@@ -24,7 +24,7 @@ import type { SelectionCallbacks } from './SelectionManager';
 export interface CanvasEngineOptions {
   /** Margem em px CSS ao redor da página no enquadramento. Padrão: 32. */
   fitMargin?: number;
-  /** Para onde vão o clique num frame e o fim de um arraste (DEC-023). */
+  /** Para onde vão o resultado dos gestos de seleção e o fim de um arraste (DEC-023, DEC-024). */
   selection?: SelectionCallbacks;
 }
 
@@ -48,7 +48,6 @@ export class CanvasEngine {
   constructor(element: HTMLCanvasElement, options: CanvasEngineOptions = {}) {
     this.fitMargin = options.fitMargin ?? 32;
     this.canvas = new Canvas(element, {
-      selection: false,
       backgroundColor: '#E5E5E5',
       renderOnAddRemove: false,
       // DESLIGADO de propósito (FIX-002): o retina do Fabric 6 trunca `css × dpr` e ignora
@@ -58,6 +57,11 @@ export class CanvasEngine {
       // O clique acerta o frame de cima pela ordem das alças, mesmo com outro selecionado
       // (sem isto o Fabric dá preferência ao objeto ativo — DEC-023).
       preserveObjectStacking: true,
+      // Shift+clique e retângulo arrastado no vazio (DEC-024): o Fabric só junta objetos com
+      // `selection` ligado, e liga os dois gestos juntos. Só as alças são `selectable`.
+      selection: true,
+      selectionColor: 'rgba(26, 115, 232, 0.08)',
+      selectionBorderColor: '#1A73E8',
     });
     this.selection = new SelectionManager(
       this.canvas,
@@ -124,6 +128,7 @@ export class CanvasEngine {
     this.assertAlive();
     this.clearText();
 
+    const bases = new Map<string, DrawRect>();
     for (const drawing of drawings) {
       for (const object of textFrameObjects(drawing)) {
         this.frameZ.set(object, drawing.zIndex);
@@ -131,8 +136,10 @@ export class CanvasEngine {
         this.textObjects.push(object);
       }
       // A caixa do texto que cresce só se conhece agora (depois do grow e da âncora).
-      this.selection.updateBase(drawing.frameId, drawing.frame);
+      bases.set(drawing.frameId, drawing.frame);
     }
+    // De uma vez: com um grupo ativo, cada atualização desfaz e remonta o grupo.
+    this.selection.updateBases(bases);
 
     this.relayer();
   }
@@ -184,16 +191,22 @@ export class CanvasEngine {
     this.selection.setFrames(frames);
   }
 
-  /** Mostra este frame como selecionado, ou nenhum (`null`). */
-  setSelected(frameId: string | null): void {
+  /** Mostra estes frames como selecionados: nenhum, um, ou vários num grupo que só move (DEC-024). */
+  setSelected(frameIds: readonly string[]): void {
     this.assertAlive();
-    this.selection.setSelected(frameId);
+    this.selection.setSelected(frameIds);
   }
 
-  /** Devolve a alça e o conteúdo do frame ao lugar do documento (arraste que não mudou nada). */
-  resetFrame(frameId: string): void {
+  /** Devolve as alças e o conteúdo destes frames ao lugar do documento (arraste que não mudou nada). */
+  resetFrames(frameIds: readonly string[]): void {
     this.assertAlive();
-    this.selection.resetFrame(frameId);
+    this.selection.resetFrames(frameIds);
+  }
+
+  /** As caixas desenhadas destes frames (px CSS do mundo) — o que alinhar, distribuir e empurrar usam. */
+  frameBoxes(frameIds: readonly string[]): Map<string, DrawRect> {
+    this.assertAlive();
+    return this.selection.baseRects(frameIds);
   }
 
   /**

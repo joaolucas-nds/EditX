@@ -22,6 +22,7 @@ com alinhamento, distribuição e setas. A nota anterior (wo0018) saiu — o mer
 - **Schema `.editx` desenhado e IMPLEMENTADO** — `TemplateSchema.ts` (documento raiz + CSV mapping) e `frame.types.ts` (frames/overflow/estilos) com tipos TypeScript completos, zero `any`, JSDoc em cada export público
 - **Boilerplate do projeto criado** — Vite 8 + React 19 + TypeScript 6, ESLint 9 (flat config) + Prettier configurados, todas as dependências de CONTEXT.md instaladas
 - **Schema validado por exemplo real** — `src/template/__examples__/catalogo-simples.example.ts` satisfaz `EditxTemplate` de ponta a ponta (2 páginas, 3 tipos de frame, herança de estilo via `basedOn`, `isDataPage`, `csvMapping` completo) — compila limpo, passa lint, `npm run build` funciona
+- **Multi-seleção, alinhar, distribuir e setas** *(wo0023, DEC-024; conferência de tela pelo chat a fazer)* — Shift+clique soma e tira da seleção, arrastar no vazio seleciona por retângulo (basta tocar), Ctrl+A seleciona os frames destravados da página; vários frames viram um grupo que só move (o conteúdo de todos acompanha), numa entrada de desfazer; setas empurram 1 mm (Shift: 10 mm), e os toques seguidos na mesma seleção viram uma entrada (janela de 1 s, `MERGE_WINDOW_MS`). Alinhar (à caixa da seleção, ou à área de corte com um frame só) e distribuir (três ou mais, espaços iguais) existem como ações (`ui/EditorActions.ts`, contas em `canvas/SelectionLayout.ts`), sem atalho até a Toolbar — no `npm run dev`, `__editx.actions.align('left')`. Testado em Node (B1–B7, E1–E11, H15–H18, K6–K8)
 - **Seleção, mover e redimensionar no canvas** *(wo0020, DEC-023; conferido pelo chat no navegador embutido em 2026-11-19, sem piscar ao soltar)* — clicar num frame não travado o seleciona (`selectionStore`); clicar fora ou Esc limpa; arrastar move o frame com o conteúdo acompanhando; as alças redimensionam só a caixa até soltar (canto mantém a proporção, Shift solta; texto que cresce só mostra as alças do eixo que não cresce); ao soltar, UMA entrada de desfazer com o `transform` novo arredondado a 0,01 da unidade (`fromPx`, mínimo 1 mm); Ctrl+Z desfaz, Ctrl+Shift+Z e Ctrl+Y refazem. Uma alça transparente por frame (`canvas/SelectionManager.ts`, dentro do `CanvasEngine`), a parte pura em `canvas/SelectionGeometry.ts`, atalhos em `ui/EditorShortcuts.ts`; imagens decodificadas em cache por caminho (`ImageCache`). Sem alça de girar. Testado em Node (A1–A14, G16–G18, M10–M12, H14, K1–K5)
 - **Documento nos stores, com desfazer e refazer** *(wo0016, DEC-021; conferido pelo chat no navegador embutido em 2026-11-18)* — `createEditorStores(template)` (`store/documentStore.ts`) guarda uma cópia do template e a página ativa; toda mudança passa por `edit` (`produceWithPatches` do Immer) e entra no `historyStore` (limite 100; mudança vazia não entra); `undo`/`redo` aplicam os patches; `selectionStore` guarda os ids selecionados. Página e seleção não entram no histórico. Primeira ação: `setFrameTransform`. O `App` lê o documento com `useStore`; no `npm run dev` os stores ficam em `window.__editx`. Testado em Node (H1–H13)
 - **Forma aparece no canvas** *(wo0014, DEC-020; conferido pelo chat no navegador embutido em 2026-11-18)* — os frames de forma da página viram contorno SVG calculado em `canvas/FrameShape.ts` (puro, testado) e pintado como `Path` (`CanvasEngine.setShapeDrawings`): `rect` com cantos arredondados, `ellipse` e `line` (horizontal, no meio do frame); preenchimento sólido ou nenhum; traço contínuo, tracejado ou pontilhado, por DENTRO do frame. Polígono (sem pontos no formato) e SVG customizado (sem sanitização) saem como retângulo vermelho. Forma, imagem e texto empilham pelo `zIndex` (empate: forma < imagem < texto). `?page=page-capa` na URL mostra a capa. Rotação ainda não é desenhada
@@ -40,7 +41,7 @@ com alinhamento, distribuição e setas. A nota anterior (wo0018) saiu — o mer
 
 ## 🔧 Em Progresso
 
-*Nada em progresso — o próximo item do backlog é a multi-seleção com alinhamento, distribuição e setas (DEC-023).*
+*Nada em progresso — o próximo item do backlog é a UI mínima (Toolbar, PropertiesPanel, LayersList).*
 
 ---
 
@@ -74,8 +75,8 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 - [ ] Sanitizar `customSvg` antes do primeiro render de SVG — prometido no JSDoc de `ShapeFrame.customSvg`; fora da wo0001 (o validador só exige presença)
 - [x] `documentStore.ts` + `selectionStore.ts` + `historyStore.ts` (wo0016, DEC-021 — antes da seleção, por decisão do dono)
 - [x] `SelectionManager.ts` — seleção simples, mover (o conteúdo acompanha), redimensionar (só a caixa até soltar), Ctrl+Z/Ctrl+Shift+Z/Ctrl+Y, cache das imagens decodificadas (wo0020, DEC-021/DEC-023)
-- [ ] Multi-seleção (Shift+clique), alinhamento, distribuição e setas para empurrar — DEC-023 ← **próximo**
-- [ ] UI mínima: Toolbar + PropertiesPanel + LayersList (sem estilização avançada)
+- [x] Multi-seleção (Shift+clique, retângulo, Ctrl+A), alinhamento, distribuição e setas para empurrar (wo0023, DEC-024)
+- [ ] UI mínima: Toolbar + PropertiesPanel + LayersList (sem estilização avançada) ← **próximo**
 - [ ] Abrir projeto = pasta — `ProjectFiles` por `showDirectoryPicker` no Chrome/Edge (handle no IndexedDB, grava o `.editx`) e por `<input webkitdirectory>` no Firefox/Safari (só leitura); junto da UI mínima — DEC-019
 - [ ] `CsvParser.ts` + `ColumnMapper.ts` básico
 - [ ] `BatchGenerator.ts` em Web Worker (PNG por enquanto)
@@ -101,10 +102,11 @@ terceiros — ver DEC-011 e as armadilhas correspondentes em CONTEXT.md):
 (`meta/analises/261119-ANALISE-selection-manager.md`, decidida pelo dono: DEC-023) e a wo0020. Detalhe em
 `logs/2026-11-19.md`. Antes, em 2026-11-18: `FrameShape.ts` (wo0014), stores (wo0016, DEC-021) e o merge do kit
 (wo0018) — `logs/2026-11-18.md`.
-**Onde parou:** wo0020 aplicada e conferida pelo chat (wo0021). Em 2026-11-20 o dono decidiu a multi-seleção
-(DEC-024) e a wo0022 extraiu o `FrameObjects.ts` do `CanvasEngine.ts` (sem mudança de comportamento). Detalhe em
-`logs/2026-11-20.md`.
+**Onde parou:** wo0023 aplicada (multi-seleção, alinhar e distribuir como ações, setas). Falta a conferência de tela
+pelo chat — que cobre também a da wo0022, que não foi feita porque o `npm run dev` não respondia. Detalhe em
+`logs/2026-11-21.md`.
 
 ---
 
-*Próximo passo: conferência de tela rápida da wo0022 pelo chat; depois, a WO da multi-seleção (DEC-024).*
+*Próximo passo: conferência de tela da wo0022/wo0023 pelo chat; depois, a UI mínima (Toolbar primeiro: é onde
+alinhar e distribuir ganham botão).*

@@ -16,6 +16,7 @@ import type { ProjectFiles } from '../project/ProjectFiles';
 import type { EditxTemplate } from '../template/TemplateSchema';
 import { FontRegistry } from '../text/FontRegistry';
 import type { Transform } from '../types/frame.types';
+import type { FrameBoxes } from './EditorActions';
 
 export interface CanvasViewProps {
   /** Template cujo documento e página serão mostrados. */
@@ -24,12 +25,17 @@ export interface CanvasViewProps {
   pageId: string;
   /** Arquivos do projeto (imagens), lidos por caminho relativo ao `.editx` (DEC-019). */
   files: ProjectFiles;
-  /** Ids dos frames selecionados (`selectionStore`); o canvas mostra o primeiro. */
+  /** Ids dos frames selecionados (`selectionStore`); vários viram um grupo que só move (DEC-024). */
   selectedIds: readonly string[];
-  /** O usuário clicou num frame (`[id]`) ou fora deles (`[]`). */
+  /** Resultado de um gesto de seleção no canvas: os ids selecionados agora (vazio = nenhum). */
   onSelect: (ids: string[]) => void;
-  /** O usuário soltou um arraste que muda o frame: o `transform` novo, já na unidade do documento. */
-  onFrameChange: (frameId: string, transform: Transform) => void;
+  /**
+   * O usuário soltou um arraste que muda frames: o `transform` novo de cada um, já na unidade do
+   * documento — uma entrada de desfazer para o gesto inteiro.
+   */
+  onFramesChange: (changes: Record<string, Transform>) => void;
+  /** Recebe quem fornece as caixas desenhadas enquanto o canvas existe (`null` ao desmontar). */
+  boxes?: { current: FrameBoxes | null };
 }
 
 /** No escopo do módulo: o cache das fontes dura entre montagens (StrictMode, troca de página). */
@@ -62,14 +68,15 @@ export function CanvasView({
   files,
   selectedIds,
   onSelect,
-  onFrameChange,
+  onFramesChange,
+  boxes,
 }: CanvasViewProps): JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<CanvasEngine | null>(null);
   // Sempre as props mais recentes: o efeito de montagem desenha já na criação, e os eventos do
   // canvas (criados uma vez) leem o template e as funções de agora.
-  const latest = useRef({ template, onSelect, onFrameChange });
-  latest.current = { template, onSelect, onFrameChange };
+  const latest = useRef({ template, onSelect, onFramesChange, boxes });
+  latest.current = { template, onSelect, onFramesChange, boxes };
 
   useEffect(() => {
     const host = hostRef.current;
@@ -80,20 +87,33 @@ export function CanvasView({
 
     const engine = new CanvasEngine(element, {
       selection: {
-        onSelect: (frameId) => latest.current.onSelect(frameId === null ? [] : [frameId]),
-        onFrameChange: (frameId, base, next) => {
-          const { template: current, onFrameChange: change } = latest.current;
-          const frame = findFrame(current, frameId);
-          if (frame === undefined) return;
-          const transform = transformFromHandle(frame.transform, base, next, current.document.unit);
+        onSelect: (frameIds) => latest.current.onSelect(frameIds),
+        onFramesChange: (list) => {
+          const { template: current, onFramesChange: change } = latest.current;
+          const changes: Record<string, Transform> = {};
+          const unchanged: string[] = [];
+          for (const { frameId, base, next } of list) {
+            const frame = findFrame(current, frameId);
+            if (frame === undefined) continue;
+            const transform = transformFromHandle(
+              frame.transform,
+              base,
+              next,
+              current.document.unit,
+            );
+            if (sameTransform(transform, frame.transform)) unchanged.push(frameId);
+            else changes[frameId] = transform;
+          }
           // Arraste que, arredondado, não muda nada: o documento não muda e a página não vai ser
-          // redesenhada — então a alça e o conteúdo voltam ao lugar aqui.
-          if (sameTransform(transform, frame.transform)) engine.resetFrame(frameId);
-          else change(frameId, transform);
+          // redesenhada — então as alças e o conteúdo voltam ao lugar aqui.
+          if (Object.keys(changes).length === 0) engine.resetFrames(unchanged);
+          else change(changes);
         },
       },
     });
     engineRef.current = engine;
+    const boxRef = latest.current.boxes;
+    if (boxRef !== undefined) boxRef.current = (frameIds) => engine.frameBoxes(frameIds);
     // Primeiro enquadramento com a melhor estimativa; o ResizeObserver dispara logo em
     // seguida com a medida exata em px do dispositivo e corrige (FIX-002).
     const rect = host.getBoundingClientRect();
@@ -131,6 +151,7 @@ export function CanvasView({
       observer.disconnect();
       deviceObserver.disconnect();
       engineRef.current = null;
+      if (boxRef !== undefined) boxRef.current = null;
       engine
         .dispose()
         .catch((error: unknown) => console.error('Falha ao liberar o CanvasEngine:', error))
@@ -182,10 +203,11 @@ export function CanvasView({
   }, [template, pageId, files]);
 
   // Depois do efeito de desenho (mesma renderização, ordem de declaração): as alças já existem.
-  const selectedId = selectedIds[0] ?? null;
+  // A lista vira texto para o efeito não rodar a cada array novo com os mesmos ids.
+  const selectedKey = selectedIds.join('\n');
   useEffect(() => {
-    engineRef.current?.setSelected(selectedId);
-  }, [selectedId, template, pageId]);
+    engineRef.current?.setSelected(selectedKey === '' ? [] : selectedKey.split('\n'));
+  }, [selectedKey, template, pageId]);
 
   return <div ref={hostRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }} />;
 }

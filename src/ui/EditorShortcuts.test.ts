@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { shortcutFor } from './EditorShortcuts';
+import { nudgeFor, shortcutFor } from './EditorShortcuts';
 import type { ShortcutKey } from './EditorShortcuts';
 
 /** Uma tecla sem modificador, com os modificadores que o teste pedir. */
@@ -35,5 +35,24 @@ describe('shortcutFor', () => {
     expect(shortcutFor(press('z', { ctrlKey: true, altKey: true }))).toBeNull();
     expect(shortcutFor(press('y', { ctrlKey: true, shiftKey: true }))).toBeNull();
     expect(shortcutFor(press('Escape', { ctrlKey: true }))).toBeNull();
+  });
+
+  it('K6: Ctrl+A seleciona tudo; Ctrl+Shift+A não', () => {
+    expect(shortcutFor(press('a', { ctrlKey: true }))).toBe('selectAll');
+    expect(shortcutFor(press('A', { ctrlKey: true, shiftKey: true }))).toBeNull();
+  });
+});
+
+describe('nudgeFor', () => {
+  it('K7: cada seta dá a sua direção; com Shift, o passo grande', () => {
+    expect(nudgeFor(press('ArrowLeft'))).toEqual({ dx: -1, dy: 0, big: false });
+    expect(nudgeFor(press('ArrowDown', { shiftKey: true }))).toEqual({ dx: 0, dy: 1, big: true });
+  });
+
+  it('K8: com Ctrl, Cmd ou Alt, ou outra tecla, nada', () => {
+    expect(nudgeFor(press('ArrowUp', { ctrlKey: true }))).toBeNull();
+    expect(nudgeFor(press('ArrowUp', { metaKey: true }))).toBeNull();
+    expect(nudgeFor(press('ArrowUp', { altKey: true }))).toBeNull();
+    expect(nudgeFor(press('z'))).toBeNull();
   });
 });

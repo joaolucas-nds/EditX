@@ -38,6 +38,16 @@ export interface DocumentState {
    * @throws Error se o frame não existe.
    */
   setFrameTransform(frameId: string, transform: Transform): void;
+  /**
+   * Troca o `transform` de vários frames numa entrada de desfazer só (DEC-024: mover em grupo,
+   * alinhar, distribuir, empurrar). Rótulo padrão: o de `setFrameTransform` para um frame;
+   * «mover N frames» (ou «redimensionar») para vários. `mergeKey`: ver `HistoryEntry`.
+   * @throws Error se algum frame não existe — e aí nada muda.
+   */
+  setFrameTransforms(
+    changes: Readonly<Record<string, Transform>>,
+    options?: { label?: string; mergeKey?: string },
+  ): void;
   /** Desfaz a última mudança do template. @returns `false` se não havia o que desfazer. */
   undo(): boolean;
   /** Refaz a última mudança desfeita. @returns `false` se não havia o que refazer. */
@@ -56,6 +66,8 @@ export interface EditorStoresOptions {
   pageId?: string;
   /** Quantas mudanças o histórico guarda; padrão: 100. */
   historyLimit?: number;
+  /** Relógio das entradas do histórico (a janela de fusão); padrão: `Date.now`. Para teste. */
+  now?: () => number;
 }
 
 /** Ids de frame são únicos no documento inteiro (o validador cobra), então basta procurar em todas as páginas. */
@@ -80,15 +92,20 @@ export function createEditorStores(
     throw new Error(`A página "${String(pageId)}" não existe no template.`);
   }
   const history = createHistoryStore(options.historyLimit ?? 100);
+  const now = options.now ?? Date.now;
   const selection = createSelectionStore();
 
   const document = createStore<DocumentState>()((set, get) => {
     /** Ponto ÚNICO de mudança do template: aplica a receita e grava os patches, se algo mudou. */
-    const edit = (label: string, recipe: (draft: Draft<EditxTemplate>) => void): void => {
+    const edit = (
+      label: string,
+      recipe: (draft: Draft<EditxTemplate>) => void,
+      mergeKey?: string,
+    ): void => {
       const [next, patches, inversePatches] = produceWithPatches(get().template, recipe);
       if (patches.length === 0) return;
       set({ template: next });
-      history.getState().record({ label, patches, inversePatches });
+      history.getState().record({ label, patches, inversePatches, mergeKey, at: now() });
     };
 
     return {
@@ -102,23 +119,41 @@ export function createEditorStores(
         selection.getState().clear();
       },
       setFrameTransform: (frameId, transform) => {
-        if (!hasFrame(get().template, frameId)) {
-          throw new Error(`O frame "${frameId}" não existe no template.`);
+        get().setFrameTransforms({ [frameId]: transform });
+      },
+      setFrameTransforms: (changes, options = {}) => {
+        const ids = Object.keys(changes);
+        for (const frameId of ids) {
+          if (!hasFrame(get().template, frameId)) {
+            throw new Error(`O frame "${frameId}" não existe no template.`);
+          }
         }
         // Rótulo do histórico: o tamanho mudou = redimensionar; só a posição = mover (DEC-023).
-        const before = get()
-          .template.pages.flatMap((page) => page.frames)
-          .find((frame) => frame.id === frameId)?.transform;
-        const resized =
-          before !== undefined &&
-          (before.width !== transform.width || before.height !== transform.height);
-        edit(`${resized ? 'redimensionar' : 'mover'} ${frameId}`, (draft) => {
-          for (const page of draft.pages) {
-            const frame = page.frames.find((candidate) => candidate.id === frameId);
-            // Campo por campo: valor igual não é mudança para o Immer; objeto novo seria.
-            if (frame !== undefined) Object.assign(frame.transform, transform);
-          }
+        const frames = get().template.pages.flatMap((page) => page.frames);
+        const resized = ids.some((frameId) => {
+          const before = frames.find((frame) => frame.id === frameId)?.transform;
+          const after = changes[frameId];
+          return (
+            before !== undefined && (before.width !== after.width || before.height !== after.height)
+          );
         });
+        const verb = resized ? 'redimensionar' : 'mover';
+        const label =
+          options.label ??
+          (ids.length === 1 ? `${verb} ${ids[0]}` : `${verb} ${ids.length} frames`);
+        edit(
+          label,
+          (draft) => {
+            for (const page of draft.pages) {
+              for (const frame of page.frames) {
+                const transform = changes[frame.id];
+                // Campo por campo: valor igual não é mudança para o Immer; objeto novo seria.
+                if (transform !== undefined) Object.assign(frame.transform, transform);
+              }
+            }
+          },
+          options.mergeKey,
+        );
       },
       undo: () => {
         const entry = history.getState().takeUndo();

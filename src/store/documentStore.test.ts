@@ -153,4 +153,65 @@ describe('createEditorStores', () => {
       `mover ${FOTO}`,
     ]);
   });
+
+  it('H15: vários frames mudam numa entrada só, e desfazer volta todos', () => {
+    const stores = open();
+    const doc = stores.document.getState();
+    doc.setFrameTransforms({
+      [FOTO]: { ...transformOf(stores, FOTO), x: 20 },
+      [NOME]: { ...transformOf(stores, NOME), x: 20 },
+    });
+    expect(stores.history.getState().past.map((entry) => entry.label)).toEqual(['mover 2 frames']);
+    doc.undo();
+    expect([transformOf(stores, FOTO).x, transformOf(stores, NOME).x]).toEqual([10, 10]);
+  });
+
+  it('H16: um frame que não existe lança e nada muda', () => {
+    const stores = open();
+    const before = stores.document.getState().template;
+    expect(() =>
+      stores.document.getState().setFrameTransforms({
+        [FOTO]: { ...transformOf(stores, FOTO), x: 20 },
+        'nao-existe': { ...transformOf(stores, FOTO), x: 20 },
+      }),
+    ).toThrow('nao-existe');
+    expect(stores.document.getState().template).toBe(before);
+    expect(stores.history.getState().past).toHaveLength(0);
+  });
+
+  it('H17: mesma chave dentro de 1 s junta; desfazer e refazer valem para o todo', () => {
+    const clock = { t: 0 };
+    const stores = createEditorStores(catalogoSimplesExample, {
+      pageId: 'page-produto',
+      now: () => clock.t,
+    });
+    const doc = stores.document.getState();
+    doc.setFrameTransforms({ [FOTO]: { ...transformOf(stores, FOTO), x: 11 } }, { mergeKey: 'k' });
+    clock.t = 1000;
+    doc.setFrameTransforms({ [FOTO]: { ...transformOf(stores, FOTO), x: 12 } }, { mergeKey: 'k' });
+    expect(stores.history.getState().past).toHaveLength(1);
+    doc.undo();
+    expect(transformOf(stores, FOTO).x).toBe(10);
+    doc.redo();
+    expect(transformOf(stores, FOTO).x).toBe(12);
+    clock.t = 2001;
+    doc.setFrameTransforms({ [FOTO]: { ...transformOf(stores, FOTO), x: 13 } }, { mergeKey: 'k' });
+    expect(stores.history.getState().past).toHaveLength(2);
+  });
+
+  it('H18: depois de um desfazer, nada junta com a entrada anterior', () => {
+    const clock = { t: 0 };
+    const stores = createEditorStores(catalogoSimplesExample, {
+      pageId: 'page-produto',
+      now: () => clock.t,
+    });
+    const doc = stores.document.getState();
+    doc.setFrameTransforms({ [FOTO]: { ...transformOf(stores, FOTO), x: 11 } }, { mergeKey: 'k' });
+    clock.t = 100;
+    doc.setFrameTransform(NOME, { ...transformOf(stores, NOME), x: 20 });
+    doc.undo();
+    clock.t = 200;
+    doc.setFrameTransforms({ [FOTO]: { ...transformOf(stores, FOTO), x: 12 } }, { mergeKey: 'k' });
+    expect(stores.history.getState().past).toHaveLength(2);
+  });
 });
