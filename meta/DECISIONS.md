@@ -919,9 +919,10 @@ referência (Figma, Canva, Adobe Express).
 ### Consequências
 - **Positivas:** juntar frames sem código próprio de gesto; alinhar e distribuir testados sem tela.
 - **Negativas:** até a Toolbar, alinhar e distribuir só existem pelo console.
-- **Riscos:** alça no lugar errado depois de soltar um grupo (coordenada relativa ao grupo); store e Fabric divergirem
-  num Shift+clique que tira um frame; toques de seta juntados de mais — os três vão para a conferência de tela e os
-  testes da WO da multi-seleção.
+- **Riscos:** os três — alça no lugar errado depois de soltar um grupo, store e Fabric divergirem num Shift+clique que
+  tira um frame, toques de seta juntados de mais — **conferidos na tela em 2026-11-21 (wo0024): nenhum apareceu.**
+  Medido na mesma conferência: as ações leem a caixa do canvas um redesenho atrasada; duas ações de alinhar seguidas
+  sem redesenho erram a segunda (pendência no STATUS, antes da Toolbar).
 
 ---
 

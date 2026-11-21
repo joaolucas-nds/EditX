@@ -3,7 +3,8 @@
 > Este arquivo é lido pelo Claude no início de cada nova conversa.
 > Atualize quando o que o projeto É mudar (stack, estrutura, armadilha nova) — não a cada turno.
 
-**Mudanças nesta revisão (2026-11-21, wo0023):** multi-seleção (DEC-024): a árvore ganha `canvas/SelectionLayout.ts` e
+**Mudanças nesta revisão (2026-11-21, wo0023 e wo0024):** a wo0024 acrescenta a armadilha das caixas do canvas um
+redesenho atrás do documento (medida na conferência de tela). Da wo0023: multi-seleção (DEC-024): a árvore ganha `canvas/SelectionLayout.ts` e
 `ui/EditorActions.ts` (+ testes) e a linha do `SelectionManager.ts` perde o «a fazer»; o «Objetivo atual» passa a
 apontar a UI mínima; a linha da seleção em «Arquitetura» fala do grupo; entram duas armadilhas (alça dentro do grupo
 tem posição relativa a ele; alinhar e empurrar usam a caixa desenhada). A nota anterior (wo0022: `FrameObjects.ts`)
@@ -417,6 +418,11 @@ a UI trava durante o cálculo de centenas de layouts em sequência.
 - **Alinhar, distribuir e empurrar usam a caixa DESENHADA** (a das alças, `CanvasEngine.frameBoxes`), não a do
   `transform`, e convertem pela diferença (`transformFromHandle`) — a mesma regra do arraste para o texto que cresce.
   Sem canvas (teste em Node), as ações caem na caixa do `transform` (DEC-024).
+- **As caixas do canvas ficam UM redesenho atrás do documento** — `frameBoxes` lê as alças, que só se atualizam quando o
+  React redesenha. Duas ações de alinhar/distribuir seguidas na mesma tarefa erram a segunda (medido na conferência da
+  wo0023: centralizar o preço logo depois de alinhá-lo à direita deu x 145 em vez de 55; com 100 ms entre as duas, 55).
+  As setas não sofrem (trabalham por diferença). Pendência no STATUS: corrigir antes de um botão da Toolbar chamar duas
+  ações no mesmo clique.
 - **O retina do Fabric 6 trunca o buffer e ignora DPR abaixo de 1** — e por isso está DESLIGADO aqui (FIX-002).
   `setCanvasDimensions` grava `width × retina` como atributo (`toString()`), e o atributo de largura do `<canvas>`
   é inteiro: 1919,99995 vira 1919 numa tela de 1920 px; e `getDevicePixelRatio()` devolve `Math.max(dpr, 1)`, então

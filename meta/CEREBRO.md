@@ -93,6 +93,12 @@ Comece vazia e escreva quando doer duas vezes: técnica que você precisou expli
   quadros. O Fabric arrasta por `MouseEvent` (`mousedown` no `upper-canvas`, `mousemove`/`mouseup` no `document`), não
   por `PointerEvent`; a captura vem reduzida (800×450 de uma página 1280×720) — coordenada para evento sai de
   `innerWidth`, não da captura. Piscar se mede lendo um pixel por quadro, com a prova de vida de um ponto que TEM de mudar.
+  **Medido na conferência da wo0023:** a captura sai um quadro ATRASADA logo depois de uma ação (mostrou a seleção
+  e a posição de antes três vezes); o estado se lê do store (`__editx`) e a tela se confere numa segunda captura. Linha
+  de 1 px some em captura reduzida (`scale` 0,5–0,6): para borda de seleção, use `zoom` ou captura cheia. O
+  `left_click` com `modifiers: "shift"` faz o Shift+clique de verdade, e `key` com `repeat` simula as setas seguidas.
+  Ações chamadas pelo console no MESMO script, sem esperar um redesenho, leem caixa velha do canvas — espere
+  (`setTimeout`) entre uma e outra.
 - **Simulação de WO pelo chat (VM Linux) e a corrida das ferramentas do dispositivo** — o chat simula toda WO a partir
   do PRÓPRIO texto dela: copia o repositório para `$HOME/simNN` (fora da pasta vinculada; `node_modules` por link),
   aplica as edições lendo âncora e texto novo da cerca de quatro crases por script, roda de novo para provar a
